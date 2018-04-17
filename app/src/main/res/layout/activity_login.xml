@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
@@ -107,7 +108,8 @@
                     android:stateListAnimator="@drawable/state_list_animator_z"
                     android:text="@string/go"
                     android:textColor="#d3d3d3"
-                    android:onClick="clickLogin"/>
+                    android:onClick="clickLogin"
+                    tools:targetApi="lollipop" />
             </RelativeLayout>
 
             <TextView
@@ -133,6 +135,7 @@
         android:onClick="clickRegisterLayout"
         android:src="@drawable/ic_signup"
         android:transitionName="loginFab"
-        app:fabSize="normal" />
+        app:fabSize="normal"
+        tools:targetApi="lollipop" />
 
 </RelativeLayout>
