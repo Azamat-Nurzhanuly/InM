@@ -3,6 +3,10 @@ apply plugin: 'com.android.application'
 android {
     signingConfigs {
         config {
+            keyAlias 'barracuda_messenger'
+            keyPassword 'InstantMessagingPasswordToCertKeystore0129384756'
+            storeFile file('../barracuda')
+            storePassword 'InstantMessagingPasswordToKeystore0129384756'
         }
     }
     compileSdkVersion 27

@@ -1,10 +1,12 @@
 package com.android.rivchat.ui;
 
+import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
 import android.content.Intent;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
@@ -67,12 +69,8 @@ public class LoginActivity extends AppCompatActivity {
         initFirebase();
     }
 
-
-    /**
-     * Khởi tạo các thành phần cần thiết cho việc quản lý đăng nhập
-     */
     private void initFirebase() {
-        //Khoi tao thanh phan de dang nhap, dang ky
+
         mAuth = FirebaseAuth.getInstance();
         authUtils = new AuthUtils();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
@@ -80,7 +78,7 @@ public class LoginActivity extends AppCompatActivity {
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
                 user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-                    // User is signed in
+
                     StaticConfig.UID = user.getUid();
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     if (firstTimeAccess) {
@@ -94,7 +92,7 @@ public class LoginActivity extends AppCompatActivity {
             }
         };
 
-        //Khoi tao dialog waiting khi dang nhap
+
         waitingDialog = new LovelyProgressDialog(this).setCancelable(false);
     }
 
@@ -106,6 +104,8 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    @SuppressLint("RestrictedApi")
+    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
     public void clickRegisterLayout(View view) {
         getWindow().setExitTransition(null);
         getWindow().setEnterTransition(null);
@@ -158,9 +158,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Dinh nghia cac ham tien ich cho quas trinhf dang nhap, dang ky,...
-     */
     class AuthUtils {
         /**
          * Action register
@@ -331,9 +328,6 @@ public class LoginActivity extends AppCompatActivity {
             });
         }
 
-        /**
-         * Luu thong tin user info cho nguoi dung dang nhap
-         */
         void saveUserInfo() {
             FirebaseDatabase.getInstance().getReference().child("user/" + StaticConfig.UID).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -354,9 +348,6 @@ public class LoginActivity extends AppCompatActivity {
             });
         }
 
-        /**
-         * Khoi tao thong tin mac dinh cho tai khoan moi
-         */
         void initNewUserInfo() {
             User newUser = new User();
             newUser.email = user.getEmail();
