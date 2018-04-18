@@ -50,6 +50,7 @@ public class RegisterActivity extends AppCompatActivity {
             }
         });
     }
+
     private void ShowEnterAnimation() {
         Transition transition = TransitionInflater.from(this).inflateTransition(R.transition.fabtransition);
         getWindow().setSharedElementEnterTransition(transition);

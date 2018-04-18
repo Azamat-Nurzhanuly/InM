@@ -10,7 +10,7 @@ android {
         }
     }
     compileSdkVersion 27
-    buildToolsVersion "25.0.3"
+    buildToolsVersion '27.0.3'
     defaultConfig {
         applicationId 'kz.salsery.barracuda'
         minSdkVersion 19
@@ -28,8 +28,16 @@ android {
         debug {
             signingConfig signingConfigs.config
         }
+        customDebugType {
+            debuggable true
+        }
+
     }
     productFlavors {
+    }
+
+    lintOptions {
+        abortOnError false
     }
 }
 
