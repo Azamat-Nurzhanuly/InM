@@ -1,4 +1,4 @@
-package com.android.rivchat.ui;
+package com.android.barracuda.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -26,13 +26,13 @@ import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.FirebaseDatabase;
-import com.android.rivchat.R;
-import com.android.rivchat.data.FriendDB;
-import com.android.rivchat.data.GroupDB;
-import com.android.rivchat.data.StaticConfig;
-import com.android.rivchat.model.Group;
-import com.android.rivchat.model.ListFriend;
-import com.android.rivchat.model.Room;
+import com.android.barracuda.R;
+import com.android.barracuda.data.FriendDB;
+import com.android.barracuda.data.GroupDB;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.model.Group;
+import com.android.barracuda.model.ListFriend;
+import com.android.barracuda.model.Room;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 

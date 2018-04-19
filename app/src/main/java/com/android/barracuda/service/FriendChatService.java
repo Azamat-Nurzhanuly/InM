@@ -1,4 +1,4 @@
-package com.android.rivchat.service;
+package com.android.barracuda.service;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -16,14 +16,14 @@ import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Log;
 
-import com.android.rivchat.MainActivity;
-import com.android.rivchat.R;
-import com.android.rivchat.data.FriendDB;
-import com.android.rivchat.data.GroupDB;
-import com.android.rivchat.data.StaticConfig;
-import com.android.rivchat.model.Friend;
-import com.android.rivchat.model.Group;
-import com.android.rivchat.model.ListFriend;
+import com.android.barracuda.MainActivity;
+import com.android.barracuda.R;
+import com.android.barracuda.data.FriendDB;
+import com.android.barracuda.data.GroupDB;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.model.Friend;
+import com.android.barracuda.model.Group;
+import com.android.barracuda.model.ListFriend;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;

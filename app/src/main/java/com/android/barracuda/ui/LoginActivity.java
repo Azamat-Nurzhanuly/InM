@@ -1,4 +1,4 @@
-package com.android.rivchat.ui;
+package com.android.barracuda.ui;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityOptions;
@@ -24,11 +24,11 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.android.rivchat.MainActivity;
-import com.android.rivchat.R;
-import com.android.rivchat.data.SharedPreferenceHelper;
-import com.android.rivchat.data.StaticConfig;
-import com.android.rivchat.model.User;
+import com.android.barracuda.MainActivity;
+import com.android.barracuda.R;
+import com.android.barracuda.data.SharedPreferenceHelper;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.model.User;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 

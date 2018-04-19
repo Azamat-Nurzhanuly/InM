@@ -1,4 +1,4 @@
-package com.android.rivchat.util;
+package com.android.barracuda.util;
 
 import android.content.Context;
 import android.content.res.Resources;

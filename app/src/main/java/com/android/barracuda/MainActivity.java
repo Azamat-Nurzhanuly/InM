@@ -1,4 +1,4 @@
-package com.android.rivchat;
+package com.android.barracuda;
 
 import android.content.Intent;
 import android.os.Bundle;
@@ -19,12 +19,12 @@ import android.widget.Toast;
 
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.android.rivchat.data.StaticConfig;
-import com.android.rivchat.service.ServiceUtils;
-import com.android.rivchat.ui.FriendsFragment;
-import com.android.rivchat.ui.GroupFragment;
-import com.android.rivchat.ui.LoginActivity;
-import com.android.rivchat.ui.UserProfileFragment;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.service.ServiceUtils;
+import com.android.barracuda.ui.FriendsFragment;
+import com.android.barracuda.ui.GroupFragment;
+import com.android.barracuda.ui.LoginActivity;
+import com.android.barracuda.ui.UserProfileFragment;
 
 import java.util.ArrayList;
 import java.util.List;

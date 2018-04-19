@@ -1,9 +1,9 @@
-package com.android.rivchat.data;
+package com.android.barracuda.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
 
-import com.android.rivchat.model.User;
+import com.android.barracuda.model.User;
 
 
 public class SharedPreferenceHelper {

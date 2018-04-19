@@ -1,4 +1,4 @@
-package com.android.rivchat.ui;
+package com.android.barracuda.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -30,12 +30,12 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.android.rivchat.R;
-import com.android.rivchat.data.FriendDB;
-import com.android.rivchat.data.GroupDB;
-import com.android.rivchat.data.StaticConfig;
-import com.android.rivchat.model.Group;
-import com.android.rivchat.model.ListFriend;
+import com.android.barracuda.R;
+import com.android.barracuda.data.FriendDB;
+import com.android.barracuda.data.GroupDB;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.model.Group;
+import com.android.barracuda.model.ListFriend;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 

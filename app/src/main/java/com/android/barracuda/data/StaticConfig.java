@@ -1,4 +1,4 @@
-package com.android.rivchat.data;
+package com.android.barracuda.data;
 
 
 

@@ -1,4 +1,4 @@
-package com.android.rivchat.ui;
+package com.android.barracuda.ui;
 
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
@@ -16,8 +16,8 @@ import android.view.animation.AccelerateInterpolator;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import com.android.rivchat.R;
-import com.android.rivchat.data.StaticConfig;
+import com.android.barracuda.R;
+import com.android.barracuda.data.StaticConfig;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
