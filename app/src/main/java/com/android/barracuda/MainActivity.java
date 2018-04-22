@@ -17,10 +17,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.Toast;
 
+import com.android.barracuda.data.SharedPreferenceHelper;
+import com.android.barracuda.model.User;
 import com.android.barracuda.service.cloud.CloudFunctions;
 import com.facebook.accountkit.AccessToken;
+import com.facebook.accountkit.Account;
 import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
 import com.facebook.accountkit.AccountKitLoginResult;
+import com.facebook.accountkit.PhoneNumber;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
@@ -36,9 +42,15 @@ import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
 import com.android.barracuda.ui.LoginActivity;
 import com.android.barracuda.ui.UserProfileFragment;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import okhttp3.ResponseBody;
@@ -101,6 +113,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     Toast.makeText(MainActivity.this, "User signed in: " + user.getUid(),
                             Toast.LENGTH_SHORT).show();
+                    saveUserInfo();
                 } else {
 
                     Log.d(TAG, "onAuthStateChanged:signed_out");
@@ -141,6 +154,48 @@ public class MainActivity extends AppCompatActivity {
     protected void onDestroy() {
         ServiceUtils.startServiceFriendChat(getApplicationContext());
         super.onDestroy();
+    }
+
+    void saveUserInfo() {
+        FirebaseDatabase.getInstance().getReference().child("user/" + StaticConfig.UID).addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                HashMap hashUser = (HashMap) dataSnapshot.getValue();
+                User userInfo = new User();
+                assert hashUser != null;
+                userInfo.name = (String) hashUser.get("name");
+                userInfo.email = (String) hashUser.get("email");
+                userInfo.avata = (String) hashUser.get("avata");
+                SharedPreferenceHelper.getInstance(MainActivity.this).saveUserInfo(userInfo);
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+    }
+
+    void initNewUserInfo() {
+        User newUser = new User();
+        newUser.email = user.getEmail();
+        newUser.name = user.getEmail().substring(0, user.getEmail().indexOf("@"));
+        newUser.avata = StaticConfig.STR_DEFAULT_BASE64;
+        FirebaseDatabase.getInstance().getReference().child("user/" + user.getUid()).setValue(newUser);
+
+        AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+            @Override
+            public void onSuccess(final Account account) {
+                String accountKitId = account.getId();
+                PhoneNumber phoneNumber = account.getPhoneNumber();
+                String phoneNumberString = phoneNumber.toString();
+            }
+
+            @Override
+            public void onError(final AccountKitError error) {
+                // Handle Error
+            }
+        });
     }
 
     /**
@@ -269,8 +324,9 @@ public class MainActivity extends AppCompatActivity {
                             Log.w(TAG, "getCustomToken", task.getException());
                             Toast.makeText(MainActivity.this, "Authentication failed.",
                                     Toast.LENGTH_SHORT).show();
+                        } else {
+                            initNewUserInfo();
                         }
-
                     }
                 });
     }
