@@ -61,7 +61,7 @@ public class UserProfileFragment extends Fragment {
     private UserInfoAdapter infoAdapter;
 
     private static final String USERNAME_LABEL = "Username";
-    private static final String EMAIL_LABEL = "Email";
+    private static final String PHONE_NUMBER_LABEL = "Phone Number";
     private static final String SIGNOUT_LABEL = "Sign out";
     private static final String RESETPASS_LABEL = "Change Password";
 
@@ -242,8 +242,8 @@ public class UserProfileFragment extends Fragment {
         Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
         listConfig.add(userNameConfig);
 
-        Configuration emailConfig = new Configuration(EMAIL_LABEL, myAccount.email, R.mipmap.ic_email);
-        listConfig.add(emailConfig);
+        Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
+        listConfig.add(phoneNumberConfig);
 
         Configuration resetPass = new Configuration(RESETPASS_LABEL, "", R.mipmap.ic_restore);
         listConfig.add(resetPass);
@@ -344,7 +344,7 @@ public class UserProfileFragment extends Fragment {
                                 .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
-                                        resetPassword(myAccount.email);
+                                        resetPassword(myAccount.phoneNumber);
                                         dialogInterface.dismiss();
                                     }
                                 })

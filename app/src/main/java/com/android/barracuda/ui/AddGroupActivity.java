@@ -320,7 +320,7 @@ class ListPeopleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     @Override
     public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
         ((ItemFriendHolder) holder).txtName.setText(listFriend.getListFriend().get(position).name);
-        ((ItemFriendHolder) holder).txtEmail.setText(listFriend.getListFriend().get(position).email);
+        ((ItemFriendHolder) holder).txtPhoneNumber.setText(listFriend.getListFriend().get(position).phoneNumber);
         String avata = listFriend.getListFriend().get(position).avata;
         final String id = listFriend.getListFriend().get(position).id;
         if (!avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
@@ -360,14 +360,14 @@ class ListPeopleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 }
 
 class ItemFriendHolder extends RecyclerView.ViewHolder {
-    public TextView txtName, txtEmail;
+    public TextView txtName, txtPhoneNumber;
     public CircleImageView avata;
     public CheckBox checkBox;
 
     public ItemFriendHolder(View itemView) {
         super(itemView);
         txtName = (TextView) itemView.findViewById(R.id.txtName);
-        txtEmail = (TextView) itemView.findViewById(R.id.txtEmail);
+        txtPhoneNumber = (TextView) itemView.findViewById(R.id.txtPhoneNumber);
         avata = (CircleImageView) itemView.findViewById(R.id.icon_avata);
         checkBox = (CheckBox) itemView.findViewById(R.id.checkAddPeople);
     }

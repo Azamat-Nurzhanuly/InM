@@ -296,7 +296,7 @@ public class LoginActivity extends AppCompatActivity {
                     User userInfo = new User();
                     assert hashUser != null;
                     userInfo.name = (String) hashUser.get("name");
-                    userInfo.email = (String) hashUser.get("email");
+                    userInfo.phoneNumber = (String) hashUser.get("phoneNumber");
                     userInfo.avata = (String) hashUser.get("avata");
                     SharedPreferenceHelper.getInstance(LoginActivity.this).saveUserInfo(userInfo);
                 }
@@ -310,7 +310,7 @@ public class LoginActivity extends AppCompatActivity {
 
         void initNewUserInfo() {
             User newUser = new User();
-            newUser.email = user.getEmail();
+            newUser.phoneNumber = user.getEmail();
             newUser.name = user.getEmail().substring(0, user.getEmail().indexOf("@"));
             newUser.avata = StaticConfig.STR_DEFAULT_BASE64;
             FirebaseDatabase.getInstance().getReference().child("user/" + user.getUid()).setValue(newUser);

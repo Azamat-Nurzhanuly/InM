@@ -164,7 +164,7 @@ public class MainActivity extends AppCompatActivity {
                 User userInfo = new User();
                 assert hashUser != null;
                 userInfo.name = (String) hashUser.get("name");
-                userInfo.email = (String) hashUser.get("email");
+                userInfo.phoneNumber = (String) hashUser.get("phoneNumber");
                 userInfo.avata = (String) hashUser.get("avata");
                 SharedPreferenceHelper.getInstance(MainActivity.this).saveUserInfo(userInfo);
             }
@@ -177,23 +177,22 @@ public class MainActivity extends AppCompatActivity {
     }
 
     void initNewUserInfo() {
-        User newUser = new User();
-        newUser.email = user.getEmail();
-        newUser.name = user.getEmail().substring(0, user.getEmail().indexOf("@"));
-        newUser.avata = StaticConfig.STR_DEFAULT_BASE64;
-        FirebaseDatabase.getInstance().getReference().child("user/" + user.getUid()).setValue(newUser);
 
         AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
             @Override
             public void onSuccess(final Account account) {
-                String accountKitId = account.getId();
-                PhoneNumber phoneNumber = account.getPhoneNumber();
-                String phoneNumberString = phoneNumber.toString();
+
+                User newUser = new User();
+                newUser.id = account.getId();
+                newUser.phoneNumber = account.getPhoneNumber().getPhoneNumber();
+                newUser.name = account.getPhoneNumber().getPhoneNumber();
+                newUser.avata = StaticConfig.STR_DEFAULT_BASE64;
+                FirebaseDatabase.getInstance().getReference().child("user/" + user.getUid()).setValue(newUser);
             }
 
             @Override
             public void onError(final AccountKitError error) {
-                // Handle Error
+                Log.e(TAG, "GetCurrentAccountError: " + error);
             }
         });
     }

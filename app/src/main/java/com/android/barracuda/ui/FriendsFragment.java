@@ -248,7 +248,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                             HashMap userMap = (HashMap) ((HashMap) dataSnapshot.getValue()).get(id);
                             Friend user = new Friend();
                             user.name = (String) userMap.get("name");
-                            user.email = (String) userMap.get("email");
+                            user.phoneNumber = (String) userMap.get("phoneNumber");
                             user.avata = (String) userMap.get("avata");
                             user.id = id;
                             user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
@@ -281,7 +281,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         .setTopColorRes(R.color.colorPrimary)
                         .setIcon(R.drawable.ic_add_friend)
                         .setTitle("Friend")
-                        .setMessage("User "+userInfo.email + " has been friend")
+                        .setMessage("User " + userInfo.phoneNumber + " has been friend")
                         .show();
             } else {
                 addFriend(idFriend, true);
@@ -402,7 +402,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         Friend user = new Friend();
                         HashMap mapUserInfo = (HashMap) dataSnapshot.getValue();
                         user.name = (String) mapUserInfo.get("name");
-                        user.email = (String) mapUserInfo.get("email");
+                        user.phoneNumber = (String) mapUserInfo.get("phoneNumber");
                         user.avata = (String) mapUserInfo.get("avata");
                         user.id = id;
                         user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
