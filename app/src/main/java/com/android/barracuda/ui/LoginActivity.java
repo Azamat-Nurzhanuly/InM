@@ -1,19 +1,15 @@
 package com.android.barracuda.ui;
 
-import android.annotation.SuppressLint;
-import android.app.ActivityOptions;
 import android.content.Intent;
-import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
-import android.support.annotation.RequiresApi;
-import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
 import android.view.View;
-import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.barracuda.BuildConfig;
+import com.android.barracuda.service.ServiceUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -30,70 +26,79 @@ import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.User;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
-import com.yarolegovich.lovelydialog.LovelyProgressDialog;
-
+import com.android.barracuda.service.cloud.CloudFunctions;
+import com.facebook.accountkit.AccessToken;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitLoginResult;
+import com.facebook.accountkit.ui.AccountKitActivity;
+import com.facebook.accountkit.ui.AccountKitConfiguration;
+import com.facebook.accountkit.ui.LoginType;
 import java.util.HashMap;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import java.io.IOException;
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 
 public class LoginActivity extends AppCompatActivity {
-    private static String TAG = "LoginActivity";
-    FloatingActionButton fab;
-    private final Pattern VALID_EMAIL_ADDRESS_REGEX =
-            Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
-    private EditText editTextUsername, editTextPassword;
-    private LovelyProgressDialog waitingDialog;
 
-    private AuthUtils authUtils;
+    private static final String TAG = LoginActivity.class.getSimpleName();
+    private static int APP_REQUEST_CODE = 99;
+
+    private FirebaseUser user;
+
     private FirebaseAuth mAuth;
     private FirebaseAuth.AuthStateListener mAuthListener;
-    private FirebaseUser user;
-    private boolean firstTimeAccess;
+    private CloudFunctions mCloudFunctions;
+
+    private AuthUtils authUtils;
+
+    public void onLogoutClick(View view) {
+        AccountKit.logOut();
+        mAuth.signOut();
+    }
 
     @Override
     protected void onStart() {
         super.onStart();
+
         mAuth.addAuthStateListener(mAuthListener);
+        ServiceUtils.stopServiceFriendChat(getApplicationContext(), false);
     }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_login);
-        fab = (FloatingActionButton) findViewById(R.id.fab);
-        editTextUsername = (EditText) findViewById(R.id.et_username);
-        editTextPassword = (EditText) findViewById(R.id.et_password);
-        firstTimeAccess = true;
-        initFirebase();
-    }
 
-    private void initFirebase() {
+        setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
         authUtils = new AuthUtils();
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                user = firebaseAuth.getCurrentUser();
+                FirebaseUser user = firebaseAuth.getCurrentUser();
                 if (user != null) {
-
-                    StaticConfig.UID = user.getUid();
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-                    if (firstTimeAccess) {
-                        startActivity(new Intent(LoginActivity.this, MainActivity.class));
-                        LoginActivity.this.finish();
-                    }
+                    Toast.makeText(LoginActivity.this, "User signed in: " + user.getUid(),
+                            Toast.LENGTH_SHORT).show();
                 } else {
-                    Log.d(TAG, "onAuthStateChanged:signed_out");
+                    final AccessToken accessToken = AccountKit.getCurrentAccessToken();
+                    if (accessToken != null) {
+                        getCustomToken(accessToken);
+                    } else {
+                        phoneLogin();
+                    }
                 }
-                firstTimeAccess = false;
             }
         };
 
-
-        waitingDialog = new LovelyProgressDialog(this).setCancelable(false);
+        final Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
+                .build();
+        mCloudFunctions = retrofit.create(CloudFunctions.class);
     }
 
     @Override
@@ -104,78 +109,101 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    @SuppressLint("RestrictedApi")
-    @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
-    public void clickRegisterLayout(View view) {
-        getWindow().setExitTransition(null);
-        getWindow().setEnterTransition(null);
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-            ActivityOptions options =
-                    ActivityOptions.makeSceneTransitionAnimation(this, fab, fab.getTransitionName());
-            startActivityForResult(new Intent(this, RegisterActivity.class), StaticConfig.REQUEST_CODE_REGISTER, options.toBundle());
-        } else {
-            startActivityForResult(new Intent(this, RegisterActivity.class), StaticConfig.REQUEST_CODE_REGISTER);
-        }
-    }
-
     @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+    protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == StaticConfig.REQUEST_CODE_REGISTER && resultCode == RESULT_OK) {
-            authUtils.createUser(data.getStringExtra(StaticConfig.STR_EXTRA_USERNAME), data.getStringExtra(StaticConfig.STR_EXTRA_PASSWORD));
+
+        if (requestCode == APP_REQUEST_CODE) {
+            handleFacebookLoginResult(resultCode, data);
         }
     }
 
-    public void clickLogin(View view) {
-        String username = editTextUsername.getText().toString();
-        String password = editTextPassword.getText().toString();
-        if (validate(username, password)) {
-            authUtils.signIn(username, password);
+    private void handleFacebookLoginResult(final int resultCode, final Intent data) {
+        final AccountKitLoginResult loginResult =
+                data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
+
+        if (loginResult.getError() != null) {
+            final String toastMessage = loginResult.getError().getErrorType().getMessage();
+            Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+        } else if (loginResult.wasCancelled() || resultCode == RESULT_CANCELED) {
+            Log.d(TAG, "Login cancelled");
+            finish();
         } else {
-            Toast.makeText(this, "Invalid email or empty password", Toast.LENGTH_SHORT).show();
+            if (loginResult.getAccessToken() != null) {
+                Log.d(TAG, "We have logged with FB Account Kit. ID: " +
+                        loginResult.getAccessToken().getAccountId());
+                getCustomToken(loginResult.getAccessToken());
+            } else {
+                Log.wtf(TAG, "It should not have been happened");
+            }
         }
     }
 
-    @Override
-    public void onBackPressed() {
-        super.onBackPressed();
-        setResult(RESULT_CANCELED, null);
-        finish();
+    private void getCustomToken(final AccessToken accessToken) {
+        Log.d(TAG, "Getting custom token for Account Kit access token: " + accessToken.getToken());
+        mCloudFunctions.getCustomToken(accessToken.getToken()).enqueue(new Callback<ResponseBody>() {
+            @Override
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+                try {
+                    if (response.isSuccessful()) {
+                        final String customToken = response.body().string();
+                        Log.d(TAG, "Custom token: " + customToken);
+                        signInWithCustomToken(customToken);
+                    } else {
+                        Log.e(TAG, response.errorBody().string());
+                    }
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ResponseBody> call, Throwable e) {
+                Log.e(TAG, "Request getCustomToken failed", e);
+            }
+        });
     }
 
-    private boolean validate(String emailStr, String password) {
-        Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(emailStr);
-        return (password.length() > 0 || password.equals(";")) && matcher.find();
+    private void signInWithCustomToken(String customToken) {
+        mAuth.signInWithCustomToken(customToken)
+                .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
+                    @Override
+                    public void onComplete(@NonNull Task<AuthResult> task) {
+                        Log.d(TAG, "getCustomToken:onComplete:" + task.isSuccessful());
+                        if (!task.isSuccessful()) {
+                            Log.w(TAG, "getCustomToken", task.getException());
+                            Toast.makeText(LoginActivity.this, "Authentication failed.",
+                                    Toast.LENGTH_SHORT).show();
+                        } else {
+
+                            authUtils.saveUserInfo();
+                            Toast.makeText(LoginActivity.this, "Register and Login success", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(LoginActivity.this, MainActivity.class));
+                            LoginActivity.this.finish();
+                        }
+                    }
+                });
     }
 
-    public void clickResetPassword(View view) {
-        String username = editTextUsername.getText().toString();
-        if (validate(username, ";")) {
-            authUtils.resetPassword(username);
-        } else {
-            Toast.makeText(this, "Invalid email", Toast.LENGTH_SHORT).show();
-        }
+    private void phoneLogin() {
+        final Intent intent = new Intent(this, AccountKitActivity.class);
+        final AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
+                new AccountKitConfiguration.AccountKitConfigurationBuilder(LoginType.PHONE,
+                        AccountKitActivity.ResponseType.TOKEN);
+        intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
+                configurationBuilder.build());
+        startActivityForResult(intent, APP_REQUEST_CODE);
     }
 
     class AuthUtils {
-        /**
-         * Action register
-         *
-         * @param email
-         * @param password
-         */
+
         void createUser(String email, String password) {
-            waitingDialog.setIcon(R.drawable.ic_add_friend)
-                    .setTitle("Registering....")
-                    .setTopColorRes(R.color.colorPrimary)
-                    .show();
+
             mAuth.createUserWithEmailAndPassword(email, password)
                     .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                         @Override
                         public void onComplete(@NonNull Task<AuthResult> task) {
                             Log.d(TAG, "createUserWithEmail:onComplete:" + task.isSuccessful());
-                            waitingDialog.dismiss();
                             // If sign in fails, display a message to the user. If sign in succeeds
                             // the auth state listener will be notified and logic to handle the
                             // signed in user can be handled in the listener.
@@ -210,24 +238,13 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            waitingDialog.dismiss();
                         }
                     })
             ;
         }
 
-
-        /**
-         * Action Login
-         *
-         * @param email
-         * @param password
-         */
         void signIn(String email, String password) {
-            waitingDialog.setIcon(R.drawable.ic_person_low)
-                    .setTitle("Login....")
-                    .setTopColorRes(R.color.colorPrimary)
-                    .show();
+
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
                         @Override
@@ -236,7 +253,6 @@ public class LoginActivity extends AppCompatActivity {
                             // If sign in fails, display a message to the user. If sign in succeeds
                             // the auth state listener will be notified and logic to handle the
                             // signed in user can be handled in the listener.
-                            waitingDialog.dismiss();
                             if (!task.isSuccessful()) {
                                 Log.w(TAG, "signInWithEmail:failed", task.getException());
                                 new LovelyInfoDialog(LoginActivity.this) {
@@ -268,73 +284,17 @@ public class LoginActivity extends AppCompatActivity {
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
-                            waitingDialog.dismiss();
                         }
                     });
-        }
-
-        /**
-         * Action reset password
-         *
-         * @param email
-         */
-        void resetPassword(final String email) {
-            mAuth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            new LovelyInfoDialog(LoginActivity.this) {
-                                @Override
-                                public LovelyInfoDialog setConfirmButtonText(String text) {
-                                    findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            dismiss();
-                                        }
-                                    });
-                                    return super.setConfirmButtonText(text);
-                                }
-                            }
-                                    .setTopColorRes(R.color.colorPrimary)
-                                    .setIcon(R.drawable.ic_pass_reset)
-                                    .setTitle("Password Recovery")
-                                    .setMessage("Sent email to " + email)
-                                    .setConfirmButtonText("Ok")
-                                    .show();
-                        }
-                    })
-            .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                    new LovelyInfoDialog(LoginActivity.this) {
-                        @Override
-                        public LovelyInfoDialog setConfirmButtonText(String text) {
-                            findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View view) {
-                                    dismiss();
-                                }
-                            });
-                            return super.setConfirmButtonText(text);
-                        }
-                    }
-                            .setTopColorRes(R.color.colorAccent)
-                            .setIcon(R.drawable.ic_pass_reset)
-                            .setTitle("False")
-                            .setMessage("False to sent email to " + email)
-                            .setConfirmButtonText("Ok")
-                            .show();
-                }
-            });
         }
 
         void saveUserInfo() {
             FirebaseDatabase.getInstance().getReference().child("user/" + StaticConfig.UID).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
-                    waitingDialog.dismiss();
                     HashMap hashUser = (HashMap) dataSnapshot.getValue();
                     User userInfo = new User();
+                    assert hashUser != null;
                     userInfo.name = (String) hashUser.get("name");
                     userInfo.email = (String) hashUser.get("email");
                     userInfo.avata = (String) hashUser.get("avata");

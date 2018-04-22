@@ -59,10 +59,6 @@ public class MainActivity extends AppCompatActivity {
     private ViewPagerAdapter adapter;
 
     private FirebaseUser user;
-
-    //Facebook Auth + Firebase Auth
-    //
-    //
     private static final String TAG = MainActivity.class.getSimpleName();
     private static int APP_REQUEST_CODE = 99;
 
@@ -74,8 +70,6 @@ public class MainActivity extends AppCompatActivity {
         AccountKit.logOut();
         mAuth.signOut();
     }
-    //
-    //
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -94,24 +88,23 @@ public class MainActivity extends AppCompatActivity {
         viewPager = (ViewPager) findViewById(R.id.viewpager);
         floatButton = (FloatingActionButton) findViewById(R.id.fab);
         initTab();
-//        initFirebase();
-
-        //Facebook Auth + Firebase Auth
-        //
-        //
-        setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
 
         mAuthListener = new FirebaseAuth.AuthStateListener() {
             @Override
             public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-                FirebaseUser user = firebaseAuth.getCurrentUser();
+
+                user = firebaseAuth.getCurrentUser();
                 if (user != null) {
+                    StaticConfig.UID = user.getUid();
                     Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
                     Toast.makeText(MainActivity.this, "User signed in: " + user.getUid(),
                             Toast.LENGTH_SHORT).show();
                 } else {
+
+                    Log.d(TAG, "onAuthStateChanged:signed_out");
+
                     final AccessToken accessToken = AccountKit.getCurrentAccessToken();
                     if (accessToken != null) {
                         getCustomToken(accessToken);
@@ -126,27 +119,7 @@ public class MainActivity extends AppCompatActivity {
                 .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
                 .build();
         mCloudFunctions = retrofit.create(CloudFunctions.class);
-        //
-        //
     }
-
-//    private void initFirebase() {
-//        mAuth = FirebaseAuth.getInstance();
-//        mAuthListener = new FirebaseAuth.AuthStateListener() {
-//            @Override
-//            public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
-//                user = firebaseAuth.getCurrentUser();
-//                if (user != null) {
-//                    StaticConfig.UID = user.getUid();
-//                } else {
-//                    MainActivity.this.finish();
-//                    // User is signed in
-//                    startActivity(new Intent(MainActivity.this, LoginActivity.class));
-//                    Log.d(TAG, "onAuthStateChanged:signed_out");
-//                }
-//            }
-//        };
-//    }
 
 
     @Override
@@ -312,21 +285,6 @@ public class MainActivity extends AppCompatActivity {
         startActivityForResult(intent, APP_REQUEST_CODE);
     }
 
-    //    @Override
-//    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-//        super.onActivityResult(requestCode, resultCode, data);
-//        if (requestCode == REQUEST_CODE_LOGIN && resultCode == RESULT_OK) {
-//            if (data.getStringExtra(STR_EXTRA_ACTION).equals(LoginActivity.STR_EXTRA_ACTION_LOGIN)) {
-//                authUtils.signIn(data.getStringExtra(STR_EXTRA_USERNAME), data.getStringExtra(STR_EXTRA_PASSWORD));
-//            } else if (data.getStringExtra(STR_EXTRA_ACTION).equals(RegisterActivity.STR_EXTRA_ACTION_REGISTER)) {
-//                authUtils.createUser(data.getStringExtra(STR_EXTRA_USERNAME), data.getStringExtra(STR_EXTRA_PASSWORD));
-//            }else if(data.getStringExtra(STR_EXTRA_ACTION).equals(LoginActivity.STR_EXTRA_ACTION_RESET)){
-//                authUtils.resetPassword(data.getStringExtra(STR_EXTRA_USERNAME));
-//            }
-//        } else if (resultCode == RESULT_CANCELED) {
-//            this.finish();
-//        }
-//    }
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.

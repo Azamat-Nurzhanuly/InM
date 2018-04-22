@@ -42,11 +42,6 @@
             android:theme="@style/TranslucentBackground">
         </activity>
         <activity
-            android:name="com.android.barracuda.ui.RegisterActivity"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:theme="@style/Translucent" />
-        <activity
             android:name="com.android.barracuda.ui.ChatActivity"
             android:screenOrientation="portrait"
             android:parentActivityName="com.android.barracuda.MainActivity"/>
