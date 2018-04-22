@@ -188,10 +188,10 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
             new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
                     .setTopColorRes(R.color.colorPrimary)
                     .setTitle("Add friend")
-                    .setMessage("Enter friend email")
+                    .setMessage("Enter friend's phone number")
                     .setIcon(R.drawable.ic_add_friend)
-                    .setInputType(InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS)
-                    .setInputFilter("Email not found", new LovelyTextInputDialog.TextFilter() {
+                    .setInputType(InputType.TYPE_CLASS_PHONE)
+                    .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
                         @Override
                         public boolean check(String text) {
                             Pattern VALID_EMAIL_ADDRESS_REGEX =
@@ -204,7 +204,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         @Override
                         public void onTextInputConfirmed(String text) {
                             //Tim id user id
-                            findIDEmail(text);
+                            findIDPhoneNumber(text);
                             //Check xem da ton tai ban ghi friend chua
                             //Ghi them 1 ban ghi
                         }
@@ -212,28 +212,23 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                     .show();
         }
 
-        /**
-         * TIm id cua email tren server
-         *
-         * @param email
-         */
-        private void findIDEmail(String email) {
+        private void findIDPhoneNumber(String phoneNumber) {
             dialogWait.setCancelable(false)
                     .setIcon(R.drawable.ic_add_friend)
                     .setTitle("Finding friend....")
                     .setTopColorRes(R.color.colorPrimary)
                     .show();
-            FirebaseDatabase.getInstance().getReference().child("user").orderByChild("email").equalTo(email).addListenerForSingleValueEvent(new ValueEventListener() {
+            FirebaseDatabase.getInstance().getReference().child("user").orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot dataSnapshot) {
                     dialogWait.dismiss();
                     if (dataSnapshot.getValue() == null) {
-                        //email not found
+                        //phoneNumber not found
                         new LovelyInfoDialog(context)
                                 .setTopColorRes(R.color.colorAccent)
                                 .setIcon(R.drawable.ic_add_friend)
                                 .setTitle("Fail")
-                                .setMessage("Email not found")
+                                .setMessage("phoneNumber not found")
                                 .show();
                     } else {
                         String id = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
@@ -242,7 +237,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                                     .setTopColorRes(R.color.colorAccent)
                                     .setIcon(R.drawable.ic_add_friend)
                                     .setTitle("Fail")
-                                    .setMessage("Email not valid")
+                                    .setMessage("Phone number not valid")
                                     .show();
                         } else {
                             HashMap userMap = (HashMap) ((HashMap) dataSnapshot.getValue()).get(id);
@@ -662,7 +657,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 public void onDataChange(DataSnapshot dataSnapshot) {
 
                     if (dataSnapshot.getValue() == null) {
-                        //email not found
+                        //phoneNumber not found
                         dialogWaitDeleting.dismiss();
                         new LovelyInfoDialog(context)
                                 .setTopColorRes(R.color.colorAccent)

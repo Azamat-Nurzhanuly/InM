@@ -36,12 +36,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name="com.android.barracuda.ui.LoginActivity"
-            android:launchMode="singleTop"
-            android:screenOrientation="portrait"
-            android:theme="@style/TranslucentBackground">
-        </activity>
-        <activity
             android:name="com.android.barracuda.ui.ChatActivity"
             android:screenOrientation="portrait"
             android:parentActivityName="com.android.barracuda.MainActivity"/>
