@@ -1,6 +1,5 @@
 package com.android.barracuda.ui;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -23,6 +22,7 @@ import android.widget.TextView;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.fab.Fab;
 import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.Message;
 import com.google.firebase.database.ChildEventListener;
@@ -31,6 +31,7 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.gordonwong.materialsheetfab.MaterialSheetFab;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -52,13 +53,15 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   private ArrayList<CharSequence> idFriend;
   private Consersation consersation;
   private ImageButton btnSend;
-  private ImageButton btnChooseFile;
+
   private EditText editWriteMessage;
   private LinearLayoutManager linearLayoutManager;
   public static HashMap<String, Bitmap> bitmapAvataFriend;
   public Bitmap bitmapAvataUser;
+  public MaterialSheetFab materialSheetFab;
 
 
+  @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
@@ -70,10 +73,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
     consersation = new Consersation();
     btnSend = (ImageButton) findViewById(R.id.btnSend);
-    btnChooseFile = (ImageButton) findViewById(R.id.btnChooseFile);
 
     btnSend.setOnClickListener(this);
-    btnChooseFile.setOnClickListener(this);
+
 
     String base64AvataUser = SharedPreferenceHelper.getInstance(this).getUserInfo().avata;
     if (!base64AvataUser.equals(StaticConfig.STR_DEFAULT_BASE64)) {
@@ -128,6 +130,36 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       });
       recyclerChat.setAdapter(adapter);
     }
+
+
+    final Fab fab = (Fab) findViewById(R.id.fab);
+    final View sheetView = findViewById(R.id.fab_sheet);
+    sheetView.setFocusable(true);
+
+    View overlay = findViewById(R.id.overlay);
+    int sheetColor = getResources().getColor(R.color.fab_sheet_color);
+    int fabColor = getResources().getColor(R.color.fab_color);
+
+    // Initialize material sheet FAB
+    materialSheetFab = new MaterialSheetFab<>(fab, sheetView, overlay,
+      sheetColor, fabColor);
+
+    fab.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        materialSheetFab.showSheet();
+      }
+    });
+
+    sheetView.setFocusable(true);
+
+    sheetView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+      @Override
+      public void onFocusChange(View v, boolean hasFocus) {
+        if(!hasFocus)
+        materialSheetFab.hideSheet();
+      }
+    });
   }
 
   @Override
@@ -143,6 +175,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   @Override
   public void onBackPressed() {
+    if (materialSheetFab.isSheetVisible()) {
+      materialSheetFab.hideSheet();
+      return;
+    }
+
     Intent result = new Intent();
     result.putExtra("idFriend", idFriend.get(0));
     setResult(RESULT_OK, result);
@@ -155,9 +192,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     switch (view.getId()) {
       case R.id.btnSend:
         sendTextMessage();
-        break;
-      case R.id.btnChooseFile:
-        chooseMedia();
         break;
     }
   }
@@ -175,14 +209,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
   }
 
-  @SuppressLint("RestrictedApi")
-  @RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
   private void chooseMedia() {
 
-    Intent intent = new Intent();
-    intent.setType("image/*");
-    intent.setAction(Intent.ACTION_GET_CONTENT);
-    startActivityForResult(Intent.createChooser(intent, "Выберите фото"), IMAGE_GALLERY_REQUEST);
   }
 }
 

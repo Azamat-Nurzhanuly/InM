@@ -5,8 +5,6 @@
   android:background="@color/colorIndivateTab"
   android:orientation="vertical">
 
-
-
     <ImageButton
       android:id="@+id/btnSend"
       android:layout_width="45dp"
@@ -18,8 +16,8 @@
       android:scaleType="centerInside"
       android:src="@drawable/ic_send" />
 
-    <ImageButton
-      android:id="@+id/btnChooseFile"
+    <com.android.barracuda.fab.Fab
+      android:id="@+id/fab"
       android:layout_width="45dp"
       android:layout_height="45dp"
       android:layout_alignParentBottom="true"
@@ -27,8 +25,7 @@
       android:layout_marginRight="45dp"
       android:background="#00000000"
       android:padding="10dp"
-      android:scaleType="centerInside"
-      android:src="@drawable/attach_msg" />
+      android:scaleType="centerInside" />
 
     <View
       android:id="@+id/line"
@@ -53,7 +50,7 @@
       android:layout_alignParentStart="true"
       android:layout_marginEnd="20dp"
       android:layout_marginTop="10dp"
-      android:layout_toStartOf="@id/btnChooseFile"
+      android:layout_toStartOf="@id/fab"
       android:background="@drawable/edittext_boder"
       android:drawablePadding="20dp"
       android:inputType="textLongMessage"
@@ -63,4 +60,112 @@
       android:textColorHint="#aeafaf"
       android:textSize="15sp" />
 
+  <RelativeLayout
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:layout_above="@id/btnSend"
+    >
+
+    <!-- Your FAB implementation -->
+
+
+    <!-- Overlay that dims the screen -->
+    <com.gordonwong.materialsheetfab.DimOverlayFrameLayout
+      android:id="@+id/overlay"
+      android:layout_width="match_parent"
+      android:layout_height="match_parent" />
+
+    <!-- Circular reveal container for the sheet -->
+    <io.codetail.widget.RevealLinearLayout
+      android:layout_width="match_parent"
+      android:layout_height="match_parent"
+      android:gravity="end|bottom"
+      android:orientation="vertical">
+
+      <!-- Sheet that contains your items -->
+      <android.support.v7.widget.CardView
+        android:id="@+id/fab_sheet"
+        android:layout_width="250dp"
+        android:layout_height="150dp"
+        android:layout_marginBottom="50dp"
+        >
+
+        <!-- TODO: Put your sheet items here -->
+
+        <LinearLayout
+          android:id="@+id/buttons_container_top"
+          android:layout_width="match_parent"
+          android:layout_height="75dp"
+
+          android:orientation="horizontal">
+          <ImageButton
+            android:id="@+id/btn_choose_doc"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/document" />
+
+          <ImageButton
+            android:id="@+id/btn_choose_camera"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/camera" />
+
+          <ImageButton
+            android:id="@+id/btn_choose_gallery"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/gallery" />
+        </LinearLayout>
+
+        <LinearLayout
+          android:id="@+id/buttons_container_bottom"
+          android:layout_width="match_parent"
+          android:layout_height="75dp"
+          android:orientation="horizontal"
+          android:layout_alignParentBottom="true"
+          android:layout_marginTop="75dp"
+          >
+          <ImageButton
+            android:id="@+id/btn_choose_audio"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/music" />
+          <ImageButton
+            android:id="@+id/btn_choose_place"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/location" />
+
+          <ImageButton
+            android:id="@+id/btn_choose_contact"
+            android:layout_width="80dp"
+            android:layout_height="match_parent"
+            android:background="#00000000"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/contacts" />
+        </LinearLayout>
+
+
+      </android.support.v7.widget.CardView>
+    </io.codetail.widget.RevealLinearLayout>
+  </RelativeLayout>
+
+
 </RelativeLayout>
+
