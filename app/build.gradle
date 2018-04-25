@@ -18,7 +18,7 @@ android {
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
-        resConfigs "ru"
+        resConfigs "kz"
         buildConfigField "String", "CLOUD_FUNCTIONS_ENDPOINT", '"getCustomToken?access_token=1153d3100ba8ab55a91b6ec4d717151d"'
         buildConfigField "String", "CLOUD_FUNCTIONS_BASE_URL", '"https://us-central1-barracuda-messenger.cloudfunctions.net/"'
     }

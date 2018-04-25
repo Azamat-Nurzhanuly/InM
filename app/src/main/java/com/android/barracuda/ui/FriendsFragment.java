@@ -195,7 +195,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                         @Override
                         public boolean check(String text) {
                             Pattern VALID_EMAIL_ADDRESS_REGEX =
-                                    Pattern.compile("^[A-Z0-9._%+-]+@[A-Z0-9.-]+\\.[A-Z]{2,6}$", Pattern.CASE_INSENSITIVE);
+                                    Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
                             Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
                             return matcher.find();
                         }
