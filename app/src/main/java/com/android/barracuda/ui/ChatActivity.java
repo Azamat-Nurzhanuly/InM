@@ -447,7 +447,25 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   @Override
   public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
     if (holder instanceof ItemMessageFriendHolder) {
-      ((ItemMessageFriendHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+      if (consersation.getListMessageData().get(position).text != null) {
+        ((ItemMessageFriendHolder) holder).txtContent.setVisibility(View.VISIBLE);
+        ((ItemMessageFriendHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+      } else {
+        if (((ItemMessageFriendHolder) holder).txtContent != null)
+          ((ItemMessageFriendHolder) holder).txtContent.setVisibility(View.INVISIBLE);
+      }
+      if (consersation.getListMessageData().get(position).fileModel != null) {
+        ((ItemMessageFriendHolder) holder).imageContent.setVisibility(View.VISIBLE);
+
+        Glide.with(((ItemMessageFriendHolder) holder).imageContent.getContext())
+          .load(consersation.getListMessageData().get(position).fileModel.url_file)
+          .into(((ItemMessageFriendHolder) holder).imageContent);
+
+//        ((ItemMessageUserHolder) holder).imageContent.setImageURI(Uri.parse(consersation.getListMessageData().get(position).fileModel.url_file));
+      } else {
+        if (((ItemMessageFriendHolder) holder).imageContent != null)
+          ((ItemMessageFriendHolder) holder).imageContent.setVisibility(View.INVISIBLE);
+      }
       Bitmap currentAvata = bitmapAvata.get(consersation.getListMessageData().get(position).idSender);
       if (currentAvata != null) {
         ((ItemMessageFriendHolder) holder).avata.setImageBitmap(currentAvata);
@@ -478,15 +496,17 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
       }
     } else if (holder instanceof ItemMessageUserHolder) {
+      if (bitmapAvataUser != null) {
+        ((ItemMessageUserHolder) holder).avata.setImageBitmap(bitmapAvataUser);
+      }
+
+
       if (consersation.getListMessageData().get(position).text != null) {
         ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.VISIBLE);
         ((ItemMessageUserHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
       } else {
         if (((ItemMessageUserHolder) holder).txtContent != null)
           ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.INVISIBLE);
-      }
-      if (bitmapAvataUser != null) {
-        ((ItemMessageUserHolder) holder).avata.setImageBitmap(bitmapAvataUser);
       }
       if (consersation.getListMessageData().get(position).fileModel != null) {
         ((ItemMessageUserHolder) holder).imageContent.setVisibility(View.VISIBLE);
