@@ -12,6 +12,7 @@ public class Fab extends FloatingActionButton implements AnimatedFab{
     super(context);
   }
 
+
   public Fab(Context context, AttributeSet attrs) {
     super(context, attrs);
   }

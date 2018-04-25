@@ -15,4 +15,9 @@
     <string name="hint_username">Enter a new username</string>
     <string name="hint_email_reset">Enter your email</string>
     <string name="enter_group_name">Enter group name</string>
+
+
+    <string name="api_key_google_places">AIzaSyCGzBYDeXk8vwAelJf-t8EtxqwWIuzNNdU</string>
+    <string name="create_group">Create group</string>
+    <string name="r">R</string>
 </resources>

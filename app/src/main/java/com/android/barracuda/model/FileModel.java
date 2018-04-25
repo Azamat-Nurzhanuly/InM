@@ -1,10 +1,21 @@
 package com.android.barracuda.model;
 
 public class FileModel {
-  private String type;
-  private String url_file;
-  private String name_file;
-  private String size_file;
+  public String type;
+  public String url_file;
+  public String name_file;
+  public String size_file;
+
+  public FileModel() {
+
+  }
+
+  public FileModel(String type, String url_file, String name_file, String size_file) {
+    this.type = type;
+    this.url_file = url_file;
+    this.name_file = name_file;
+    this.size_file = size_file;
+  }
 
   public String getType() {
     return type;
