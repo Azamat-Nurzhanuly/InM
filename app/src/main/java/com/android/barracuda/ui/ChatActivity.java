@@ -9,6 +9,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.provider.MediaStore;
+import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
@@ -16,6 +17,7 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateFormat;
 import android.util.Base64;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -37,12 +39,17 @@ import com.bumptech.glide.Glide;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.storage.FirebaseStorage;
+import com.google.firebase.storage.StorageReference;
+import com.google.firebase.storage.UploadTask;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 
 import java.io.File;
@@ -59,6 +66,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   public static final int VIEW_TYPE_FRIEND_MESSAGE_TEXT = 1;
   public static final int VIEW_TYPE_USER_MESSAGE_FILE = 2;
   public static final int VIEW_TYPE_FRIEND_MESSAGE_FILE = 3;
+
+  static final String TAG = ChatActivity.class.getSimpleName();
 
   public static final String MESSAGE_TYPE_TEXT = "text";
   public static final String MESSAGE_TYPE_IMAGE = "img";
@@ -94,6 +103,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   public MaterialSheetFab materialSheetFab;
   public Fab fab = null;
 
+  FirebaseStorage storage = FirebaseStorage.getInstance();
 
   @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
@@ -340,21 +350,35 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   private void sendImageFirebase(Uri selectedImageUri) {
 
-    Message newMessage = new Message();
+    final Message newMessage = new Message();
     newMessage.text = null;
-    String nameOfImage = MESSAGE_TYPE_IMAGE + DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString();
+    final String nameOfImage = MESSAGE_TYPE_IMAGE + DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString();
 
-    FileModel fileModel = new FileModel();
-    fileModel.name_file = nameOfImage;
-    fileModel.type = MESSAGE_TYPE_IMAGE;
-    fileModel.url_file = selectedImageUri.toString();
+    StorageReference imageRef = storage.getReference().child("images/" + selectedImageUri.getLastPathSegment());
 
-    newMessage.fileModel = fileModel;
+    UploadTask uploadTask = imageRef.putFile(selectedImageUri);
+    uploadTask.addOnFailureListener(new OnFailureListener() {
+      @Override
+      public void onFailure(@NonNull Exception e) {
+        Log.e(TAG, "onFailure sendFileFirebase " + e.getMessage());
+      }
+    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        FileModel fileModel = new FileModel();
+        fileModel.name_file = nameOfImage;
+        fileModel.type = MESSAGE_TYPE_IMAGE;
+        fileModel.url_file = taskSnapshot.getDownloadUrl().toString();
 
-    newMessage.idSender = StaticConfig.UID;
-    newMessage.idReceiver = roomId;
-    newMessage.timestamp = System.currentTimeMillis();
-    FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
+        newMessage.fileModel = fileModel;
+
+        newMessage.idSender = StaticConfig.UID;
+        newMessage.idReceiver = roomId;
+        newMessage.timestamp = System.currentTimeMillis();
+        FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
+      }
+    });
+
   }
 
   private void chooseMedia(int content) {

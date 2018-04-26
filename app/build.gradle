@@ -67,6 +67,9 @@ dependencies {
   compile 'com.gordonwong:material-sheet-fab:1.2.1'
   implementation 'com.android.support:appcompat-v7:27.1.1'
 
+  //STORAGE FIREBASE
+  compile 'com.google.firebase:firebase-storage:15.0.0'
+
   implementation 'com.github.bumptech.glide:glide:4.7.1'
   annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
 }
