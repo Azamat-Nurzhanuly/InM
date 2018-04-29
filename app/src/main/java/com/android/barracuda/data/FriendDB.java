@@ -35,7 +35,7 @@ public final class FriendDB {
     ContentValues values = new ContentValues();
     values.put(FeedEntry.COLUMN_NAME_ID, friend.id);
     values.put(FeedEntry.COLUMN_NAME_NAME, friend.name);
-    values.put(FeedEntry.COLUMN_NAME_EMAIL, friend.email);
+    values.put(FeedEntry.COLUMN_NAME_PHONE_NUMBER, friend.phoneNumber);
     values.put(FeedEntry.COLUMN_NAME_ID_ROOM, friend.idRoom);
     values.put(FeedEntry.COLUMN_NAME_AVATA, friend.avata);
     // Insert the new row, returning the primary key value of the new row
@@ -60,7 +60,7 @@ public final class FriendDB {
         Friend friend = new Friend();
         friend.id = cursor.getString(0);
         friend.name = cursor.getString(1);
-        friend.email = cursor.getString(2);
+        friend.phoneNumber = cursor.getString(2);
         friend.idRoom = cursor.getString(3);
         friend.avata = cursor.getString(4);
         listFriend.getListFriend().add(friend);
@@ -83,7 +83,7 @@ public final class FriendDB {
     static final String TABLE_NAME = "friend";
     static final String COLUMN_NAME_ID = "friendID";
     static final String COLUMN_NAME_NAME = "name";
-    static final String COLUMN_NAME_EMAIL = "email";
+    static final String COLUMN_NAME_PHONE_NUMBER = "phoneNumber";
     static final String COLUMN_NAME_ID_ROOM = "idRoom";
     static final String COLUMN_NAME_AVATA = "avata";
   }
@@ -94,7 +94,7 @@ public final class FriendDB {
     "CREATE TABLE " + FeedEntry.TABLE_NAME + " (" +
       FeedEntry.COLUMN_NAME_ID + " TEXT PRIMARY KEY," +
       FeedEntry.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
-      FeedEntry.COLUMN_NAME_EMAIL + TEXT_TYPE + COMMA_SEP +
+      FeedEntry.COLUMN_NAME_PHONE_NUMBER + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_ID_ROOM + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_AVATA + TEXT_TYPE + " )";
 

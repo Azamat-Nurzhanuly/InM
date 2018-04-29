@@ -25,6 +25,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.facebook.accountkit.AccountKit;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -61,7 +62,7 @@ public class UserProfileFragment extends Fragment {
     private UserInfoAdapter infoAdapter;
 
     private static final String USERNAME_LABEL = "Username";
-    private static final String EMAIL_LABEL = "Email";
+    private static final String PHONE_NUMBER_LABEL = "Phone Number";
     private static final String SIGNOUT_LABEL = "Sign out";
     private static final String RESETPASS_LABEL = "Change Password";
 
@@ -242,11 +243,11 @@ public class UserProfileFragment extends Fragment {
         Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
         listConfig.add(userNameConfig);
 
-        Configuration emailConfig = new Configuration(EMAIL_LABEL, myAccount.email, R.mipmap.ic_email);
-        listConfig.add(emailConfig);
+        Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
+        listConfig.add(phoneNumberConfig);
 
-        Configuration resetPass = new Configuration(RESETPASS_LABEL, "", R.mipmap.ic_restore);
-        listConfig.add(resetPass);
+//        Configuration resetPass = new Configuration(RESETPASS_LABEL, "", R.mipmap.ic_restore);
+//        listConfig.add(resetPass);
 
         Configuration signout = new Configuration(SIGNOUT_LABEL, "", R.mipmap.ic_power_settings);
         listConfig.add(signout);
@@ -303,6 +304,7 @@ public class UserProfileFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     if(config.getLabel().equals(SIGNOUT_LABEL)){
+                        AccountKit.logOut();
                         FirebaseAuth.getInstance().signOut();
                         FriendDB.getInstance(getContext()).dropDB();
                         GroupDB.getInstance(getContext()).dropDB();
@@ -337,24 +339,24 @@ public class UserProfileFragment extends Fragment {
                                 }).show();
                     }
 
-                    if(config.getLabel().equals(RESETPASS_LABEL)){
-                        new AlertDialog.Builder(context)
-                                .setTitle("Password")
-                                .setMessage("Are you sure want to reset password?")
-                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        resetPassword(myAccount.email);
-                                        dialogInterface.dismiss();
-                                    }
-                                })
-                                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                }).show();
-                    }
+//                    if(config.getLabel().equals(RESETPASS_LABEL)){
+//                        new AlertDialog.Builder(context)
+//                                .setTitle("Password")
+//                                .setMessage("Are you sure want to reset password?")
+//                                .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialogInterface, int i) {
+//                                        resetPassword(myAccount.phoneNumber);
+//                                        dialogInterface.dismiss();
+//                                    }
+//                                })
+//                                .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+//                                    @Override
+//                                    public void onClick(DialogInterface dialogInterface, int i) {
+//                                        dialogInterface.dismiss();
+//                                    }
+//                                }).show();
+//                    }
                 }
             });
         }
@@ -374,55 +376,55 @@ public class UserProfileFragment extends Fragment {
             setupArrayListInfo(myAccount);
         }
 
-        void resetPassword(final String email) {
-            mAuth.sendPasswordResetEmail(email)
-                    .addOnCompleteListener(new OnCompleteListener<Void>() {
-                        @Override
-                        public void onComplete(@NonNull Task<Void> task) {
-                            new LovelyInfoDialog(context) {
-                                @Override
-                                public LovelyInfoDialog setConfirmButtonText(String text) {
-                                    findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            dismiss();
-                                        }
-                                    });
-                                    return super.setConfirmButtonText(text);
-                                }
-                            }
-                                    .setTopColorRes(R.color.colorPrimary)
-                                    .setIcon(R.drawable.ic_pass_reset)
-                                    .setTitle("Password Recovery")
-                                    .setMessage("Sent email to " + email)
-                                    .setConfirmButtonText("Ok")
-                                    .show();
-                        }
-                    })
-                    .addOnFailureListener(new OnFailureListener() {
-                        @Override
-                        public void onFailure(@NonNull Exception e) {
-                            new LovelyInfoDialog(context) {
-                                @Override
-                                public LovelyInfoDialog setConfirmButtonText(String text) {
-                                    findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            dismiss();
-                                        }
-                                    });
-                                    return super.setConfirmButtonText(text);
-                                }
-                            }
-                                    .setTopColorRes(R.color.colorAccent)
-                                    .setIcon(R.drawable.ic_pass_reset)
-                                    .setTitle("False")
-                                    .setMessage("False to sent email to " + email)
-                                    .setConfirmButtonText("Ok")
-                                    .show();
-                        }
-                    });
-        }
+//        void resetPassword(final String email) {
+//            mAuth.sendPasswordResetEmail(email)
+//                    .addOnCompleteListener(new OnCompleteListener<Void>() {
+//                        @Override
+//                        public void onComplete(@NonNull Task<Void> task) {
+//                            new LovelyInfoDialog(context) {
+//                                @Override
+//                                public LovelyInfoDialog setConfirmButtonText(String text) {
+//                                    findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
+//                                        @Override
+//                                        public void onClick(View view) {
+//                                            dismiss();
+//                                        }
+//                                    });
+//                                    return super.setConfirmButtonText(text);
+//                                }
+//                            }
+//                                    .setTopColorRes(R.color.colorPrimary)
+//                                    .setIcon(R.drawable.ic_pass_reset)
+//                                    .setTitle("Password Recovery")
+//                                    .setMessage("Sent email to " + email)
+//                                    .setConfirmButtonText("Ok")
+//                                    .show();
+//                        }
+//                    })
+//                    .addOnFailureListener(new OnFailureListener() {
+//                        @Override
+//                        public void onFailure(@NonNull Exception e) {
+//                            new LovelyInfoDialog(context) {
+//                                @Override
+//                                public LovelyInfoDialog setConfirmButtonText(String text) {
+//                                    findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
+//                                        @Override
+//                                        public void onClick(View view) {
+//                                            dismiss();
+//                                        }
+//                                    });
+//                                    return super.setConfirmButtonText(text);
+//                                }
+//                            }
+//                                    .setTopColorRes(R.color.colorAccent)
+//                                    .setIcon(R.drawable.ic_pass_reset)
+//                                    .setTitle("False")
+//                                    .setMessage("False to sent email to " + email)
+//                                    .setConfirmButtonText("Ok")
+//                                    .show();
+//                        }
+//                    });
+//        }
 
         @Override
         public int getItemCount() {

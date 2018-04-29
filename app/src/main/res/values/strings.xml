@@ -12,6 +12,9 @@
     <string name="next">NEXT</string>
     <string name="register">REGISTER</string>
 
+    <string name="FACEBOOK_APP_ID">169006583806838</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">1153d3100ba8ab55a91b6ec4d717151d</string>
+
     <string name="hint_username">Enter a new username</string>
     <string name="hint_email_reset">Enter your email</string>
     <string name="enter_group_name">Enter group name</string>

@@ -8,3 +8,5 @@
 /captures
 .externalNativeBuild
 .idea
+/node_modules
+/functions/node_modules
