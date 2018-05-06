@@ -26,6 +26,7 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.R;
@@ -36,6 +37,11 @@ import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.bumptech.glide.Glide;
+import com.devlomi.record_view.OnBasketAnimationEnd;
+import com.devlomi.record_view.OnRecordClickListener;
+import com.devlomi.record_view.OnRecordListener;
+import com.devlomi.record_view.RecordButton;
+import com.devlomi.record_view.RecordView;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -237,7 +243,57 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         }
       }
     });
+
+
+    //audio record
+    RecordView recordView = (RecordView) findViewById(R.id.record_view);
+    RecordButton recordButton = (RecordButton) findViewById(R.id.record_button);
+
+    //IMPORTANT
+    recordButton.setRecordView(recordView);
+
+    recordView.setCancelBounds(130);
+
+
+    recordView.setOnBasketAnimationEndListener(new OnBasketAnimationEnd() {
+      @Override
+      public void onAnimationEnd() {
+        Log.d("RecordView", "Basket Animation Finished");
+      }
+    });
+
+
+    recordView.setOnRecordListener(new OnRecordListener() {
+      @Override
+      public void onStart() {
+        //Start Recording..
+        Log.d("RecordView", "onStart");
+      }
+
+      @Override
+      public void onCancel() {
+        //On Swipe To Cancel
+        Log.d("RecordView", "onCancel");
+
+      }
+
+      @Override
+      public void onFinish(long recordTime) {
+        //Stop Recording..
+        System.out.println(recordTime);
+        Log.d("RecordView", "onFinish");
+
+        Log.d("RecordTime", String.valueOf(recordTime));
+      }
+
+      @Override
+      public void onLessThanSecond() {
+        //When the record time is less than One Second
+        Log.d("RecordView", "onLessThanSecond");
+      }
+    });
   }
+
 
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
