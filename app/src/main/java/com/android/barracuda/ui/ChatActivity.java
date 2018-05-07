@@ -690,6 +690,7 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_audio, parent, false);
       return new ItemMessageFriendHolder(view);
     }
+
   }
 
   @Override
