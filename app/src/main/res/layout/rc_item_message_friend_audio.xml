@@ -40,17 +40,19 @@
         android:paddingTop="5dp">
 
         <ImageView
-          android:id="@+id/play"
+          android:id="@+id/play_audio"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:padding="6dp"
+          android:layout_marginTop="5dp"
           android:src="@drawable/play_audio" />
 
         <ImageView
-          android:id="@+id/pause"
+          android:id="@+id/pause_audio"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:padding="6dp"
+          android:layout_marginTop="5dp"
           android:src="@drawable/pause_audio"
           android:visibility="gone" />
       </FrameLayout>
@@ -65,7 +67,7 @@
         android:paddingTop="5dp">
 
         <SeekBar
-          android:id="@+id/media_seekbar"
+          android:id="@+id/friend_seekbar"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:layout_gravity="center_vertical" />
