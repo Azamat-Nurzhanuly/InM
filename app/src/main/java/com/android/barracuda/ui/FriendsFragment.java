@@ -27,6 +27,7 @@ import android.widget.TextView;
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
 import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListFriend;
 import com.android.barracuda.service.ServiceUtils;
@@ -183,74 +184,74 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
       return this;
     }
 
-        @Override
-        public void onClick(final View view) {
-            new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
-                    .setTopColorRes(R.color.colorPrimary)
-                    .setTitle("Add friend")
-                    .setMessage("Enter friend's phone number")
-                    .setIcon(R.drawable.ic_add_friend)
-                    .setInputType(InputType.TYPE_CLASS_PHONE)
-                    .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
-                        @Override
-                        public boolean check(String text) {
-                            Pattern VALID_EMAIL_ADDRESS_REGEX =
-                                    Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-                            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
-                            return matcher.find();
-                        }
-                    })
-                    .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-                        @Override
-                        public void onTextInputConfirmed(String text) {
-                            //Tim id user id
-                            findIDPhoneNumber(text);
-                            //Check xem da ton tai ban ghi friend chua
-                            //Ghi them 1 ban ghi
-                        }
-                    })
-                    .show();
-        }
+    @Override
+    public void onClick(final View view) {
+      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
+        .setTopColorRes(R.color.colorPrimary)
+        .setTitle("Add friend")
+        .setMessage("Enter friend's phone number")
+        .setIcon(R.drawable.ic_add_friend)
+        .setInputType(InputType.TYPE_CLASS_PHONE)
+        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
+          @Override
+          public boolean check(String text) {
+            Pattern VALID_EMAIL_ADDRESS_REGEX =
+              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
+            return matcher.find();
+          }
+        })
+        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+          @Override
+          public void onTextInputConfirmed(String text) {
+            //Tim id user id
+            findIDPhoneNumber(text);
+            //Check xem da ton tai ban ghi friend chua
+            //Ghi them 1 ban ghi
+          }
+        })
+        .show();
+    }
 
-        private void findIDPhoneNumber(String phoneNumber) {
-            dialogWait.setCancelable(false)
-                    .setIcon(R.drawable.ic_add_friend)
-                    .setTitle("Finding friend....")
-                    .setTopColorRes(R.color.colorPrimary)
-                    .show();
-            FirebaseDatabase.getInstance().getReference().child("user").orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    dialogWait.dismiss();
-                    if (dataSnapshot.getValue() == null) {
-                        //phoneNumber not found
-                        new LovelyInfoDialog(context)
-                                .setTopColorRes(R.color.colorAccent)
-                                .setIcon(R.drawable.ic_add_friend)
-                                .setTitle("Fail")
-                                .setMessage("phoneNumber not found")
-                                .show();
-                    } else {
-                        String id = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
-                        if (id.equals(StaticConfig.UID)) {
-                            new LovelyInfoDialog(context)
-                                    .setTopColorRes(R.color.colorAccent)
-                                    .setIcon(R.drawable.ic_add_friend)
-                                    .setTitle("Fail")
-                                    .setMessage("Phone number not valid")
-                                    .show();
-                        } else {
-                            HashMap userMap = (HashMap) ((HashMap) dataSnapshot.getValue()).get(id);
-                            Friend user = new Friend();
-                            user.name = (String) userMap.get("name");
-                            user.phoneNumber = (String) userMap.get("phoneNumber");
-                            user.avata = (String) userMap.get("avata");
-                            user.id = id;
-                            user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
-                            checkBeforAddFriend(id, user);
-                        }
-                    }
-                }
+    private void findIDPhoneNumber(String phoneNumber) {
+      dialogWait.setCancelable(false)
+        .setIcon(R.drawable.ic_add_friend)
+        .setTitle("Finding friend....")
+        .setTopColorRes(R.color.colorPrimary)
+        .show();
+      FirebaseDatabase.getInstance().getReference().child("user").orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+          dialogWait.dismiss();
+          if (dataSnapshot.getValue() == null) {
+            //phoneNumber not found
+            new LovelyInfoDialog(context)
+              .setTopColorRes(R.color.colorAccent)
+              .setIcon(R.drawable.ic_add_friend)
+              .setTitle("Fail")
+              .setMessage("phoneNumber not found")
+              .show();
+          } else {
+            String id = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
+            if (id.equals(StaticConfig.UID)) {
+              new LovelyInfoDialog(context)
+                .setTopColorRes(R.color.colorAccent)
+                .setIcon(R.drawable.ic_add_friend)
+                .setTitle("Fail")
+                .setMessage("Phone number not valid")
+                .show();
+            } else {
+              HashMap userMap = (HashMap) ((HashMap) dataSnapshot.getValue()).get(id);
+              Friend user = new Friend();
+              user.name = (String) userMap.get("name");
+              user.phoneNumber = (String) userMap.get("phoneNumber");
+              user.avata = (String) userMap.get("avata");
+              user.id = id;
+              user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
+              checkBeforAddFriend(id, user);
+            }
+          }
+        }
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
@@ -269,23 +270,23 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         .setTopColorRes(R.color.colorPrimary)
         .show();
 
-            //Check xem da ton tai id trong danh sach id chua
-            if (listFriendID.contains(idFriend)) {
-                dialogWait.dismiss();
-                new LovelyInfoDialog(context)
-                        .setTopColorRes(R.color.colorPrimary)
-                        .setIcon(R.drawable.ic_add_friend)
-                        .setTitle("Friend")
-                        .setMessage("User " + userInfo.phoneNumber + " has been friend")
-                        .show();
-            } else {
-                addFriend(idFriend, true);
-                listFriendID.add(idFriend);
-                dataListFriend.getListFriend().add(userInfo);
-                FriendDB.getInstance(getContext()).addFriend(userInfo);
-                adapter.notifyDataSetChanged();
-            }
-        }
+      //Check xem da ton tai id trong danh sach id chua
+      if (listFriendID.contains(idFriend)) {
+        dialogWait.dismiss();
+        new LovelyInfoDialog(context)
+          .setTopColorRes(R.color.colorPrimary)
+          .setIcon(R.drawable.ic_add_friend)
+          .setTitle("Friend")
+          .setMessage("User " + userInfo.phoneNumber + " has been friend")
+          .show();
+      } else {
+        addFriend(idFriend, true);
+        listFriendID.add(idFriend);
+        dataListFriend.getListFriend().add(userInfo);
+        FriendDB.getInstance(getContext()).addFriend(userInfo);
+        adapter.notifyDataSetChanged();
+      }
+    }
 
     /**
      * Add friend
@@ -378,34 +379,34 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     });
   }
 
-    /**
-     * Truy cap bang user lay thong tin id nguoi dung
-     */
-    private void getAllFriendInfo(final int index) {
-        if (index == listFriendID.size()) {
-            //save list friend
-            adapter.notifyDataSetChanged();
-            dialogFindAllFriend.dismiss();
-            mSwipeRefreshLayout.setRefreshing(false);
-            detectFriendOnline.start();
-        } else {
-            final String id = listFriendID.get(index);
-            FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    if (dataSnapshot.getValue() != null) {
-                        Friend user = new Friend();
-                        HashMap mapUserInfo = (HashMap) dataSnapshot.getValue();
-                        user.name = (String) mapUserInfo.get("name");
-                        user.phoneNumber = (String) mapUserInfo.get("phoneNumber");
-                        user.avata = (String) mapUserInfo.get("avata");
-                        user.id = id;
-                        user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
-                        dataListFriend.getListFriend().add(user);
-                        FriendDB.getInstance(getContext()).addFriend(user);
-                    }
-                    getAllFriendInfo(index + 1);
-                }
+  /**
+   * Truy cap bang user lay thong tin id nguoi dung
+   */
+  private void getAllFriendInfo(final int index) {
+    if (index == listFriendID.size()) {
+      //save list friend
+      adapter.notifyDataSetChanged();
+      dialogFindAllFriend.dismiss();
+      mSwipeRefreshLayout.setRefreshing(false);
+      detectFriendOnline.start();
+    } else {
+      final String id = listFriendID.get(index);
+      FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+          if (dataSnapshot.getValue() != null) {
+            Friend user = new Friend();
+            HashMap mapUserInfo = (HashMap) dataSnapshot.getValue();
+            user.name = (String) mapUserInfo.get("name");
+            user.phoneNumber = (String) mapUserInfo.get("phoneNumber");
+            user.avata = (String) mapUserInfo.get("avata");
+            user.id = id;
+            user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
+            dataListFriend.getListFriend().add(user);
+            FriendDB.getInstance(getContext()).addFriend(user);
+          }
+          getAllFriendInfo(index + 1);
+        }
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
@@ -541,18 +542,35 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           @Override
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
-            if (mapMark.get(id) != null) {
-              if (!mapMark.get(id)) {
-                listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+
+            if (listFriend.getListFriend().get(position).message != null &&
+              listFriend.getListFriend().get(position).message.text != null &&
+              listFriend.getListFriend() != null) {
+              if (mapMark.get(id) != null) {
+                if (!mapMark.get(id)) {
+                  listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+                } else {
+                  listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                }
+                notifyDataSetChanged();
+                mapMark.put(id, false);
               } else {
                 listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                notifyDataSetChanged();
               }
-              notifyDataSetChanged();
-              mapMark.put(id, false);
-            } else {
-              listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
-              notifyDataSetChanged();
             }
+
+            if (listFriend.getListFriend().get(position).message != null &&
+              listFriend.getListFriend().get(position).message.fileModel != null &&
+              listFriend.getListFriend() != null) {
+
+                listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
+                notifyDataSetChanged();
+
+            }
+
+            //TODO for fileModel
+
             listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
           }
 
@@ -656,22 +674,22 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
 
-                    if (dataSnapshot.getValue() == null) {
-                        //phoneNumber not found
-                        dialogWaitDeleting.dismiss();
-                        new LovelyInfoDialog(context)
-                                .setTopColorRes(R.color.colorAccent)
-                                .setTitle("Error")
-                                .setMessage("Error occurred during deleting friend")
-                                .show();
-                    } else {
-                        String idRemoval = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
-                        FirebaseDatabase.getInstance().getReference().child("friend")
-                                .child(StaticConfig.UID).child(idRemoval).removeValue()
-                                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                                    @Override
-                                    public void onComplete(@NonNull Task<Void> task) {
-                                        dialogWaitDeleting.dismiss();
+          if (dataSnapshot.getValue() == null) {
+            //phoneNumber not found
+            dialogWaitDeleting.dismiss();
+            new LovelyInfoDialog(context)
+              .setTopColorRes(R.color.colorAccent)
+              .setTitle("Error")
+              .setMessage("Error occurred during deleting friend")
+              .show();
+          } else {
+            String idRemoval = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
+            FirebaseDatabase.getInstance().getReference().child("friend")
+              .child(StaticConfig.UID).child(idRemoval).removeValue()
+              .addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                  dialogWaitDeleting.dismiss();
 
                   new LovelyInfoDialog(context)
                     .setTopColorRes(R.color.colorAccent)

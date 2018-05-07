@@ -15,6 +15,8 @@ import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.text.Editable;
+import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
@@ -26,7 +28,6 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.R;
@@ -100,6 +101,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   private ImageButton btn_choose_place;
   private ImageButton btn_choose_contact;
 
+  private RecordButton recordButton;
+
 
   private EditText editWriteMessage;
   private LinearLayoutManager linearLayoutManager;
@@ -124,7 +127,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     consersation = new Consersation();
 
 
-    btnSend = (ImageButton) findViewById(R.id.btnSend);
+//    btnSend = (ImageButton) findViewById(R.id.btnSend);
     btn_choose_doc = (ImageButton) findViewById(R.id.btn_choose_doc);
     btn_choose_camera = (ImageButton) findViewById(R.id.btn_choose_camera);
     btn_choose_gallery = (ImageButton) findViewById(R.id.btn_choose_gallery);
@@ -132,7 +135,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     btn_choose_place = (ImageButton) findViewById(R.id.btn_choose_place);
     btn_choose_contact = (ImageButton) findViewById(R.id.btn_choose_contact);
 
-    btnSend.setOnClickListener(this);
+//    btnSend.setOnClickListener(this);
     btn_choose_doc.setOnClickListener(this);
     btn_choose_camera.setOnClickListener(this);
     btn_choose_gallery.setOnClickListener(this);
@@ -149,7 +152,104 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       bitmapAvataUser = null;
     }
 
+    initAudioButtons();
+
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
+    initEditText(nameFriend);
+
+
+//    fab = (Fab) findViewById(R.id.fab);
+//    final View sheetView = findViewById(R.id.fab_sheet);
+//    sheetView.setFocusable(true);
+//
+//    View overlay = findViewById(R.id.overlay);
+//    int sheetColor = getResources().getColor(R.color.fab_sheet_color);
+//    int fabColor = getResources().getColor(R.color.fab_color);
+
+    // Initialize material sheet FAB
+//    materialSheetFab = new MaterialSheetFab<>(fab, sheetView, overlay,
+//      sheetColor, fabColor);
+//
+//    fab.setOnClickListener(new View.OnClickListener() {
+//      @Override
+//      public void onClick(View v) {
+//        materialSheetFab.showSheet();
+//      }
+//    });
+//
+//    sheetView.setFocusable(true);
+//
+//    sheetView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
+//      @Override
+//      public void onFocusChange(View v, boolean hasFocus) {
+//        if (!hasFocus) {
+//          materialSheetFab.hideSheet();
+//        }
+//      }
+//    });
+
+
+  }
+
+  private void initAudioButtons() {
+    //audio record
+    RecordView recordView = (RecordView) findViewById(R.id.record_view);
+    recordButton = (RecordButton) findViewById(R.id.record_button);
+
+    //IMPORTANT
+    recordButton.setRecordView(recordView);
+
+    recordView.setCancelBounds(130);
+
+    recordButton.setOnRecordClickListener(new OnRecordClickListener() {
+      @Override
+      public void onClick(View v) {
+//        Toast.makeText(ChatActivity.this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show();
+        sendTextMessage();
+        Log.d("RecordButton", "RECORD BUTTON CLICKED");
+      }
+    });
+
+    recordView.setOnBasketAnimationEndListener(new OnBasketAnimationEnd() {
+      @Override
+      public void onAnimationEnd() {
+        Log.d("RecordView", "Basket Animation Finished");
+      }
+    });
+
+
+    recordView.setOnRecordListener(new OnRecordListener() {
+      @Override
+      public void onStart() {
+        //Start Recording..
+        Log.d("RecordView", "onStart");
+      }
+
+      @Override
+      public void onCancel() {
+        //On Swipe To Cancel
+        Log.d("RecordView", "onCancel");
+
+      }
+
+      @Override
+      public void onFinish(long recordTime) {
+        //Stop Recording..
+        System.out.println(recordTime);
+        Log.d("RecordView", "onFinish");
+
+        Log.d("RecordTime", String.valueOf(recordTime));
+      }
+
+      @Override
+      public void onLessThanSecond() {
+        //When the record time is less than One Second
+        Log.d("RecordView", "onLessThanSecond");
+      }
+    });
+  }
+
+  private void initEditText(String nameFriend) {
     if (idFriend != null && nameFriend != null) {
       getSupportActionBar().setTitle(nameFriend);
       linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
@@ -165,8 +265,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
             Message newMessage = new Message();
             newMessage.idSender = (String) mapMessage.get("idSender");
             newMessage.idReceiver = (String) mapMessage.get("idReceiver");
-            newMessage.text = (String) mapMessage.get("text");
             newMessage.timestamp = (long) mapMessage.get("timestamp");
+
+            if (mapMessage.get("text") != null) {
+              newMessage.text = (String) mapMessage.get("text");
+            }
 
 
             if (mapMessage.get("fileModel") != null) {
@@ -213,83 +316,26 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       recyclerChat.setAdapter(adapter);
     }
 
-
-    fab = (Fab) findViewById(R.id.fab);
-    final View sheetView = findViewById(R.id.fab_sheet);
-    sheetView.setFocusable(true);
-
-    View overlay = findViewById(R.id.overlay);
-    int sheetColor = getResources().getColor(R.color.fab_sheet_color);
-    int fabColor = getResources().getColor(R.color.fab_color);
-
-    // Initialize material sheet FAB
-    materialSheetFab = new MaterialSheetFab<>(fab, sheetView, overlay,
-      sheetColor, fabColor);
-
-    fab.setOnClickListener(new View.OnClickListener() {
+    editWriteMessage.addTextChangedListener(new TextWatcher() {
       @Override
-      public void onClick(View v) {
-        materialSheetFab.showSheet();
+      public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
       }
-    });
 
-    sheetView.setFocusable(true);
-
-    sheetView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
       @Override
-      public void onFocusChange(View v, boolean hasFocus) {
-        if (!hasFocus) {
-          materialSheetFab.hideSheet();
+      public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+      }
+
+      @Override
+      public void afterTextChanged(Editable s) {
+        if (editWriteMessage != null && editWriteMessage.getText().toString().trim().length() == 0) {
+          recordButton.setListenForRecord(true);
+          recordButton.setImageResource(R.drawable.record);
+        } else {
+          recordButton.setListenForRecord(false);
+          recordButton.setImageResource(R.drawable.send);
         }
-      }
-    });
-
-
-    //audio record
-    RecordView recordView = (RecordView) findViewById(R.id.record_view);
-    RecordButton recordButton = (RecordButton) findViewById(R.id.record_button);
-
-    //IMPORTANT
-    recordButton.setRecordView(recordView);
-
-    recordView.setCancelBounds(130);
-
-
-    recordView.setOnBasketAnimationEndListener(new OnBasketAnimationEnd() {
-      @Override
-      public void onAnimationEnd() {
-        Log.d("RecordView", "Basket Animation Finished");
-      }
-    });
-
-
-    recordView.setOnRecordListener(new OnRecordListener() {
-      @Override
-      public void onStart() {
-        //Start Recording..
-        Log.d("RecordView", "onStart");
-      }
-
-      @Override
-      public void onCancel() {
-        //On Swipe To Cancel
-        Log.d("RecordView", "onCancel");
-
-      }
-
-      @Override
-      public void onFinish(long recordTime) {
-        //Stop Recording..
-        System.out.println(recordTime);
-        Log.d("RecordView", "onFinish");
-
-        Log.d("RecordTime", String.valueOf(recordTime));
-      }
-
-      @Override
-      public void onLessThanSecond() {
-        //When the record time is less than One Second
-        Log.d("RecordView", "onLessThanSecond");
       }
     });
   }
@@ -351,10 +397,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   @Override
   public void onBackPressed() {
-    if (materialSheetFab.isSheetVisible()) {
-      materialSheetFab.hideSheet();
-      return;
-    }
+//    if (materialSheetFab.isSheetVisible()) {
+//      materialSheetFab.hideSheet();
+//      return;
+//    }
 
     Intent result = new Intent();
     result.putExtra("idFriend", idFriend.get(0));
@@ -366,9 +412,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   public void onClick(View view) {
 
     switch (view.getId()) {
-      case R.id.btnSend:
-        sendTextMessage();
-        break;
+//      case R.id.btnSend:
+//        sendTextMessage();
+//        break;
       case R.id.btn_choose_audio:
         chooseMedia(AUDIO_PICKER_REQUEST);
         break;
@@ -389,6 +435,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         break;
     }
   }
+
 
   private void sendTextMessage() {
     String content = editWriteMessage.getText().toString().trim();

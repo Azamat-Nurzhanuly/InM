@@ -21,6 +21,7 @@
   </android.support.v7.widget.RecyclerView>
 
   <RelativeLayout
+    android:visibility="invisible"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_above="@id/btnSend">
@@ -132,15 +133,14 @@
     android:layout_height="45dp"
     android:layout_alignParentBottom="true"
     android:layout_alignParentStart="true"
-    android:layout_marginEnd="20dp"
+    android:layout_marginEnd="45dp"
     android:layout_marginTop="10dp"
-    android:layout_toStartOf="@id/fab"
     android:background="@drawable/edittext_boder"
     android:drawablePadding="20dp"
     android:inputType="textLongMessage"
     android:maxLines="1"
-    android:paddingLeft="7dp"
-    android:paddingRight="7dp"
+    android:paddingEnd="7dp"
+    android:paddingStart="7dp"
     android:textColorHint="#aeafaf"
     android:textSize="15sp" />
 
@@ -153,7 +153,8 @@
     android:background="#00000000"
     android:padding="10dp"
     android:scaleType="centerInside"
-    android:src="@drawable/ic_send" />
+    android:src="@drawable/ic_send"
+    android:visibility="invisible" />
 
   <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -161,7 +162,7 @@
     android:id="@+id/parent_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.devlomi.recordview.MainActivity">
+    tools:context=".ui.ChatActivity">
 
     <com.devlomi.record_view.RecordView
       android:id="@+id/record_view"
@@ -170,8 +171,8 @@
       android:layout_alignParentBottom="true"
       android:layout_toLeftOf="@id/record_button"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
-      app:slide_to_cancel_text="Slide To Cancel"
-      app:slide_to_cancel_margin_right="10dp"/>
+      app:slide_to_cancel_margin_right="10dp"
+      app:slide_to_cancel_text="Slide To Cancel" />
 
     <com.devlomi.record_view.RecordButton
       android:id="@+id/record_button"
@@ -179,23 +180,21 @@
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
       android:layout_alignParentRight="true"
-      android:background="@drawable/bg_mic"
       android:scaleType="centerInside"
-      app:src="@drawable/ic_mic_white"
-      />
+      app:src="@drawable/record" />
 
 
   </RelativeLayout>
 
-  <com.android.barracuda.fab.Fab
-    android:id="@+id/fab"
-    android:layout_width="45dp"
-    android:layout_height="45dp"
-    android:layout_alignParentBottom="true"
-    android:layout_alignParentEnd="true"
-    android:layout_marginRight="45dp"
-    android:background="#00000000"
-    android:padding="10dp"
-    android:scaleType="centerInside" />
+  <!--<com.android.barracuda.fab.Fab-->
+  <!--android:id="@+id/fab"-->
+  <!--android:layout_width="45dp"-->
+  <!--android:layout_height="45dp"-->
+  <!--android:layout_alignParentBottom="true"-->
+  <!--android:layout_alignParentEnd="true"-->
+  <!--android:layout_marginRight="45dp"-->
+  <!--android:background="#00000000"-->
+  <!--android:padding="10dp"-->
+  <!--android:scaleType="centerInside" />-->
 </RelativeLayout>
 
