@@ -1,9 +1,13 @@
 package com.android.barracuda.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.media.MediaPlayer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -11,6 +15,7 @@ import android.os.Environment;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
@@ -27,6 +32,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.android.barracuda.BuildConfig;
@@ -60,24 +66,31 @@ import com.google.firebase.storage.UploadTask;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
+import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_IMAGE;
+
 
 public class ChatActivity extends AppCompatActivity implements View.OnClickListener {
   private RecyclerView recyclerChat;
   public static final int VIEW_TYPE_USER_MESSAGE_TEXT = 0;
   public static final int VIEW_TYPE_FRIEND_MESSAGE_TEXT = 1;
-  public static final int VIEW_TYPE_USER_MESSAGE_FILE = 2;
-  public static final int VIEW_TYPE_FRIEND_MESSAGE_FILE = 3;
+  public static final int VIEW_TYPE_USER_MESSAGE_IMAGE = 2;
+  public static final int VIEW_TYPE_FRIEND_MESSAGE_IMAGE = 3;
+  public static final int VIEW_TYPE_USER_MESSAGE_AUDIO = 4;
+  public static final int VIEW_TYPE_FRIEND_MESSAGE_AUDIO = 5;
 
   static final String TAG = ChatActivity.class.getSimpleName();
 
   public static final String MESSAGE_TYPE_TEXT = "text";
   public static final String MESSAGE_TYPE_IMAGE = "img";
+  public static final String MESSAGE_TYPE_AUDIO = "audio";
 
   private static final int IMAGE_GALLERY_REQUEST = 1;
   private static final int IMAGE_CAMERA_REQUEST = 2;
@@ -101,7 +114,17 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   private ImageButton btn_choose_place;
   private ImageButton btn_choose_contact;
 
+  //audio recording
   private RecordButton recordButton;
+  private MediaRecorder recorder = null;
+  // Requesting permission to RECORD_AUDIO
+  private boolean permissionToRecordAccepted = false;
+  private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+  private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+  private static String mFileName = null;
+
+  //audio playing
+  private MediaPlayer player = null;
 
 
   private EditText editWriteMessage;
@@ -153,6 +176,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
 
     initAudioButtons();
+    initAudioRecord();
+    initAudioPlay();
 
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     initEditText(nameFriend);
@@ -191,6 +216,31 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   }
 
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+    super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+    switch (requestCode) {
+      case REQUEST_RECORD_AUDIO_PERMISSION:
+        permissionToRecordAccepted = grantResults[0] == PackageManager.PERMISSION_GRANTED;
+        break;
+    }
+    if (!permissionToRecordAccepted) finish();
+
+  }
+
+  private void initAudioRecord() {
+    // Record to the external cache directory for visibility
+    mFileName = getExternalCacheDir().getAbsolutePath();
+    mFileName += "/audiorecordtest.3gp";
+
+    ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
+  }
+
+  private void initAudioPlay() {
+    player = new MediaPlayer();
+  }
+
   private void initAudioButtons() {
     //audio record
     RecordView recordView = (RecordView) findViewById(R.id.record_view);
@@ -223,10 +273,27 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       public void onStart() {
         //Start Recording..
         Log.d("RecordView", "onStart");
+
+        recorder = new MediaRecorder();
+        recorder.setAudioSource(MediaRecorder.AudioSource.MIC);
+        recorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
+        recorder.setOutputFile(mFileName);
+        recorder.setAudioEncoder(MediaRecorder.AudioEncoder.AMR_NB);
+
+        try {
+          recorder.prepare();
+        } catch (IOException e) {
+          Log.e("RECORDING AUDIO FAILED", "prepare() failed");
+        }
+
+        recorder.start();
       }
 
       @Override
       public void onCancel() {
+        recorder.stop();
+        recorder.reset();
+        recorder = null;
         //On Swipe To Cancel
         Log.d("RecordView", "onCancel");
 
@@ -239,10 +306,22 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         Log.d("RecordView", "onFinish");
 
         Log.d("RecordTime", String.valueOf(recordTime));
+
+        recorder.stop();
+        recorder.release();
+        recorder = null;
+
+
+        sendAudioFirebase(mFileName);
+//          player.setDataSource(mFileName);
+//          player.prepare();
+//          player.start();
+
       }
 
       @Override
       public void onLessThanSecond() {
+        onCancel();
         //When the record time is less than One Second
         Log.d("RecordView", "onLessThanSecond");
       }
@@ -471,7 +550,42 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         FileModel fileModel = new FileModel();
         fileModel.name_file = nameOfImage;
         fileModel.type = MESSAGE_TYPE_IMAGE;
-        fileModel.url_file = taskSnapshot.getDownloadUrl().toString();
+        fileModel.url_file = taskSnapshot.getStorage().getDownloadUrl().toString();
+
+        newMessage.fileModel = fileModel;
+
+        newMessage.idSender = StaticConfig.UID;
+        newMessage.idReceiver = roomId;
+        newMessage.timestamp = System.currentTimeMillis();
+        FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
+      }
+    });
+
+  }
+
+  private void sendAudioFirebase(String fileName) {
+
+    final Message newMessage = new Message();
+    newMessage.text = null;
+    final String nameOfAudio = MESSAGE_TYPE_AUDIO + DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString();
+
+    Uri file = Uri.fromFile(new File(fileName));
+
+    StorageReference audioRef = storage.getReference().child("audio/" + fileName);
+
+    UploadTask uploadTask = audioRef.putFile(file);
+    uploadTask.addOnFailureListener(new OnFailureListener() {
+      @Override
+      public void onFailure(@NonNull Exception e) {
+        Log.e(TAG, "onFailure sendFileFirebase " + e.getMessage());
+      }
+    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        FileModel fileModel = new FileModel();
+        fileModel.name_file = nameOfAudio;
+        fileModel.type = MESSAGE_TYPE_AUDIO;
+        fileModel.url_file = taskSnapshot.getStorage().getDownloadUrl().toString();
 
         newMessage.fileModel = fileModel;
 
@@ -554,44 +668,72 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     bitmapAvataDB = new HashMap<>();
   }
 
+  @NonNull
   @Override
-  public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+  public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
     if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_TEXT) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend, parent, false);
       return new ItemMessageFriendHolder(view);
     } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_TEXT) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user, parent, false);
       return new ItemMessageUserHolder(view);
-    } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_FILE) {
+    } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_IMAGE) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user_img, parent, false);
       return new ItemMessageUserHolder(view);
-    } else {
+    } else if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_img, parent, false);
+      return new ItemMessageFriendHolder(view);
+    } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_AUDIO) {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user_audio, parent, false);
+      return new ItemMessageUserHolder(view);
+    } else {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_audio, parent, false);
       return new ItemMessageFriendHolder(view);
     }
   }
 
   @Override
-  public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+  public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
     if (holder instanceof ItemMessageFriendHolder) {
       if (consersation.getListMessageData().get(position).text != null) {
-        ((ItemMessageFriendHolder) holder).txtContent.setVisibility(View.VISIBLE);
-        ((ItemMessageFriendHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+        if (((ItemMessageFriendHolder) holder).txtContent != null) {
+          ((ItemMessageFriendHolder) holder).txtContent.setVisibility(View.VISIBLE);
+          ((ItemMessageFriendHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+        }
       } else {
         if (((ItemMessageFriendHolder) holder).txtContent != null)
           ((ItemMessageFriendHolder) holder).txtContent.setVisibility(View.INVISIBLE);
       }
       if (consersation.getListMessageData().get(position).fileModel != null) {
-        ((ItemMessageFriendHolder) holder).imageContent.setVisibility(View.VISIBLE);
 
-        Glide.with(((ItemMessageFriendHolder) holder).imageContent.getContext())
-          .load(consersation.getListMessageData().get(position).fileModel.url_file)
-          .into(((ItemMessageFriendHolder) holder).imageContent);
+        if (MESSAGE_TYPE_IMAGE.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+          if (((ItemMessageFriendHolder) holder).imageContent != null) {
+            ((ItemMessageFriendHolder) holder).imageContent.setVisibility(View.VISIBLE);
+
+            Glide.with(((ItemMessageFriendHolder) holder).imageContent.getContext())
+              .load(consersation.getListMessageData().get(position).fileModel.url_file)
+              .into(((ItemMessageFriendHolder) holder).imageContent);
+          }
+        }
+
+        if (MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+          if (((ItemMessageFriendHolder) holder).audioContent != null) {
+
+
+            ((ItemMessageFriendHolder) holder).audioContent.setVisibility(View.VISIBLE);
+            //TODO AUDIO PLAYER
+          }
+        }
 
 //        ((ItemMessageUserHolder) holder).imageContent.setImageURI(Uri.parse(consersation.getListMessageData().get(position).fileModel.url_file));
       } else {
-        if (((ItemMessageFriendHolder) holder).imageContent != null)
+        if (((ItemMessageFriendHolder) holder).imageContent != null) {
           ((ItemMessageFriendHolder) holder).imageContent.setVisibility(View.INVISIBLE);
+        }
+
+        if (((ItemMessageFriendHolder) holder).audioContent != null) {
+          ((ItemMessageFriendHolder) holder).audioContent.setVisibility(View.INVISIBLE);
+        }
       }
       Bitmap currentAvata = bitmapAvata.get(consersation.getListMessageData().get(position).idSender);
       if (currentAvata != null) {
@@ -629,18 +771,36 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 
       if (consersation.getListMessageData().get(position).text != null) {
-        ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.VISIBLE);
-        ((ItemMessageUserHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+        if (((ItemMessageUserHolder) holder).txtContent != null) {
+          ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.VISIBLE);
+          ((ItemMessageUserHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+        }
       } else {
         if (((ItemMessageUserHolder) holder).txtContent != null)
           ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.INVISIBLE);
       }
       if (consersation.getListMessageData().get(position).fileModel != null) {
-        ((ItemMessageUserHolder) holder).imageContent.setVisibility(View.VISIBLE);
 
-        Glide.with(((ItemMessageUserHolder) holder).imageContent.getContext())
-          .load(consersation.getListMessageData().get(position).fileModel.url_file)
-          .into(((ItemMessageUserHolder) holder).imageContent);
+        if (MESSAGE_TYPE_IMAGE.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+          if (((ItemMessageUserHolder) holder).imageContent != null) {
+
+
+            ((ItemMessageUserHolder) holder).imageContent.setVisibility(View.VISIBLE);
+
+            Glide.with(((ItemMessageUserHolder) holder).imageContent.getContext())
+              .load(consersation.getListMessageData().get(position).fileModel.url_file)
+              .into(((ItemMessageUserHolder) holder).imageContent);
+          }
+        }
+
+        if (MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+          if (((ItemMessageUserHolder) holder).audioContent != null) {
+            ((ItemMessageUserHolder) holder).audioContent.setVisibility(View.VISIBLE);
+
+            //TODO AUDIO PLAYER
+          }
+        }
+
 
 //        ((ItemMessageUserHolder) holder).imageContent.setImageURI(Uri.parse(consersation.getListMessageData().get(position).fileModel.url_file));
       } else {
@@ -653,8 +813,16 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   @Override
   public int getItemViewType(int position) {
     if (consersation.getListMessageData().get(position).text == null && consersation.getListMessageData().get(position).fileModel != null) {
-      return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
-        ? ChatActivity.VIEW_TYPE_USER_MESSAGE_FILE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_FILE;
+
+      if (MESSAGE_TYPE_IMAGE.equals(consersation.getListMessageData().get(position).fileModel.type)) {
+        return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
+          ? ChatActivity.VIEW_TYPE_USER_MESSAGE_IMAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE;
+      }
+
+      if (MESSAGE_TYPE_AUDIO.equals(consersation.getListMessageData().get(position).fileModel.type)) {
+        return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
+          ? ChatActivity.VIEW_TYPE_USER_MESSAGE_AUDIO : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_AUDIO;
+      }
     }
 
     return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
@@ -673,12 +841,14 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 class ItemMessageUserHolder extends RecyclerView.ViewHolder {
   public TextView txtContent;
   public ImageView imageContent;
+  public LinearLayout audioContent;
   public CircleImageView avata;
 
   public ItemMessageUserHolder(View itemView) {
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentUser);
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentUser);
+    audioContent = (LinearLayout) itemView.findViewById(R.id.audioUserView);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
   }
 }
@@ -687,11 +857,13 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder {
   public TextView txtContent;
   public CircleImageView avata;
   public ImageView imageContent;
+  public LinearLayout audioContent;
 
   public ItemMessageFriendHolder(View itemView) {
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentFriend);
+    audioContent = (LinearLayout) itemView.findViewById(R.id.audioFriendView);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
   }
 }
