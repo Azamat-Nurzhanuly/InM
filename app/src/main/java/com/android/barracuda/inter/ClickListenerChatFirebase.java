@@ -1,8 +1,7 @@
 package com.android.barracuda.inter;
 
 import android.view.View;
-
-import java.io.IOException;
+import android.widget.ImageView;
 
 public interface ClickListenerChatFirebase {
 
@@ -10,8 +9,8 @@ public interface ClickListenerChatFirebase {
 
   void clickImageMapChat(View view, int position, String latitude, String longitude);
 
-  void clickAudioPlayChat(View view, int position) throws IOException;
+  void clickAudioPlayChat(View view, int position, ImageView play_button, ImageView pause_button) throws Exception;
 
-  void clickAudioStopChat(View view, int position);
+  void clickAudioStopChat(View view, int position, ImageView play_button, ImageView pause_button) throws Exception;
 
 }

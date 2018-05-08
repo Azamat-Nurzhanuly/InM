@@ -127,10 +127,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   //audio playing
   private MediaPlayer player;
-  private ImageView play_audio;
-  private ImageView pause_audio;
-  private SeekBar user_seekBar;
-  private SeekBar friend_seekBar;
+  private String SAVED_URL_PLAY;
+  private ImageView SAVED_PLAY_AUDIO;
+  private ImageView SAVED_PAUSE_AUDIO;
 
 
   private EditText editWriteMessage;
@@ -185,8 +184,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     initEditText(nameFriend);
 
-    initAudioPlay();
-
 
 //    fab = (Fab) findViewById(R.id.fab);
 //    final View sheetView = findViewById(R.id.fab_sheet);
@@ -240,36 +237,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     mFileName += "/audiorecordtest.3gp";
 
     ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
-  }
-
-  private void initAudioPlay() {
-    player = new MediaPlayer();
-
-//    play_audio = (ImageView) findViewById(R.id.play_audio);
-//    pause_audio = (ImageView) findViewById(R.id.pause_audio);
-
-//    user_seekBar = (SeekBar) findViewById(R.id.user_seekbar);
-//    user_seekBar.setMax(player.getDuration());
-//    user_seekBar.setOnTouchListener(new View.OnTouchListener() {
-//      @Override
-//      public boolean onTouch(View v, MotionEvent event) {
-//        seekChange(v);
-//        return false;
-//      }
-//    });
-//
-//    friend_seekBar = (SeekBar) findViewById(R.id.friend_seekbar);
-//    friend_seekBar.setMax(player.getDuration());
-//    friend_seekBar.setOnTouchListener(new View.OnTouchListener() {
-//      @Override
-//      public boolean onTouch(View v, MotionEvent event) {
-//        seekChange(v);
-//        return false;
-//      }
-//    });
-
-//    play_audio.setOnClickListener(this);
-//    pause_audio.setOnClickListener(this);
   }
 
 
@@ -491,34 +458,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     }
   }
 
-
-//  private void sendFileFirebase(DatabaseReference databaseReference, final Uri file){
-//    if (databaseReference != null){
-//      final String name = DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString();
-//      DatabaseReference imageGalleryRef = databaseReference.child(name+"_gallery");
-//      UploadTask uploadTask = imageGalleryRef.putFile(file);
-//      uploadTask.addOnFailureListener(new OnFailureListener() {
-//        @Override
-//        public void onFailure(@NonNull Exception e) {
-//          Log.e(TAG,"onFailure sendFileFirebase "+e.getMessage());
-//        }
-//      }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
-//        @Override
-//        public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-//          Log.i(TAG,"onSuccess sendFileFirebase");
-//          Uri downloadUrl = taskSnapshot.getDownloadUrl();
-//          FileModel fileModel = new FileModel("img",downloadUrl.toString(),name,"");
-//          ChatModel chatModel = new ChatModel(userModel,"", Calendar.getInstance().getTime().getTime()+"",fileModel);
-//          mFirebaseDatabaseReference.child(CHAT_REFERENCE).push().setValue(chatModel);
-//        }
-//      });
-//    }else{
-//      //IS NULL
-//    }
-//
-//  }
-
-
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == android.R.id.home) {
@@ -532,11 +471,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   @Override
   public void onBackPressed() {
-//    if (materialSheetFab.isSheetVisible()) {
-//      materialSheetFab.hideSheet();
-//      return;
-//    }
-
     Intent result = new Intent();
     result.putExtra("idFriend", idFriend.get(0));
     setResult(RESULT_OK, result);
@@ -547,9 +481,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   public void onClick(View view) {
 
     switch (view.getId()) {
-//      case R.id.btnSend:
-//        sendTextMessage();
-//        break;
       case R.id.btn_choose_audio:
         chooseMedia(AUDIO_PICKER_REQUEST);
         break;
@@ -573,24 +504,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       case R.id.btn_choose_place:
         chooseMedia(PLACE_PICKER_REQUEST);
         break;
-
-//      case R.id.play_audio:
-//        playAudioMessage();
-//        break;
-//
-//      case R.id.pause_audio:
-//        pauseAudioMessage();
-//        break;
     }
-  }
-
-  private void pauseAudioMessage() {
-    player.pause();
-  }
-
-  public void playAudioMessage() {
-    player.start();
-//    startPlayProgressUpdater();
   }
 
 
@@ -675,7 +589,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
       }
     });
-
   }
 
   private void chooseMedia(int content) {
@@ -742,9 +655,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   }
 
   @Override
-  public void clickAudioPlayChat(View view, int position) {
+  public void clickAudioPlayChat(View view, int position, final ImageView play_audio, final ImageView pause_audio) {
     if (consersation.getListMessageData().get(position).fileModel != null &&
-      MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+      MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)
+      && SAVED_URL_PLAY == null && player == null) {
+      SAVED_URL_PLAY = consersation.getListMessageData().get(position).fileModel.url_file;
       player = new MediaPlayer();
       try {
         player.setDataSource(consersation.getListMessageData().get(position).fileModel.url_file);
@@ -752,6 +667,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
           @Override
           public void onPrepared(MediaPlayer mp) {
             player.start();
+            play_audio.setVisibility(View.GONE);
+            pause_audio.setVisibility(View.VISIBLE);
+
+            SAVED_PLAY_AUDIO = play_audio;
+            SAVED_PAUSE_AUDIO = pause_audio;
           }
         });
 
@@ -761,13 +681,45 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         Log.e(TAG, "onFailure play audio " + e.getMessage());
       }
 
+    } else if (SAVED_URL_PLAY != null &&
+      SAVED_URL_PLAY.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.url_file) &&
+      player != null) {
+      player.start();
+      play_audio.setVisibility(View.GONE);
+      pause_audio.setVisibility(View.VISIBLE);
+    } else if(player != null) {
+      player.stop();
+      SAVED_PLAY_AUDIO.setVisibility(View.VISIBLE);
+      SAVED_PAUSE_AUDIO.setVisibility(View.GONE);
+      player = null;
+      SAVED_URL_PLAY = null;
+      SAVED_PLAY_AUDIO = null;
+      SAVED_PAUSE_AUDIO = null;
+
+      clickAudioPlayChat(view, position, play_audio, pause_audio);
     }
+
+    player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
+      @Override
+      public void onCompletion(MediaPlayer mp) {
+        play_audio.setVisibility(View.VISIBLE);
+        pause_audio.setVisibility(View.GONE);
+        SAVED_URL_PLAY = null;
+        player = null;
+      }
+    });
 
   }
 
   @Override
-  public void clickAudioStopChat(View view, int position) {
-
+  public void clickAudioStopChat(View view, int position, final ImageView play_audio, final ImageView pause_audio) {
+    if (consersation.getListMessageData().get(position).fileModel != null &&
+      MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type) &&
+      player != null) {
+      player.pause();
+      play_audio.setVisibility(View.VISIBLE);
+      pause_audio.setVisibility(View.GONE);
+    }
   }
 }
 
@@ -960,6 +912,7 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
   public TextView txtContent;
   public ImageView imageContent;
   public ImageView play_audio;
+  public ImageView pause_audio;
   public LinearLayout audioContent;
   public CircleImageView avata;
 
@@ -971,11 +924,16 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentUser);
     audioContent = (LinearLayout) itemView.findViewById(R.id.audioUserView);
     play_audio = (ImageView) itemView.findViewById(R.id.play_audio);
+    pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
-    if (play_audio != null)
+    if (play_audio != null) {
       play_audio.setOnClickListener(this);
+    }
+    if (pause_audio != null) {
+      pause_audio.setOnClickListener(this);
+    }
   }
 
   @Override
@@ -985,11 +943,19 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     switch (v.getId()) {
       case R.id.play_audio:
         try {
-          clickListenerChatFirebase.clickAudioPlayChat(v, position);
-        } catch (IOException e) {
+          clickListenerChatFirebase.clickAudioPlayChat(v, position, play_audio, pause_audio);
+        } catch (Exception e) {
           e.printStackTrace();
         }
         break;
+      case R.id.pause_audio:
+        try {
+          clickListenerChatFirebase.clickAudioStopChat(v, position, play_audio, pause_audio);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+
     }
   }
 }

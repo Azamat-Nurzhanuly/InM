@@ -48,6 +48,7 @@
           android:src="@drawable/play_audio" />
 
         <ImageView
+          android:id="@+id/pause_audio"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
           android:padding="6dp"
