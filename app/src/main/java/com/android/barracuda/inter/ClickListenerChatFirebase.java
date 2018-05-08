@@ -2,6 +2,7 @@ package com.android.barracuda.inter;
 
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.SeekBar;
 
 public interface ClickListenerChatFirebase {
 
@@ -9,8 +10,10 @@ public interface ClickListenerChatFirebase {
 
   void clickImageMapChat(View view, int position, String latitude, String longitude);
 
-  void clickAudioPlayChat(View view, int position, ImageView play_button, ImageView pause_button) throws Exception;
+  void clickAudioPlayChat(View view, int position, ImageView play_button, ImageView pause_button, SeekBar seek) throws Exception;
 
-  void clickAudioStopChat(View view, int position, ImageView play_button, ImageView pause_button) throws Exception;
+  void clickAudioPauseChat(View view, int position, ImageView play_button, ImageView pause_button, SeekBar seek) throws Exception;
+
+  void seekChange(View view, ImageView play_button, ImageView pause_button, SeekBar seekBar) throws Exception;
 
 }

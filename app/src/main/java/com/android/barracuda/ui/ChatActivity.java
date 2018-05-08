@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -27,6 +28,7 @@ import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -239,30 +241,6 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
   }
 
-
-//  public void startPlayProgressUpdater() {
-//    seekBar.setProgress(mediaPlayer.getCurrentPosition());
-//
-//    if (mediaPlayer.isPlaying()) {
-//      Runnable notification = new Runnable() {
-//        public void run() {
-//          startPlayProgressUpdater();
-//        }
-//      };
-//      handler.postDelayed(notification, 1000);
-//    } else {
-//      mediaPlayer.pause();
-//      buttonPlayStop.setText(getString(R.string.play_str));
-//      seekBar.setProgress(0);
-//    }
-//  }
-
-  private void seekChange(View v) {
-    if (player.isPlaying()) {
-      SeekBar sb = (SeekBar) v;
-      player.seekTo(sb.getProgress());
-    }
-  }
 
   private void initAudioButtons() {
     //audio record
@@ -654,8 +632,24 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 
   }
 
+  private final Handler handler = new Handler();
+
+  public void startPlayProgressUpdater(final SeekBar seek) {
+    if (player == null) return;
+    seek.setProgress(player.getCurrentPosition());
+
+    if (player != null && player.isPlaying()) {
+      Runnable notification = new Runnable() {
+        public void run() {
+          startPlayProgressUpdater(seek);
+        }
+      };
+      handler.postDelayed(notification, 10);
+    }
+  }
+
   @Override
-  public void clickAudioPlayChat(View view, int position, final ImageView play_audio, final ImageView pause_audio) {
+  public void clickAudioPlayChat(View view, int position, final ImageView play_audio, final ImageView pause_audio, final SeekBar seek) {
     if (consersation.getListMessageData().get(position).fileModel != null &&
       MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)
       && SAVED_URL_PLAY == null && player == null) {
@@ -666,7 +660,11 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         player.setOnPreparedListener(new MediaPlayer.OnPreparedListener() {
           @Override
           public void onPrepared(MediaPlayer mp) {
+            seek.setMax(player.getDuration());
+            player.seekTo(seek.getProgress());
             player.start();
+
+            startPlayProgressUpdater(seek);
             play_audio.setVisibility(View.GONE);
             pause_audio.setVisibility(View.VISIBLE);
 
@@ -685,9 +683,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       SAVED_URL_PLAY.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.url_file) &&
       player != null) {
       player.start();
+      startPlayProgressUpdater(seek);
       play_audio.setVisibility(View.GONE);
       pause_audio.setVisibility(View.VISIBLE);
-    } else if(player != null) {
+    } else if (player != null) {
       player.stop();
       SAVED_PLAY_AUDIO.setVisibility(View.VISIBLE);
       SAVED_PAUSE_AUDIO.setVisibility(View.GONE);
@@ -696,7 +695,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       SAVED_PLAY_AUDIO = null;
       SAVED_PAUSE_AUDIO = null;
 
-      clickAudioPlayChat(view, position, play_audio, pause_audio);
+      clickAudioPlayChat(view, position, play_audio, pause_audio, seek);
     }
 
     player.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
@@ -706,19 +705,28 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         pause_audio.setVisibility(View.GONE);
         SAVED_URL_PLAY = null;
         player = null;
+        seek.setProgress(0);
       }
     });
 
   }
 
   @Override
-  public void clickAudioStopChat(View view, int position, final ImageView play_audio, final ImageView pause_audio) {
+  public void clickAudioPauseChat(View view, int position, final ImageView play_audio, final ImageView pause_audio, final SeekBar seek) {
     if (consersation.getListMessageData().get(position).fileModel != null &&
       MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type) &&
       player != null) {
       player.pause();
+      seek.setProgress(player.getCurrentPosition());
       play_audio.setVisibility(View.VISIBLE);
       pause_audio.setVisibility(View.GONE);
+    }
+  }
+
+  @Override
+  public void seekChange(View view, ImageView play_button, ImageView pause_button, SeekBar seekBar) throws Exception {
+    if (player != null && player.isPlaying()) {
+      player.seekTo(seekBar.getProgress());
     }
   }
 }
@@ -908,13 +916,15 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 }
 
-class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnClickListener {
+class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
   public TextView txtContent;
   public ImageView imageContent;
   public ImageView play_audio;
   public ImageView pause_audio;
   public LinearLayout audioContent;
   public CircleImageView avata;
+
+  public SeekBar user_seekbar;
 
   private ClickListenerChatFirebase clickListenerChatFirebase;
 
@@ -925,6 +935,7 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     audioContent = (LinearLayout) itemView.findViewById(R.id.audioUserView);
     play_audio = (ImageView) itemView.findViewById(R.id.play_audio);
     pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
+    user_seekbar = (SeekBar) itemView.findViewById(R.id.user_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
@@ -933,6 +944,10 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     }
     if (pause_audio != null) {
       pause_audio.setOnClickListener(this);
+    }
+
+    if (user_seekbar != null) {
+      user_seekbar.setOnTouchListener(this);
     }
   }
 
@@ -943,14 +958,14 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     switch (v.getId()) {
       case R.id.play_audio:
         try {
-          clickListenerChatFirebase.clickAudioPlayChat(v, position, play_audio, pause_audio);
+          clickListenerChatFirebase.clickAudioPlayChat(v, position, play_audio, pause_audio, user_seekbar);
         } catch (Exception e) {
           e.printStackTrace();
         }
         break;
       case R.id.pause_audio:
         try {
-          clickListenerChatFirebase.clickAudioStopChat(v, position, play_audio, pause_audio);
+          clickListenerChatFirebase.clickAudioPauseChat(v, position, play_audio, pause_audio, user_seekbar);
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -958,22 +973,93 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
 
     }
   }
+
+  @Override
+  public boolean onTouch(View v, MotionEvent event) {
+    switch (v.getId()) {
+      case R.id.user_seekbar: {
+        try {
+          clickListenerChatFirebase.seekChange(v, play_audio, pause_audio, user_seekbar);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+
+    return false;
+  }
 }
 
-class ItemMessageFriendHolder extends RecyclerView.ViewHolder {
+class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
   public TextView txtContent;
   public CircleImageView avata;
   public ImageView imageContent;
   public LinearLayout audioContent;
-  ClickListenerChatFirebase clickListenerChatFirebase;
+  public ImageView play_audio;
+  public ImageView pause_audio;
+
+  public SeekBar friend_seekbar;
+
+  private ClickListenerChatFirebase clickListenerChatFirebase;
 
   public ItemMessageFriendHolder(View itemView, ClickListenerChatFirebase clickListenerChatFirebase) {
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentFriend);
     audioContent = (LinearLayout) itemView.findViewById(R.id.audioFriendView);
+    play_audio = (ImageView) itemView.findViewById(R.id.play_audio);
+    pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
+    friend_seekbar = (SeekBar) itemView.findViewById(R.id.friend_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
     this.clickListenerChatFirebase = clickListenerChatFirebase;
+
+    if (play_audio != null) {
+      play_audio.setOnClickListener(this);
+    }
+    if (pause_audio != null) {
+      pause_audio.setOnClickListener(this);
+    }
+
+    if (friend_seekbar != null) {
+      friend_seekbar.setOnTouchListener(this);
+    }
+
   }
 
+  @Override
+  public void onClick(View v) {
+    int position = getAdapterPosition();
+    System.out.println("ID " + v.getId());
+    switch (v.getId()) {
+      case R.id.play_audio:
+        try {
+          clickListenerChatFirebase.clickAudioPlayChat(v, position, play_audio, pause_audio, friend_seekbar);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+      case R.id.pause_audio:
+        try {
+          clickListenerChatFirebase.clickAudioPauseChat(v, position, play_audio, pause_audio, friend_seekbar);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+
+    }
+  }
+
+  @Override
+  public boolean onTouch(View v, MotionEvent event) {
+    switch (v.getId()) {
+      case R.id.user_seekbar: {
+        try {
+          clickListenerChatFirebase.seekChange(v, play_audio, pause_audio, friend_seekbar);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+      }
+    }
+    return false;
+  }
 }
