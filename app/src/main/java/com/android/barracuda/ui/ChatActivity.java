@@ -236,7 +236,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   private void initAudioRecord() {
     // Record to the external cache directory for visibility
     mFileName = getExternalCacheDir().getAbsolutePath();
-    mFileName += "/audiorecordtest.3gp";
+    mFileName += "/audioMessage.3gp";
 
     ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
   }
@@ -875,6 +875,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
           if (((ItemMessageUserHolder) holder).audioContent != null) {
             ((ItemMessageUserHolder) holder).audioContent.setVisibility(View.VISIBLE);
+            if(((ItemMessageUserHolder) holder).totalTime != null){
+              ((ItemMessageUserHolder) holder).totalTime.setText("test");
+            }
+            if(((ItemMessageUserHolder) holder).dateTime != null){
+              ((ItemMessageUserHolder) holder).dateTime.setText(String.valueOf(consersation.getListMessageData().get(position).timestamp));
+            }
 
             //TODO AUDIO PLAYER
           }
@@ -924,6 +930,9 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
   public LinearLayout audioContent;
   public CircleImageView avata;
 
+  public TextView totalTime;
+  public TextView dateTime;
+
   public SeekBar user_seekbar;
 
   private ClickListenerChatFirebase clickListenerChatFirebase;
@@ -937,6 +946,10 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
     user_seekbar = (SeekBar) itemView.findViewById(R.id.user_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
+
+    totalTime = (TextView) itemView.findViewById(R.id.total_time);
+    dateTime = (TextView) itemView.findViewById(R.id.date_time);
+
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
     if (play_audio != null) {
@@ -998,6 +1011,9 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
   public ImageView play_audio;
   public ImageView pause_audio;
 
+  public TextView totalTime;
+  public TextView dateTime;
+
   public SeekBar friend_seekbar;
 
   private ClickListenerChatFirebase clickListenerChatFirebase;
@@ -1011,6 +1027,9 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
     pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
     friend_seekbar = (SeekBar) itemView.findViewById(R.id.friend_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
+
+    totalTime = (TextView) itemView.findViewById(R.id.total_time);
+    dateTime = (TextView) itemView.findViewById(R.id.date_time);
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
     if (play_audio != null) {

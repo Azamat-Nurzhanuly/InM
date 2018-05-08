@@ -81,7 +81,6 @@
           android:paddingTop="5dp">
 
           <TextView
-            android:id="@+id/run_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -102,7 +101,7 @@
             android:textSize="11sp" />
 
           <TextView
-            android:id="@+id/total_time"
+            android:id="@+id/date_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
