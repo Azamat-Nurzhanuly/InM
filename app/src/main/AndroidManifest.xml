@@ -100,5 +100,12 @@
 
     <service android:name=".service.SinchService"></service>
   </application>
+        <activity
+            android:name=".ProfileActivity"
+            android:label="@string/title_activity_profile"
+            android:parentActivityName=".MainActivity"
+            android:theme="@style/AppTheme.NoActionBar" />
+        <activity android:name="kz.salsery.barracuda.SplashscreenActivity"></activity>
+    </application>
 
 </manifest>
