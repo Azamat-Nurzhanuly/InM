@@ -51,6 +51,11 @@ repositories {
     url "https://jitpack.io"
   }
   jcenter()
+
+  //sinch
+  flatDir {
+    dirs 'libs'
+  }
 }
 
 
@@ -79,15 +84,17 @@ dependencies {
 
   //STORAGE FIREBASE
   compile 'com.google.firebase:firebase-storage:15.0.2'
-
   implementation 'com.github.bumptech.glide:glide:4.7.1'
   annotationProcessor 'com.github.bumptech.glide:compiler:4.7.1'
   implementation 'com.facebook.android:account-kit-sdk:4.32.0'
   compile 'com.squareup.retrofit2:retrofit:2.4.0'
   compile 'com.google.android.gms:play-services-auth:15.0.1'
-
   //record audio view
+
   compile 'com.devlomi.record-view:record-view:1.2.2beta'
+
+  //sinch
+  compile(name:'sinch-android-rtc', version:'+', ext:'aar')
 
 }
 apply plugin: 'com.google.gms.google-services'

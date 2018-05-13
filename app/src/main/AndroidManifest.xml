@@ -15,6 +15,13 @@
 
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
 
+
+  <uses-feature
+    android:name="android.hardware.microphone"
+    android:required="false"/>
+  <uses-permission android:name="android.permission.MODIFY_AUDIO_SETTINGS"/>
+
+
   <application
     android:allowBackup="true"
     android:icon="@mipmap/ic_launcher"
@@ -56,8 +63,26 @@
       android:name="com.android.barracuda.ui.ChatActivity"
       android:screenOrientation="portrait"
       android:parentActivityName="com.android.barracuda.MainActivity"/>
+
+    <activity
+      android:name="com.android.barracuda.ui.CallActivity"
+      android:screenOrientation="portrait"
+      android:parentActivityName="com.android.barracuda.MainActivity"/>
+
+
     <activity android:name="com.android.barracuda.ui.AddGroupActivity"
       android:theme="@style/MyThemeNoActionbar"/>
+
+
+
+
+    <activity android:name="com.android.barracuda.ui.CallScreenActivity"
+      android:theme="@style/MyThemeNoActionbar"/>
+    <activity android:name="com.android.barracuda.ui.IncomingCallScreenActivity"
+      android:theme="@style/MyThemeNoActionbar"/>
+
+
+
     <service android:name="com.android.barracuda.service.FriendChatService"
       android:exported="false"
       android:persistent= "true" />
@@ -71,6 +96,9 @@
         <action android:name="com.google.firebase.INSTANCE_ID_EVENT"/>
       </intent-filter>
     </service>
+
+
+    <service android:name=".service.SinchService"></service>
   </application>
 
 </manifest>

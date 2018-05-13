@@ -1,0 +1,14 @@
+<LinearLayout android:layout_width="match_parent"
+  android:gravity="right"
+  android:id="@+id/call_title_layout"
+  android:layout_height="wrap_content"
+  xmlns:android="http://schemas.android.com/apk/res/android">
+
+  <Button
+    android:text="Delete"
+    android:layout_width="wrap_content"
+    android:background="#000"
+    android:textColor="#fff"
+    android:layout_height="wrap_content"
+    android:textSize="16dp" />
+</LinearLayout>

@@ -5,6 +5,19 @@
   android:background="@color/colorIndivateTab"
   android:orientation="vertical">
 
+
+    <Button
+      android:text="Call"
+      android:id="@+id/chat_call_button"
+      android:layout_width="wrap_content"
+      android:background="#000"
+      android:textColor="#fff"
+      android:layout_height="wrap_content"
+      android:textSize="16sp"
+      android:enabled="false"
+      />
+
+
   <View
     android:id="@+id/line"
     android:layout_width="match_parent"

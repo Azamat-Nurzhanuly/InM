@@ -1,8 +1,10 @@
 package com.android.barracuda.ui;
 
 import android.Manifest;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -13,6 +15,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -31,14 +34,17 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.barracuda.BuildConfig;
+import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
@@ -47,6 +53,7 @@ import com.android.barracuda.inter.ClickListenerChatFirebase;
 import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
+import com.android.barracuda.service.SinchService;
 import com.bumptech.glide.Glide;
 import com.devlomi.record_view.OnBasketAnimationEnd;
 import com.devlomi.record_view.OnRecordClickListener;
@@ -68,6 +75,9 @@ import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.gordonwong.materialsheetfab.MaterialSheetFab;
+import com.sinch.android.rtc.MissingPermissionException;
+import com.sinch.android.rtc.SinchError;
+import com.sinch.android.rtc.calling.Call;
 
 import java.io.File;
 import java.io.IOException;
@@ -77,11 +87,16 @@ import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_IMAGE;
 
 
-public class ChatActivity extends AppCompatActivity implements View.OnClickListener, ClickListenerChatFirebase {
+public class ChatActivity extends MainActivity
+  implements View.OnClickListener,
+  ClickListenerChatFirebase,
+  SinchService.StartFailedListener {
+
   private RecyclerView recyclerChat;
   public static final int VIEW_TYPE_USER_MESSAGE_TEXT = 0;
   public static final int VIEW_TYPE_FRIEND_MESSAGE_TEXT = 1;
@@ -142,6 +157,10 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   public MaterialSheetFab materialSheetFab;
   public Fab fab = null;
 
+  //SINCH call
+  private Button chat_call_button;
+  private SinchService.SinchServiceInterface mSinchServiceInterface;
+
   FirebaseStorage storage = FirebaseStorage.getInstance();
 
   @RequiresApi(api = Build.VERSION_CODES.M)
@@ -150,7 +169,7 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_chat);
     Intent intentData = getIntent();
-    idFriend = intentData.getCharSequenceArrayListExtra(StaticConfig.INTENT_KEY_CHAT_ID);
+    idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
     String nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
 
@@ -217,7 +236,9 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
 //      }
 //    });
 
+    chat_call_button = (Button) findViewById(R.id.chat_call_button);
 
+    chat_call_button.setOnClickListener(this);
   }
 
 
@@ -230,6 +251,13 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
         break;
     }
     if (!permissionToRecordAccepted) finish();
+
+    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+      Toast.makeText(this, "You may now place a call", Toast.LENGTH_LONG).show();
+    } else {
+      Toast.makeText(this, "This application needs permission to use your microphone to function properly.", Toast
+        .LENGTH_LONG).show();
+    }
 
   }
 
@@ -332,6 +360,8 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
   private void initEditText(String nameFriend) {
     if (idFriend != null && nameFriend != null) {
       getSupportActionBar().setTitle(nameFriend);
+
+
       linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
       recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
       recyclerChat.setLayoutManager(linearLayoutManager);
@@ -482,6 +512,35 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       case R.id.btn_choose_place:
         chooseMedia(PLACE_PICKER_REQUEST);
         break;
+
+      case R.id.chat_call_button:
+        audioCall();
+        break;
+    }
+  }
+
+  private void audioCall() {
+
+    String userId = (String) idFriend.get(0);
+    if (userId.isEmpty()) {
+      Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+      return;
+    }
+
+    try {
+      Call call = getSinchServiceInterface().callUser(userId);
+      if (call == null) {
+        // Service failed for some reason, show a Toast and abort
+        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+          + "placing a call.", Toast.LENGTH_LONG).show();
+        return;
+      }
+      String callId = call.getCallId();
+      Intent callScreen = new Intent(this, CallScreenActivity.class);
+      callScreen.putExtra(SinchService.CALL_ID, callId);
+      startActivity(callScreen);
+    } catch (MissingPermissionException e) {
+      ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, 0);
     }
   }
 
@@ -729,6 +788,24 @@ public class ChatActivity extends AppCompatActivity implements View.OnClickListe
       player.seekTo(seekBar.getProgress());
     }
   }
+
+
+  //SINCH
+  @Override
+  public void onStartFailed(SinchError error) {
+    Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show();
+  }
+
+  @Override
+  public void onStarted() {
+    Toast.makeText(this, "Audio call started", Toast.LENGTH_LONG).show();
+  }
+
+  @Override
+  protected void onServiceConnected() {
+    getSinchServiceInterface().setStartListener(this);
+    chat_call_button.setEnabled(true);
+  }
 }
 
 class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -875,10 +952,10 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
           if (((ItemMessageUserHolder) holder).audioContent != null) {
             ((ItemMessageUserHolder) holder).audioContent.setVisibility(View.VISIBLE);
-            if(((ItemMessageUserHolder) holder).totalTime != null){
+            if (((ItemMessageUserHolder) holder).totalTime != null) {
               ((ItemMessageUserHolder) holder).totalTime.setText("test");
             }
-            if(((ItemMessageUserHolder) holder).dateTime != null){
+            if (((ItemMessageUserHolder) holder).dateTime != null) {
               ((ItemMessageUserHolder) holder).dateTime.setText(String.valueOf(consersation.getListMessageData().get(position).timestamp));
             }
 
