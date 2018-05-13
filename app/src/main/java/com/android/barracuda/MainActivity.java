@@ -1,5 +1,6 @@
 package com.android.barracuda;
 
+import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -45,6 +46,10 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.service.ServiceUtils;
+import com.android.barracuda.ui.FriendsFragment;
+import com.android.barracuda.ui.GroupFragment;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -88,6 +93,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     AccountKit.logOut();
     mAuth.signOut();
   }
+    private Context context;
+
+    public void onLogoutClick(View view) {
+        AccountKit.logOut();
+        mAuth.signOut();
+    }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -98,6 +109,9 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
       BIND_AUTO_CREATE);
 
     GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
+        context = this;
+
+        GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
 
     setContentView(R.layout.activity_main);
 
@@ -250,6 +264,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
       @Override
       public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
+    private void setupViewPager(ViewPager viewPager) {
+        adapter = new ViewPagerAdapter(getSupportFragmentManager());
+        adapter.addFrag(new FriendsFragment(), STR_FRIEND_FRAGMENT);
+        adapter.addFrag(new GroupFragment(), STR_GROUP_FRAGMENT);
+        floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
+        viewPager.setAdapter(adapter);
+        viewPager.setOffscreenPageLimit(3);
+        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
+            @Override
+            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
       }
 
@@ -365,28 +389,28 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     return true;
   }
 
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    // Handle action bar item clicks here. The action bar will
-    // automatically handle clicks on the Home/Up button, so long
-    // as you specify a parent activity in AndroidManifest.xml.
-    int id = item.getItemId();
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        // Handle action bar item clicks here. The action bar will
+        // automatically handle clicks on the Home/Up button, so long
+        // as you specify a parent activity in AndroidManifest.xml.
 
-    //noinspection SimplifiableIfStatement
-    if (id == R.id.about) {
-      Toast.makeText(this, "Barracuda version 1.0", Toast.LENGTH_LONG).show();
-      return true;
+        switch (item.getItemId()) {
+            case R.id.setProfile: {
+
+                Intent profIntent = new Intent(this, ProfileActivity.class);
+                startActivity(profIntent);
+                break;
+            }
+            default:
+        }
+
+        return super.onOptionsItemSelected(item);
     }
 
-    return super.onOptionsItemSelected(item);
-  }
-
-  /**
-   * Adapter hien thi tab
-   */
-  class ViewPagerAdapter extends FragmentPagerAdapter {
-    private final List<Fragment> mFragmentList = new ArrayList<>();
-    private final List<String> mFragmentTitleList = new ArrayList<>();
+    class ViewPagerAdapter extends FragmentPagerAdapter {
+        private final List<Fragment> mFragmentList = new ArrayList<>();
+        private final List<String> mFragmentTitleList = new ArrayList<>();
 
     public ViewPagerAdapter(FragmentManager manager) {
       super(manager);
