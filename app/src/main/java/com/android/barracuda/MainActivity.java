@@ -1,6 +1,5 @@
 package com.android.barracuda;
 
-import android.content.Context;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -30,7 +29,6 @@ import com.android.barracuda.service.cloud.CloudFunctions;
 import com.android.barracuda.ui.CallFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
-import com.android.barracuda.ui.UserProfileFragment;
 import com.facebook.accountkit.AccessToken;
 import com.facebook.accountkit.Account;
 import com.facebook.accountkit.AccountKit;
@@ -46,10 +44,6 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
-import com.android.barracuda.data.StaticConfig;
-import com.android.barracuda.service.ServiceUtils;
-import com.android.barracuda.ui.FriendsFragment;
-import com.android.barracuda.ui.GroupFragment;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -93,12 +87,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     AccountKit.logOut();
     mAuth.signOut();
   }
-    private Context context;
-
-    public void onLogoutClick(View view) {
-        AccountKit.logOut();
-        mAuth.signOut();
-    }
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -109,16 +97,16 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
       BIND_AUTO_CREATE);
 
     GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
-        context = this;
-
-        GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
 
     setContentView(R.layout.activity_main);
 
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     if (toolbar != null) {
-      setSupportActionBar(toolbar);
-      getSupportActionBar().setTitle("Barracuda");
+      if(getSupportActionBar() == null) {
+        setSupportActionBar(toolbar);
+      }
+        getSupportActionBar().setTitle("Barracuda");
+
     }
 
     viewPager = (ViewPager) findViewById(R.id.viewpager);
@@ -241,22 +229,19 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     int[] tabIcons = {
       R.drawable.ic_tab_person,
       R.drawable.ic_tab_group,
-      R.drawable.ic_tab_infor,
-      R.drawable.attach_msg
     };
 
     tabLayout.getTabAt(0).setIcon(tabIcons[0]);
     tabLayout.getTabAt(1).setIcon(tabIcons[1]);
-    tabLayout.getTabAt(2).setIcon(tabIcons[2]);
-    tabLayout.getTabAt(3).setIcon(tabIcons[3]);
+
+
   }
 
   private void setupViewPager(ViewPager viewPager) {
     adapter = new ViewPagerAdapter(getSupportFragmentManager());
     adapter.addFrag(new FriendsFragment(), STR_FRIEND_FRAGMENT);
     adapter.addFrag(new GroupFragment(), STR_GROUP_FRAGMENT);
-    adapter.addFrag(new UserProfileFragment(), STR_INFO_FRAGMENT);
-    adapter.addFrag(new CallFragment(), STR_INFO_CALL);
+
 
     floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
     viewPager.setAdapter(adapter);
@@ -264,16 +249,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
       @Override
       public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
-    private void setupViewPager(ViewPager viewPager) {
-        adapter = new ViewPagerAdapter(getSupportFragmentManager());
-        adapter.addFrag(new FriendsFragment(), STR_FRIEND_FRAGMENT);
-        adapter.addFrag(new GroupFragment(), STR_GROUP_FRAGMENT);
-        floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
-        viewPager.setAdapter(adapter);
-        viewPager.setOffscreenPageLimit(3);
-        viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
-            @Override
-            public void onPageScrolled(int position, float positionOffset, int positionOffsetPixels) {
 
       }
 
@@ -389,28 +364,28 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     return true;
   }
 
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
+  @Override
+  public boolean onOptionsItemSelected(MenuItem item) {
+    // Handle action bar item clicks here. The action bar will
+    // automatically handle clicks on the Home/Up button, so long
+    // as you specify a parent activity in AndroidManifest.xml.
+    int id = item.getItemId();
 
-        switch (item.getItemId()) {
-            case R.id.setProfile: {
-
-                Intent profIntent = new Intent(this, ProfileActivity.class);
-                startActivity(profIntent);
-                break;
-            }
-            default:
-        }
-
-        return super.onOptionsItemSelected(item);
+    //noinspection SimplifiableIfStatement
+    if (id == R.id.about) {
+      Toast.makeText(this, "Barracuda version 1.0", Toast.LENGTH_LONG).show();
+      return true;
     }
 
-    class ViewPagerAdapter extends FragmentPagerAdapter {
-        private final List<Fragment> mFragmentList = new ArrayList<>();
-        private final List<String> mFragmentTitleList = new ArrayList<>();
+    return super.onOptionsItemSelected(item);
+  }
+
+  /**
+   * Adapter hien thi tab
+   */
+  class ViewPagerAdapter extends FragmentPagerAdapter {
+    private final List<Fragment> mFragmentList = new ArrayList<>();
+    private final List<String> mFragmentTitleList = new ArrayList<>();
 
     public ViewPagerAdapter(FragmentManager manager) {
       super(manager);

@@ -14,8 +14,8 @@
     <item name="colorAccent">#4fa881</item>
     <!-- set Can use Activity transitions -->
     <item name="android:windowContentTransitions">true</item>
-    <!--sinch-->
-    <item name="windowActionBar">true</item>
-    <item name="windowNoTitle">true</item>
+    <!--&lt;!&ndash;sinch&ndash;&gt;-->
+    <!--<item name="windowActionBar">true</item>-->
+    <!--<item name="windowNoTitle">true</item>-->
   </style>
 </resources>
