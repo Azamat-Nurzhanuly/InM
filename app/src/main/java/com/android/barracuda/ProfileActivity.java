@@ -104,10 +104,10 @@ public class ProfileActivity extends AppCompatActivity {
     private RecyclerView recyclerView;
     private UserInfoAdapter infoAdapter;
 
-    private static final String USERNAME_LABEL = "Username";
-    private static final String PHONE_NUMBER_LABEL = "Phone Number";
-    private static final String SIGNOUT_LABEL = "Sign out";
-    private static final String RESETPASS_LABEL = "Change Password";
+    private static final String USERNAME_LABEL = "Имя пользователя";
+    private static final String PHONE_NUMBER_LABEL = "Номер телефона";
+    private static final String SIGNOUT_LABEL = "Выйти";
+    private static final String RESETPASS_LABEL = "Сменить пароль";
 
     public static final int PICK_IMAGE = 1994;
     private LovelyProgressDialog waitingDialog;
@@ -149,15 +149,15 @@ public class ProfileActivity extends AppCompatActivity {
         public void onClick(View view) {
 
             new AlertDialog.Builder(context)
-                    .setTitle("Avatar")
-                    .setMessage("Are you sure want to change avatar profile?")
+                    .setTitle("Аватар")
+                    .setMessage("Вы точно хотите сменить аватар профиля?")
                     .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialogInterface, int i) {
                             Intent intent = new Intent();
                             intent.setType("image/*");
                             intent.setAction(Intent.ACTION_PICK);
-                            startActivityForResult(Intent.createChooser(intent, "Select Picture"), PICK_IMAGE);
+                            startActivityForResult(Intent.createChooser(intent, "Выберите фото"), PICK_IMAGE);
                             dialogInterface.dismiss();
                         }
                     })
@@ -192,7 +192,7 @@ public class ProfileActivity extends AppCompatActivity {
                 myAccount.avata = imageBase64;
 
                 waitingDialog.setCancelable(false)
-                        .setTitle("Avatar updating....")
+                        .setTitle("Обновление аватар....")
                         .setTopColorRes(R.color.colorPrimary)
                         .show();
 
@@ -209,8 +209,8 @@ public class ProfileActivity extends AppCompatActivity {
 
                                     new LovelyInfoDialog(context)
                                             .setTopColorRes(R.color.colorPrimary)
-                                            .setTitle("Success")
-                                            .setMessage("Update avatar successfully!")
+                                            .setTitle("Успешно")
+                                            .setMessage("Аватар обновлён!")
                                             .show();
                                 }
                             }
@@ -222,8 +222,8 @@ public class ProfileActivity extends AppCompatActivity {
                                 Log.d("Update Avatar", "failed");
                                 new LovelyInfoDialog(context)
                                         .setTopColorRes(R.color.colorAccent)
-                                        .setTitle("False")
-                                        .setMessage("False to update avatar")
+                                        .setTitle("Ошибка")
+                                        .setMessage("Не удалось обновить аватар")
                                         .show();
                             }
                         });
@@ -304,9 +304,9 @@ public class ProfileActivity extends AppCompatActivity {
                         final EditText input = (EditText)vewInflater.findViewById(R.id.edit_username);
                         input.setText(myAccount.name);
                         new AlertDialog.Builder(context)
-                                .setTitle("Edit username")
+                                .setTitle("Редактирование имени")
                                 .setView(vewInflater)
-                                .setPositiveButton("Save", new DialogInterface.OnClickListener() {
+                                .setPositiveButton("Сохранить", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         String newName = input.getText().toString();
@@ -316,7 +316,7 @@ public class ProfileActivity extends AppCompatActivity {
                                         dialogInterface.dismiss();
                                     }
                                 })
-                                .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                                .setNegativeButton("Отменить", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         dialogInterface.dismiss();

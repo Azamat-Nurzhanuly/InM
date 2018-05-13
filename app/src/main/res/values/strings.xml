@@ -1,27 +1,27 @@
 <resources>
     <string name="app_name">Barracuda</string>
-    <string name="action_settings">Settings</string>
-    <string name="about">About</string>
-    <string name="login_success">login success</string>
-    <string name="login">LOGIN</string>
-    <string name="Username">Email</string>
-    <string name="Password">Password</string>
-    <string name="forgot_your_password">Forgot your password ?</string>
+    <string name="action_settings">Настройки</string>
+    <string name="about">О приложении</string>
+    <string name="login_success">Успешная авторизация</string>
+    <string name="login">ЛОГИН</string>
+    <string name="Username">Почта</string>
+    <string name="Password">Пароль</string>
+    <string name="forgot_your_password">Забыли пароль?</string>
     <string name="go">GO</string>
-    <string name="repeat_password">Repeat Password</string>
-    <string name="next">NEXT</string>
-    <string name="register">REGISTER</string>
+    <string name="repeat_password">ПОВТОРИТЕ ПАРОЛЬ</string>
+    <string name="next">СЛЕДУЮЩИЙ</string>
+    <string name="register">РЕГИСТРАЦИЯ</string>
 
     <string name="FACEBOOK_APP_ID">169006583806838</string>
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">1153d3100ba8ab55a91b6ec4d717151d</string>
 
-    <string name="hint_username">Enter a new username</string>
-    <string name="hint_email_reset">Enter your email</string>
-    <string name="enter_group_name">Enter group name</string>
+    <string name="hint_username">Введите имя</string>
+    <string name="hint_email_reset">Введите свою почту</string>
+    <string name="enter_group_name">Введите название группы</string>
 
 
     <string name="api_key_google_places">AIzaSyCGzBYDeXk8vwAelJf-t8EtxqwWIuzNNdU</string>
-    <string name="create_group">Create group</string>
+    <string name="create_group">Создать группу</string>
     <string name="r">R</string>
     <string name="profile">Профиль</string>
     <string name="avatar">Аватарка</string>
