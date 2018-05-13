@@ -23,4 +23,29 @@
     <string name="api_key_google_places">AIzaSyCGzBYDeXk8vwAelJf-t8EtxqwWIuzNNdU</string>
     <string name="create_group">Create group</string>
     <string name="r">R</string>
+    <string name="profile">Профиль</string>
+    <string name="avatar">Аватарка</string>
+    <string name="user_name">Имя</string>
+    <string name="phone_number">Номер телефона</string>
+    <string name="status">Статус</string>
+    <string name="fav_messages">Избранные сообщения</string>
+    <string name="account">Аккаунт</string>
+    <string name="rules">Конфиденциальность (правила)</string>
+    <string name="black_list">Черный список</string>
+    <string name="delete_account">Удалить аккаунт</string>
+    <string name="chats">Чаты</string>
+    <string name="themes">Темы</string>
+    <string name="copy">Резервная копия</string>
+    <string name="create_copy">Создать копию</string>
+    <string name="recover">Восстановить</string>
+    <string name="delete_all_chats">Удалить все Чаты</string>
+    <string name="clear_all_chats">Очистить все Чаты</string>
+    <string name="notification">Оповещения</string>
+    <string name="help">Помощь</string>
+    <string name="faq">FAQ</string>
+    <string name="contact_us">Связаться с нами</string>
+    <string name="rules_conf">Правила пользования и условия конфиденциальности</string>
+    <string name="license">Лицензия</string>
+    <string name="version">Версия</string>
+
 </resources>

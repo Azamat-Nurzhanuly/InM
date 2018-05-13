@@ -5,6 +5,39 @@
     <item
         android:id="@+id/about"
         android:orderInCategory="100"
-        android:title="@string/about"
+        android:title="@string/profile"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/avatar"
+                android:orderInCategory="110"
+                android:title="@string/avatar"
+                app:showAsAction="never" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/favMes"
+        android:orderInCategory="101"
+        android:title="@string/fav_messages"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/account"
+        android:orderInCategory="102"
+        android:title="@string/account"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/chats"
+        android:orderInCategory="103"
+        android:title="@string/chats"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/notification"
+        android:orderInCategory="104"
+        android:title="@string/notification"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/help"
+        android:orderInCategory="105"
+        android:title="@string/help"
         app:showAsAction="never" />
 </menu>
