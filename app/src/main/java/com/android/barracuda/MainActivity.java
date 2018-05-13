@@ -1,5 +1,6 @@
 package com.android.barracuda;
 
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
@@ -39,7 +40,6 @@ import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.service.ServiceUtils;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
-import com.android.barracuda.ui.UserProfileFragment;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -75,6 +75,8 @@ public class MainActivity extends AppCompatActivity {
     private FirebaseAuth.AuthStateListener mAuthListener;
     private CloudFunctions mCloudFunctions;
 
+    private Context context;
+
     public void onLogoutClick(View view) {
         AccountKit.logOut();
         mAuth.signOut();
@@ -83,6 +85,8 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        context = this;
 
         GoogleApiAvailability.getInstance().isGooglePlayServicesAvailable(this);
 
@@ -209,20 +213,17 @@ public class MainActivity extends AppCompatActivity {
     private void setupTabIcons() {
         int[] tabIcons = {
                 R.drawable.ic_tab_person,
-                R.drawable.ic_tab_group,
-                R.drawable.ic_tab_infor
+                R.drawable.ic_tab_group
         };
 
         tabLayout.getTabAt(0).setIcon(tabIcons[0]);
         tabLayout.getTabAt(1).setIcon(tabIcons[1]);
-        tabLayout.getTabAt(2).setIcon(tabIcons[2]);
     }
 
     private void setupViewPager(ViewPager viewPager) {
         adapter = new ViewPagerAdapter(getSupportFragmentManager());
         adapter.addFrag(new FriendsFragment(), STR_FRIEND_FRAGMENT);
         adapter.addFrag(new GroupFragment(), STR_GROUP_FRAGMENT);
-        adapter.addFrag(new UserProfileFragment(), STR_INFO_FRAGMENT);
         floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
         viewPager.setAdapter(adapter);
         viewPager.setOffscreenPageLimit(3);
@@ -349,16 +350,20 @@ public class MainActivity extends AppCompatActivity {
         // Handle action bar item clicks here. The action bar will
         // automatically handle clicks on the Home/Up button, so long
         // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
 
-        //noinspection SimplifiableIfStatement
+        switch (item.getItemId()) {
+            case R.id.setProfile: {
+
+                Intent profIntent = new Intent(this, ProfileActivity.class);
+                startActivity(profIntent);
+                break;
+            }
+            default:
+        }
 
         return super.onOptionsItemSelected(item);
     }
 
-    /**
-     * Adapter hien thi tab
-     */
     class ViewPagerAdapter extends FragmentPagerAdapter {
         private final List<Fragment> mFragmentList = new ArrayList<>();
         private final List<String> mFragmentTitleList = new ArrayList<>();

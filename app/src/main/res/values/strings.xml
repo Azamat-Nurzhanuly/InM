@@ -47,5 +47,6 @@
     <string name="rules_conf">Правила пользования и условия конфиденциальности</string>
     <string name="license">Лицензия</string>
     <string name="version">Версия</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 
 </resources>
