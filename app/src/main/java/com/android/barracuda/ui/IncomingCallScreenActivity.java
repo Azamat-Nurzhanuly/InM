@@ -22,6 +22,7 @@ import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
+import com.sinch.android.rtc.video.VideoCallListener;
 
 import java.util.List;
 
@@ -95,7 +96,7 @@ public class IncomingCallScreenActivity extends ChatActivity {
     finish();
   }
 
-  private class SinchCallListener implements CallListener {
+  private class SinchCallListener implements CallListener, VideoCallListener {
 
     @Override
     public void onCallEnded(Call call) {
@@ -118,6 +119,23 @@ public class IncomingCallScreenActivity extends ChatActivity {
     @Override
     public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
       // Send a push through your push provider here, e.g. GCM
+    }
+
+
+
+    //VIDEO CALL
+
+    @Override
+    public void onVideoTrackAdded(Call call) {
+      // Display some kind of icon showing it's a video call
+    }
+    @Override
+    public void onVideoTrackPaused(Call call) {
+      // Display some kind of icon showing it's a video call
+    }
+    @Override
+    public void onVideoTrackResumed(Call call) {
+      // Display some kind of icon showing it's a video call
     }
 
   }

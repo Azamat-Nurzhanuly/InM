@@ -1,15 +1,18 @@
 package com.android.barracuda.ui;
 
 import android.media.AudioManager;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.annotation.RequiresApi;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.model.AudioPlayer;
 import com.android.barracuda.service.SinchService;
@@ -17,6 +20,9 @@ import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
+import com.sinch.android.rtc.calling.CallState;
+import com.sinch.android.rtc.video.VideoCallListener;
+import com.sinch.android.rtc.video.VideoController;
 
 import java.util.List;
 import java.util.Locale;
@@ -25,137 +31,250 @@ import java.util.TimerTask;
 
 public class CallScreenActivity extends ChatActivity {
 
-    static final String TAG = CallScreenActivity.class.getSimpleName();
 
-    private AudioPlayer mAudioPlayer;
-    private Timer mTimer;
-    private UpdateCallDurationTask mDurationTask;
+  //AUDIO CALL
+  static final String TAG = CallScreenActivity.class.getSimpleName();
 
-    private String mCallId;
+  private AudioPlayer mAudioPlayer;
+  private Timer mTimer;
+  private UpdateCallDurationTask mDurationTask;
 
-    private TextView mCallDuration;
-    private TextView mCallState;
-    private TextView mCallerName;
+  private String mCallId;
 
-    private class UpdateCallDurationTask extends TimerTask {
+  private TextView mCallDuration;
+  private TextView mCallState;
+  private TextView mCallerName;
 
+  private class UpdateCallDurationTask extends TimerTask {
+
+    @Override
+    public void run() {
+      CallScreenActivity.this.runOnUiThread(new Runnable() {
         @Override
         public void run() {
-            CallScreenActivity.this.runOnUiThread(new Runnable() {
-                @Override
-                public void run() {
-                    updateCallDuration();
-                }
-            });
+          updateCallDuration();
         }
+      });
+    }
+  }
+
+  @RequiresApi(api = Build.VERSION_CODES.M)
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+    setContentView(R.layout.callscreen);
+
+    mAudioPlayer = new AudioPlayer(this);
+    mCallDuration = (TextView) findViewById(R.id.callDuration);
+    mCallerName = (TextView) findViewById(R.id.remoteUser);
+    mCallState = (TextView) findViewById(R.id.callState);
+    Button endCallButton = (Button) findViewById(R.id.hangupButton);
+
+    endCallButton.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        endCall();
+      }
+    });
+    mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+  }
+
+  @Override
+  public void onServiceConnected() {
+    Call call = getSinchServiceInterface().getCall(mCallId);
+    if (call != null) {
+      call.addCallListener(new SinchCallListener());
+      mCallerName.setText(call.getRemoteUserId());
+      mCallState.setText(call.getState().toString());
+    } else {
+      Log.e(TAG, "Started with invalid callId, aborting.");
+      finish();
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.callscreen);
+    updateUI();
+  }
 
-        mAudioPlayer = new AudioPlayer(this);
-        mCallDuration = (TextView) findViewById(R.id.callDuration);
-        mCallerName = (TextView) findViewById(R.id.remoteUser);
-        mCallState = (TextView) findViewById(R.id.callState);
-        Button endCallButton = (Button) findViewById(R.id.hangupButton);
-
-        endCallButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                endCall();
-            }
-        });
-        mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+  private void updateUI() {
+    if (getSinchServiceInterface() == null) {
+      return; // early
     }
 
-    @Override
-    public void onServiceConnected() {
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
-            call.addCallListener(new SinchCallListener());
-            mCallerName.setText(call.getRemoteUserId());
-            mCallState.setText(call.getState().toString());
-        } else {
-            Log.e(TAG, "Started with invalid callId, aborting.");
-            finish();
+    Call call = getSinchServiceInterface().getCall(mCallId);
+    if (call != null) {
+      mCallerName.setText(call.getRemoteUserId());
+      mCallState.setText(call.getState().toString());
+      if (call.getDetails().isVideoOffered()) {
+        addLocalView();
+        if (call.getState() == CallState.ESTABLISHED) {
+          addRemoteView();
         }
+      }
+    }
+  }
+
+  @Override
+  public void onStart() {
+    super.onStart();
+    mTimer = new Timer();
+    mDurationTask = new UpdateCallDurationTask();
+    mTimer.schedule(mDurationTask, 0, 500);
+    updateUI();
+  }
+
+  @Override
+  public void onStop() {
+    super.onStop();
+    mDurationTask.cancel();
+    mTimer.cancel();
+    removeVideoViews();
+  }
+
+  @Override
+  public void onPause() {
+    super.onPause();
+    mDurationTask.cancel();
+    mTimer.cancel();
+  }
+
+  @Override
+  public void onResume() {
+    super.onResume();
+    mTimer = new Timer();
+    mDurationTask = new UpdateCallDurationTask();
+    mTimer.schedule(mDurationTask, 0, 500);
+  }
+
+  @Override
+  public void onBackPressed() {
+    // User should exit activity by ending call, not by going back.
+  }
+
+  private void endCall() {
+    mAudioPlayer.stopProgressTone();
+    Call call = getSinchServiceInterface().getCall(mCallId);
+    if (call != null) {
+      call.hangup();
+    }
+    finish();
+  }
+
+  private String formatTimespan(int totalSeconds) {
+    long minutes = totalSeconds / 60;
+    long seconds = totalSeconds % 60;
+    return String.format(Locale.US, "%02d:%02d", minutes, seconds);
+  }
+
+  private void updateCallDuration() {
+    Call call = getSinchServiceInterface().getCall(mCallId);
+    if (call != null) {
+      mCallDuration.setText(formatTimespan(call.getDetails().getDuration()));
+    }
+  }
+
+  private class SinchCallListener implements CallListener, VideoCallListener {
+
+    @Override
+    public void onCallEnded(Call call) {
+      CallEndCause cause = call.getDetails().getEndCause();
+      Log.d(TAG, "Call ended. Reason: " + cause.toString());
+      mAudioPlayer.stopProgressTone();
+      setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
+      String endMsg = "Call ended: " + call.getDetails().toString();
+      Toast.makeText(CallScreenActivity.this, endMsg, Toast.LENGTH_LONG).show();
+      endCall();
     }
 
     @Override
-    public void onPause() {
-        super.onPause();
-        mDurationTask.cancel();
-        mTimer.cancel();
+    public void onCallEstablished(Call call) {
+      Log.d(TAG, "Call established");
+      mAudioPlayer.stopProgressTone();
+      mCallState.setText(call.getState().toString());
+      setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 
     @Override
-    public void onResume() {
-        super.onResume();
-        mTimer = new Timer();
-        mDurationTask = new UpdateCallDurationTask();
-        mTimer.schedule(mDurationTask, 0, 500);
+    public void onCallProgressing(Call call) {
+      Log.d(TAG, "Call progressing");
+      mAudioPlayer.playProgressTone();
     }
 
     @Override
-    public void onBackPressed() {
-        // User should exit activity by ending call, not by going back.
+    public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
+      // Send a push through your push provider here, e.g. GCM
     }
 
-    private void endCall() {
-        mAudioPlayer.stopProgressTone();
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
-            call.hangup();
-        }
-        finish();
+
+    //VIDEO CALL LISTENERS
+    @Override
+    public void onVideoTrackAdded(Call call) {
+      Log.d(TAG, "Video track added");
+      addRemoteView();
     }
 
-    private String formatTimespan(int totalSeconds) {
-        long minutes = totalSeconds / 60;
-        long seconds = totalSeconds % 60;
-        return String.format(Locale.US, "%02d:%02d", minutes, seconds);
+    @Override
+    public void onVideoTrackPaused(Call call) {
+
     }
 
-    private void updateCallDuration() {
-        Call call = getSinchServiceInterface().getCall(mCallId);
-        if (call != null) {
-            mCallDuration.setText(formatTimespan(call.getDetails().getDuration()));
-        }
+    @Override
+    public void onVideoTrackResumed(Call call) {
+
     }
 
-    private class SinchCallListener implements CallListener {
+  }
 
+
+  //VIDEO CALL
+  private boolean mLocalVideoViewAdded = false;
+  private boolean mRemoteVideoViewAdded = false;
+
+  private void addLocalView() {
+    if (mLocalVideoViewAdded || getSinchServiceInterface() == null) {
+      return; //early
+    }
+    final VideoController vc = getSinchServiceInterface().getVideoController();
+    if (vc != null) {
+      RelativeLayout localView = (RelativeLayout) findViewById(R.id.localVideo);
+      localView.addView(vc.getLocalView());
+      localView.setOnClickListener(new View.OnClickListener() {
         @Override
-        public void onCallEnded(Call call) {
-            CallEndCause cause = call.getDetails().getEndCause();
-            Log.d(TAG, "Call ended. Reason: " + cause.toString());
-            mAudioPlayer.stopProgressTone();
-            setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
-            String endMsg = "Call ended: " + call.getDetails().toString();
-            Toast.makeText(CallScreenActivity.this, endMsg, Toast.LENGTH_LONG).show();
-            endCall();
+        public void onClick(View v) {
+          vc.toggleCaptureDevicePosition();
         }
-
-        @Override
-        public void onCallEstablished(Call call) {
-            Log.d(TAG, "Call established");
-            mAudioPlayer.stopProgressTone();
-            mCallState.setText(call.getState().toString());
-            setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
-        }
-
-        @Override
-        public void onCallProgressing(Call call) {
-            Log.d(TAG, "Call progressing");
-            mAudioPlayer.playProgressTone();
-        }
-
-        @Override
-        public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
-            // Send a push through your push provider here, e.g. GCM
-        }
-
+      });
+      mLocalVideoViewAdded = true;
     }
+  }
+
+  private void addRemoteView() {
+    if (mRemoteVideoViewAdded || getSinchServiceInterface() == null) {
+      return; //early
+    }
+    final VideoController vc = getSinchServiceInterface().getVideoController();
+    if (vc != null) {
+      LinearLayout view = (LinearLayout) findViewById(R.id.remoteVideo);
+      view.addView(vc.getRemoteView());
+      mRemoteVideoViewAdded = true;
+    }
+  }
+
+
+  private void removeVideoViews() {
+    if (getSinchServiceInterface() == null) {
+      return; // early
+    }
+
+    VideoController vc = getSinchServiceInterface().getVideoController();
+    if (vc != null) {
+      LinearLayout view = (LinearLayout) findViewById(R.id.remoteVideo);
+      view.removeView(vc.getRemoteView());
+
+      RelativeLayout localView = (RelativeLayout) findViewById(R.id.localVideo);
+      localView.removeView(vc.getLocalView());
+      mLocalVideoViewAdded = false;
+      mRemoteVideoViewAdded = false;
+    }
+  }
+
+
 }

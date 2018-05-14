@@ -1,10 +1,8 @@
 package com.android.barracuda.ui;
 
 import android.Manifest;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
-import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -15,13 +13,11 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
-import android.os.IBinder;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.FileProvider;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -158,7 +154,8 @@ public class ChatActivity extends MainActivity
   public Fab fab = null;
 
   //SINCH call
-  private Button chat_call_button;
+  private Button chat_audio_call_button;
+  private Button chat_video_call_button;
   private SinchService.SinchServiceInterface mSinchServiceInterface;
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
@@ -236,9 +233,11 @@ public class ChatActivity extends MainActivity
 //      }
 //    });
 
-    chat_call_button = (Button) findViewById(R.id.chat_call_button);
+    chat_audio_call_button = (Button) findViewById(R.id.chat_audio_call_button);
+    chat_video_call_button = (Button) findViewById(R.id.chat_video_call_button);
 
-    chat_call_button.setOnClickListener(this);
+    chat_audio_call_button.setOnClickListener(this);
+    chat_video_call_button.setOnClickListener(this);
   }
 
 
@@ -513,8 +512,12 @@ public class ChatActivity extends MainActivity
         chooseMedia(PLACE_PICKER_REQUEST);
         break;
 
-      case R.id.chat_call_button:
+      case R.id.chat_audio_call_button:
         audioCall();
+        break;
+
+      case R.id.chat_video_call_button:
+        videoCall();
         break;
     }
   }
@@ -529,6 +532,31 @@ public class ChatActivity extends MainActivity
 
     try {
       Call call = getSinchServiceInterface().callUser(userId);
+      if (call == null) {
+        // Service failed for some reason, show a Toast and abort
+        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
+          + "placing a call.", Toast.LENGTH_LONG).show();
+        return;
+      }
+      String callId = call.getCallId();
+      Intent callScreen = new Intent(this, CallScreenActivity.class);
+      callScreen.putExtra(SinchService.CALL_ID, callId);
+      startActivity(callScreen);
+    } catch (MissingPermissionException e) {
+      ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, 0);
+    }
+  }
+
+  private void videoCall() {
+
+    String userId = (String) idFriend.get(0);
+    if (userId.isEmpty()) {
+      Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
+      return;
+    }
+
+    try {
+      Call call = getSinchServiceInterface().callUserVideo(userId);
       if (call == null) {
         // Service failed for some reason, show a Toast and abort
         Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
@@ -804,7 +832,8 @@ public class ChatActivity extends MainActivity
   @Override
   protected void onServiceConnected() {
     getSinchServiceInterface().setStartListener(this);
-    chat_call_button.setEnabled(true);
+    chat_audio_call_button.setEnabled(true);
+    chat_video_call_button.setEnabled(true);
   }
 }
 

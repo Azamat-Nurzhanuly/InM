@@ -14,6 +14,7 @@
   <uses-permission android:name="android.permission.RECEIVE_SMS" />
 
   <uses-permission android:name="android.permission.RECORD_AUDIO" />
+  <uses-permission android:name="android.permission.CAMERA"/>
 
 
   <uses-feature
@@ -99,13 +100,15 @@
 
 
     <service android:name=".service.SinchService"></service>
+
+    <activity
+      android:name=".ProfileActivity"
+      android:label="@string/title_activity_profile"
+      android:parentActivityName=".MainActivity"
+      android:theme="@style/AppTheme.NoActionBar" />
+    <activity android:name="kz.salsery.barracuda.SplashscreenActivity"></activity>
   </application>
-        <activity
-            android:name=".ProfileActivity"
-            android:label="@string/title_activity_profile"
-            android:parentActivityName=".MainActivity"
-            android:theme="@style/AppTheme.NoActionBar" />
-        <activity android:name="kz.salsery.barracuda.SplashscreenActivity"></activity>
-    </application>
+
+
 
 </manifest>

@@ -9,6 +9,7 @@ import android.os.IBinder;
 import android.util.Log;
 
 import com.android.barracuda.ui.IncomingCallScreenActivity;
+import com.sinch.android.rtc.AudioController;
 import com.sinch.android.rtc.ClientRegistration;
 import com.sinch.android.rtc.Sinch;
 import com.sinch.android.rtc.SinchClient;
@@ -17,6 +18,7 @@ import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallClient;
 import com.sinch.android.rtc.calling.CallClientListener;
+import com.sinch.android.rtc.video.VideoController;
 
 public class SinchService extends Service {
 
@@ -102,6 +104,24 @@ public class SinchService extends Service {
             return mSinchClient.getCallClient().callUser(userId);
         }
 
+        public Call callUserVideo(String userId) {
+            return mSinchClient.getCallClient().callUserVideo(userId);
+        }
+
+        public VideoController getVideoController() {
+            if (!isStarted()) {
+                return null;
+            }
+            return mSinchClient.getVideoController();
+        }
+
+        public AudioController getAudioController() {
+            if (!isStarted()) {
+                return null;
+            }
+            return mSinchClient.getAudioController();
+        }
+
         public String getUserName() {
             return mUserId;
         }
@@ -125,6 +145,8 @@ public class SinchService extends Service {
         public Call getCall(String callId) {
             return mSinchClient.getCallClient().getCall(callId);
         }
+
+
     }
 
     public interface StartFailedListener {
