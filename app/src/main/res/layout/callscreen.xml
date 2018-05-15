@@ -27,7 +27,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_gravity="center_horizontal"
-      android:text="Ringing"
+      android:text="Звонок"
       android:textAllCaps="true"
       android:textSize="16sp" />
 
@@ -70,15 +70,17 @@
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_weight="1">
-        <Button
+        <android.support.design.widget.FloatingActionButton
                 android:id="@+id/hangupButton"
                 android:paddingBottom="20dp"
                 android:paddingTop="20dp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_centerInParent="true"
-                android:text="decline"
-                />
+                android:src="@drawable/decline"
+                android:backgroundTint="@color/colorWhiteDecline"
+
+          />
 
     </RelativeLayout>
 
