@@ -1,5 +1,7 @@
-package com.android.barracuda.model;
+package com.android.barracuda.model.cypher;
 
+
+import com.android.barracuda.model.User;
 
 import java.math.BigInteger;
 

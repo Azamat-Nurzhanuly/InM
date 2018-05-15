@@ -1,10 +1,6 @@
 package com.android.barracuda.ui;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
+import android.content.*;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -23,7 +19,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
 import com.android.barracuda.data.StaticConfig;
@@ -31,30 +26,20 @@ import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListFriend;
 import com.android.barracuda.service.ServiceUtils;
+import com.android.barracuda.util.AuthUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -247,7 +232,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
               user.phoneNumber = (String) userMap.get("phoneNumber");
               user.avata = (String) userMap.get("avata");
               user.id = id;
-              user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
+              user.idRoom = AuthUtils.userIdToRoomId(id);
               checkBeforAddFriend(id, user);
             }
           }
@@ -401,7 +386,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
             user.phoneNumber = (String) mapUserInfo.get("phoneNumber");
             user.avata = (String) mapUserInfo.get("avata");
             user.id = id;
-            user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
+            user.idRoom = AuthUtils.userIdToRoomId(id);
             dataListFriend.getListFriend().add(user);
             FriendDB.getInstance(getContext()).addFriend(user);
           }
@@ -564,8 +549,8 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
               listFriend.getListFriend().get(position).message.fileModel != null &&
               listFriend.getListFriend() != null) {
 
-                listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
-                notifyDataSetChanged();
+              listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
+              notifyDataSetChanged();
 
             }
 

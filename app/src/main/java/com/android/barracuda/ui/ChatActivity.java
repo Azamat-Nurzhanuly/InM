@@ -347,6 +347,7 @@ public class ChatActivity extends MainActivity
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
           if (dataSnapshot.getValue() != null) {
+
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
             Message newMessage = new Message();

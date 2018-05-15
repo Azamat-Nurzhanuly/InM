@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import com.android.barracuda.model.Key;
+import com.android.barracuda.model.cypher.Key;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -100,7 +100,7 @@ public final class KeyStorageDB {
 
   private static final String SQL_CREATE_TABLE =
     "CREATE TABLE IF NOT EXISTS " + TableStruct.TABLE_NAME + "(" +
-      TableStruct.ROOM_ID + " TEXT," +
+      TableStruct.ROOM_ID + " TEXT primary key," +
       TableStruct.USER_ID + " TEXT," +
       TableStruct.P + " TEXT," +
       TableStruct.G + " TEXT," +
