@@ -37,7 +37,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
@@ -156,7 +155,7 @@ public class ChatActivity extends MainActivity
   //SINCH call
   private Button chat_audio_call_button;
   private Button chat_video_call_button;
-  private SinchService.SinchServiceInterface mSinchServiceInterface;
+
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
 
@@ -252,10 +251,8 @@ public class ChatActivity extends MainActivity
     if (!permissionToRecordAccepted) finish();
 
     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      Toast.makeText(this, "You may now place a call", Toast.LENGTH_LONG).show();
     } else {
-      Toast.makeText(this, "This application needs permission to use your microphone to function properly.", Toast
-        .LENGTH_LONG).show();
+
     }
 
   }
@@ -282,7 +279,6 @@ public class ChatActivity extends MainActivity
     recordButton.setOnRecordClickListener(new OnRecordClickListener() {
       @Override
       public void onClick(View v) {
-//        Toast.makeText(ChatActivity.this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show();
         sendTextMessage();
         Log.d("RecordButton", "RECORD BUTTON CLICKED");
       }
@@ -526,16 +522,12 @@ public class ChatActivity extends MainActivity
 
     String userId = (String) idFriend.get(0);
     if (userId.isEmpty()) {
-      Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
       return;
     }
 
     try {
       Call call = getSinchServiceInterface().callUser(userId);
       if (call == null) {
-        // Service failed for some reason, show a Toast and abort
-        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-          + "placing a call.", Toast.LENGTH_LONG).show();
         return;
       }
       String callId = call.getCallId();
@@ -551,16 +543,12 @@ public class ChatActivity extends MainActivity
 
     String userId = (String) idFriend.get(0);
     if (userId.isEmpty()) {
-      Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
       return;
     }
 
     try {
       Call call = getSinchServiceInterface().callUserVideo(userId);
       if (call == null) {
-        // Service failed for some reason, show a Toast and abort
-        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-          + "placing a call.", Toast.LENGTH_LONG).show();
         return;
       }
       String callId = call.getCallId();
@@ -821,12 +809,10 @@ public class ChatActivity extends MainActivity
   //SINCH
   @Override
   public void onStartFailed(SinchError error) {
-    Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show();
   }
 
   @Override
   public void onStarted() {
-    Toast.makeText(this, "Audio call started", Toast.LENGTH_LONG).show();
   }
 
   @Override

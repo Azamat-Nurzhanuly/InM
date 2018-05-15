@@ -26,7 +26,6 @@ import com.android.barracuda.model.User;
 import com.android.barracuda.service.ServiceUtils;
 import com.android.barracuda.service.SinchService;
 import com.android.barracuda.service.cloud.CloudFunctions;
-import com.android.barracuda.ui.CallFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
 import com.facebook.accountkit.AccessToken;

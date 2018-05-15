@@ -2,6 +2,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:background="#ffffffff"
   android:orientation="vertical"
   android:weightSum="5">
@@ -48,7 +49,8 @@
       android:layout_height="wrap_content"
       android:backgroundTint="@color/colorGreenAnswer"
       android:src="@drawable/call"
-      android:scaleType="fitStart"
+      app:borderWidth="0dp"
+
       />
 
     <android.support.design.widget.FloatingActionButton
@@ -59,7 +61,7 @@
       android:layout_toRightOf="@+id/answerButton"
       android:backgroundTint="@color/colorWhiteDecline"
       android:src="@drawable/decline"
-      android:scaleType="fitXY"
+      app:borderWidth="0dp"
       />
 
   </RelativeLayout>

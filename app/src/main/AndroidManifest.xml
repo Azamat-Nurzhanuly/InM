@@ -65,11 +65,6 @@
       android:screenOrientation="portrait"
       android:parentActivityName="com.android.barracuda.MainActivity"/>
 
-    <activity
-      android:name="com.android.barracuda.ui.CallActivity"
-      android:screenOrientation="portrait"
-      android:parentActivityName="com.android.barracuda.MainActivity"/>
-
 
     <activity android:name="com.android.barracuda.ui.AddGroupActivity"
       android:theme="@style/MyThemeNoActionbar"/>
