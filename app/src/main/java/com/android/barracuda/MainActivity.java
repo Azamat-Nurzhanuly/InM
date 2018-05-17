@@ -19,22 +19,16 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
-
+import com.android.barracuda.cypher.PublicKeyWorker;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.User;
 import com.android.barracuda.service.ServiceUtils;
 import com.android.barracuda.service.SinchService;
 import com.android.barracuda.service.cloud.CloudFunctions;
-import com.android.barracuda.ui.CallFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
-import com.facebook.accountkit.AccessToken;
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
-import com.facebook.accountkit.AccountKitLoginResult;
+import com.facebook.accountkit.*;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
@@ -48,17 +42,16 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements ServiceConnection {
 
@@ -102,10 +95,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
     if (toolbar != null) {
-      if(getSupportActionBar() == null) {
+      if (getSupportActionBar() == null) {
         setSupportActionBar(toolbar);
       }
-        getSupportActionBar().setTitle("Barracuda");
+      getSupportActionBar().setTitle("Barracuda");
 
     }
 
@@ -128,6 +121,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
           saveUserInfo();
+          PublicKeyWorker.getInstance().updatePublicKeys(getApplicationContext());
         } else {
 
           Log.d(TAG, "onAuthStateChanged:signed_out");

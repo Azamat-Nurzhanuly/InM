@@ -1,11 +1,9 @@
 package com.android.barracuda.model.cypher;
 
 
-import com.android.barracuda.model.User;
-
 import java.math.BigInteger;
 
-public class Key extends User {
+public class Key {
   public String roomId;
   public String userId;
 

@@ -7,7 +7,6 @@ public class User {
   public String phoneNumber;
   public String avata;
   public Status status;
-  public PublicKeys keys;
   public Message message;
 
 

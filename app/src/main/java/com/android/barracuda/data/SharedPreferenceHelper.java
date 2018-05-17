@@ -2,7 +2,7 @@ package com.android.barracuda.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-
+import com.android.barracuda.model.cypher.PublicKeys;
 import com.android.barracuda.model.User;
 
 
@@ -15,6 +15,8 @@ public class SharedPreferenceHelper {
   private static String SHARE_KEY_PHONE_NUMBER = "phoneNumber";
   private static String SHARE_KEY_AVATA = "avata";
   private static String SHARE_KEY_UID = "uid";
+
+  private static PublicKeys publicKeys;
 
 
   private SharedPreferenceHelper() {
@@ -48,6 +50,14 @@ public class SharedPreferenceHelper {
     user.avata = avatar;
 
     return user;
+  }
+
+  public PublicKeys getPublicKeys() {
+    return publicKeys;
+  }
+
+  public void setPublicKeys(PublicKeys publicKeys) {
+    SharedPreferenceHelper.publicKeys = publicKeys;
   }
 
   public String getUID() {
