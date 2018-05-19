@@ -602,12 +602,15 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mapMark.put(id, true);
       }
     }
-    if (listFriend.getListFriend().get(position).avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
+    if (StaticConfig.STR_DEFAULT_BASE64.equals(listFriend.getListFriend().get(position).avata)) {
       ((ItemFriendViewHolder) holder).avata.setImageResource(R.drawable.default_avata);
     } else {
-      byte[] decodedString = Base64.decode(listFriend.getListFriend().get(position).avata, Base64.DEFAULT);
-      Bitmap src = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-      ((ItemFriendViewHolder) holder).avata.setImageBitmap(src);
+
+      if (listFriend.getListFriend().get(position).avata != null) {
+        byte[] decodedString = Base64.decode(listFriend.getListFriend().get(position).avata, Base64.DEFAULT);
+        Bitmap src = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        ((ItemFriendViewHolder) holder).avata.setImageBitmap(src);
+      }
     }
 
 

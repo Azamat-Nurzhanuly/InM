@@ -370,18 +370,19 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
 
-    //noinspection SimplifiableIfStatement
-    if (id == R.id.about) {
-      Toast.makeText(this, "Barracuda version 1.0", Toast.LENGTH_LONG).show();
-      return true;
+    switch (item.getItemId()) {
+      case R.id.setProfile: {
+
+        Intent profIntent = new Intent(this, ProfileActivity.class);
+        startActivity(profIntent);
+        break;
+      }
+      default:
     }
 
     return super.onOptionsItemSelected(item);
   }
 
-  /**
-   * Adapter hien thi tab
-   */
   class ViewPagerAdapter extends FragmentPagerAdapter {
     private final List<Fragment> mFragmentList = new ArrayList<>();
     private final List<String> mFragmentTitleList = new ArrayList<>();
