@@ -28,25 +28,29 @@ public final class PublicKeysDB {
     return instance;
   }
 
-
   public void setKey(PublicKeys keys, String privateKey) {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
     ContentValues values = new ContentValues();
+    values.put(TableStruct.ID, 2);
     values.put(TableStruct.P, keys.p);
     values.put(TableStruct.G, keys.g);
     values.put(TableStruct.PUB_KEY, keys.key);
     values.put(TableStruct.PRV_KEY, privateKey);
     values.put(TableStruct.TIMESTAMP, new Date().getTime());
 
-    db.delete(TableStruct.TABLE_NAME, null, null);
+    ContentValues toUpdate = new ContentValues();
+    values.put(TableStruct.ID, 1);
+
+    db.delete(TableStruct.TABLE_NAME, "id=1", null);
+    db.update(TableStruct.TABLE_NAME, toUpdate, "id=2", null);
     db.insert(TableStruct.TABLE_NAME, null, values);
   }
 
-  public Key getKeys() {
+  public Key getKey(long timestamp) {
     Key key = null;
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      try (Cursor cursor = db.rawQuery("select * from " + TableStruct.TABLE_NAME, null)) {
+      try (Cursor cursor = db.rawQuery("select * from " + TableStruct.TABLE_NAME + " where timestamp < " + timestamp, null)) {
         if (cursor.moveToNext()) {
           key = new Key();
           int i = 0;
@@ -57,8 +61,6 @@ public final class PublicKeysDB {
           key.ownPrvKey = new BigInteger(cursor.getString(i++));
           key.timestamp = cursor.getLong(i);
         }
-      } catch (Exception e) {
-        return null;
       }
     }
     return key;
@@ -67,6 +69,7 @@ public final class PublicKeysDB {
   private static class TableStruct implements BaseColumns {
     static final String TABLE_NAME = "public_keys";
 
+    static final String ID = "id";
     static final String P = "p";
     static final String G = "g";
     static final String PUB_KEY = "public_key";
@@ -76,6 +79,7 @@ public final class PublicKeysDB {
 
   private static final String SQL_CREATE_TABLE =
     "CREATE TABLE IF NOT EXISTS " + TableStruct.TABLE_NAME + "(" +
+      TableStruct.ID + " INTEGER primary key," +
       TableStruct.P + " TEXT," +
       TableStruct.G + " TEXT," +
       TableStruct.PUB_KEY + " TEXT," +

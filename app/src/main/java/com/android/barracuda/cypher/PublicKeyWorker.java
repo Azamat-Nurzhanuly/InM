@@ -18,31 +18,20 @@ import java.util.Date;
 
 public class PublicKeyWorker {
 
-  private static PublicKeyWorker instance = null;
-
-  private PublicKeyWorker() {}
-
-  public static PublicKeyWorker getInstance() {
-    if (instance == null) {
-      instance = new PublicKeyWorker();
-    }
-    return instance;
-  }
-
-  public void updatePublicKeys(Context context) {
+  public static void updatePublicKeys(Context context) {
     if (context == null) throw new NullPointerException("Context can not be null");
-    Key keys = PublicKeysDB.getInstance(context).getKeys();
+    Key keys = PublicKeysDB.getInstance(context).getKey();
 
     if (keys == null || keys.timestamp + StaticConfig.KEY_LIFETIME > new Date().getTime()) {
       try {
         registerNewPublicKey(context);
       } catch (NoSuchAlgorithmException e) {
-        Log.e(getClass().getSimpleName(), "Cant create key", e);
+        Log.e("PublicKeyWorker", "Cant create key", e);
       }
     }
   }
 
-  private void registerNewPublicKey(Context context) throws NoSuchAlgorithmException {
+  private static void registerNewPublicKey(Context context) throws NoSuchAlgorithmException {
     PublicKeys pks = new PublicKeys();
 
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("DiffieHellman");

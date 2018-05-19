@@ -11,8 +11,6 @@ public class Key {
   public BigInteger g;
   public BigInteger pubKey;
 
-  public BigInteger ownP;
-  public BigInteger ownG;
   public BigInteger ownPubKey;
   public BigInteger ownPrvKey;
 

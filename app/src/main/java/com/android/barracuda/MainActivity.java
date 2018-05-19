@@ -121,7 +121,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
 
           saveUserInfo();
-          PublicKeyWorker.getInstance().updatePublicKeys(getApplicationContext());
+          PublicKeyWorker.updatePublicKeys(getApplicationContext());
         } else {
 
           Log.d(TAG, "onAuthStateChanged:signed_out");

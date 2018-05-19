@@ -37,8 +37,6 @@ public final class KeyStorageDB {
     values.put(TableStruct.P, key.p.toString());
     values.put(TableStruct.G, key.g.toString());
     values.put(TableStruct.PUB_KEY, key.pubKey.toString());
-    values.put(TableStruct.OWN_P, key.ownP.toString());
-    values.put(TableStruct.OWN_G, key.ownG.toString());
     values.put(TableStruct.OWN_PUB_KEY, key.ownPubKey.toString());
     values.put(TableStruct.OWN_PRV_KEY, key.ownPrvKey.toString());
     values.put(TableStruct.KEY, key.key.toString());
@@ -60,21 +58,28 @@ public final class KeyStorageDB {
           key.p = new BigInteger(cursor.getString(i++));
           key.g = new BigInteger(cursor.getString(i++));
           key.pubKey = new BigInteger(cursor.getString(i++));
-          key.ownP = new BigInteger(cursor.getString(i++));
-          key.ownG = new BigInteger(cursor.getString(i++));
           key.ownPubKey = new BigInteger(cursor.getString(i++));
           key.ownPrvKey = new BigInteger(cursor.getString(i++));
           key.key = new BigInteger(cursor.getString(i++));
-          key.timestamp = cursor.getLong(i++);
+          key.timestamp = cursor.getLong(i + 1);
 
           list.add(key);
         }
-      } catch (Exception e) {
-        return new ArrayList<>();
       }
     }
 
     return list;
+  }
+
+  public BigInteger getSecretKeyFor(String friendPublicKey) {
+    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String sql = "select " + TableStruct.KEY + " from " + TableStruct.TABLE_NAME + " where " + TableStruct.PUB_KEY + "=?";
+      try (Cursor cursor = db.rawQuery(sql, new String[]{friendPublicKey})) {
+        if (cursor.moveToNext()) return new BigInteger(cursor.getString(1));
+      }
+    }
+
+    return null;
   }
 
   public static class TableStruct implements BaseColumns {
@@ -87,12 +92,10 @@ public final class KeyStorageDB {
     static final String G = "g";
     static final String PUB_KEY = "public_key";
 
-    static final String OWN_P = "own_p";
-    static final String OWN_G = "own_g";
     static final String OWN_PUB_KEY = "own_pub_key";
     static final String OWN_PRV_KEY = "own_prv_key";
 
-    static final String KEY = "key";
+    static final String KEY = "sec_key";
 
     static final String TIMESTAMP = "timestamp";
 
@@ -105,8 +108,6 @@ public final class KeyStorageDB {
       TableStruct.P + " TEXT," +
       TableStruct.G + " TEXT," +
       TableStruct.PUB_KEY + " TEXT," +
-      TableStruct.OWN_P + " TEXT," +
-      TableStruct.OWN_G + " TEXT," +
       TableStruct.OWN_PUB_KEY + " TEXT," +
       TableStruct.OWN_PRV_KEY + " TEXT," +
       TableStruct.KEY + " TEXT," +
