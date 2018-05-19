@@ -4,18 +4,22 @@ import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.barracuda.R;
 import com.android.barracuda.model.AudioPlayer;
+import com.android.barracuda.model.User;
 import com.android.barracuda.service.SinchService;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
 import com.sinch.android.rtc.calling.CallEndCause;
@@ -24,6 +28,7 @@ import com.sinch.android.rtc.calling.CallState;
 import com.sinch.android.rtc.video.VideoCallListener;
 import com.sinch.android.rtc.video.VideoController;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Timer;
@@ -68,7 +73,7 @@ public class CallScreenActivity extends ChatActivity {
     mCallDuration = (TextView) findViewById(R.id.callDuration);
     mCallerName = (TextView) findViewById(R.id.remoteUser);
     mCallState = (TextView) findViewById(R.id.callState);
-    Button endCallButton = (Button) findViewById(R.id.hangupButton);
+    FloatingActionButton endCallButton = (FloatingActionButton) findViewById(R.id.hangupButton);
 
     endCallButton.setOnClickListener(new OnClickListener() {
       @Override
@@ -84,8 +89,6 @@ public class CallScreenActivity extends ChatActivity {
     Call call = getSinchServiceInterface().getCall(mCallId);
     if (call != null) {
       call.addCallListener(new SinchCallListener());
-      mCallerName.setText(call.getRemoteUserId());
-      mCallState.setText(call.getState().toString());
     } else {
       Log.e(TAG, "Started with invalid callId, aborting.");
       finish();
@@ -101,13 +104,35 @@ public class CallScreenActivity extends ChatActivity {
 
     Call call = getSinchServiceInterface().getCall(mCallId);
     if (call != null) {
-      mCallerName.setText(call.getRemoteUserId());
-      mCallState.setText(call.getState().toString());
+
+
+      FirebaseDatabase.getInstance().getReference().child("user/" + call.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+          HashMap hashUser = (HashMap) snapshot.getValue();
+          User userInfo = new User();
+          assert hashUser != null;
+          userInfo.name = (String) hashUser.get("name");
+          userInfo.phoneNumber = (String) hashUser.get("phoneNumber");
+          userInfo.avata = (String) hashUser.get("avata");
+          mCallerName.setText(userInfo.name);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+        }
+      });
+
       if (call.getDetails().isVideoOffered()) {
+
+        mCallState.setText("Видео звонок");
+
         addLocalView();
         if (call.getState() == CallState.ESTABLISHED) {
           addRemoteView();
         }
+      } else {
+        mCallState.setText("Аудио звонок");
       }
     }
   }
@@ -180,7 +205,6 @@ public class CallScreenActivity extends ChatActivity {
       mAudioPlayer.stopProgressTone();
       setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
       String endMsg = "Call ended: " + call.getDetails().toString();
-      Toast.makeText(CallScreenActivity.this, endMsg, Toast.LENGTH_LONG).show();
       endCall();
     }
 
@@ -188,7 +212,7 @@ public class CallScreenActivity extends ChatActivity {
     public void onCallEstablished(Call call) {
       Log.d(TAG, "Call established");
       mAudioPlayer.stopProgressTone();
-      mCallState.setText(call.getState().toString());
+      mCallState.setText("Соединено");
       setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
     }
 

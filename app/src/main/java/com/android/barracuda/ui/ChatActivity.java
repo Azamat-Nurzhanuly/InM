@@ -25,8 +25,19 @@ import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
-import android.view.*;
-import android.widget.*;
+import android.view.LayoutInflater;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
@@ -39,13 +50,22 @@ import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.service.SinchService;
 import com.bumptech.glide.Glide;
-import com.devlomi.record_view.*;
+import com.devlomi.record_view.OnBasketAnimationEnd;
+import com.devlomi.record_view.OnRecordClickListener;
+import com.devlomi.record_view.OnRecordListener;
+import com.devlomi.record_view.RecordButton;
+import com.devlomi.record_view.RecordView;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.*;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -53,13 +73,14 @@ import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
@@ -134,7 +155,7 @@ public class ChatActivity extends MainActivity
   //SINCH call
   private Button chat_audio_call_button;
   private Button chat_video_call_button;
-  private SinchService.SinchServiceInterface mSinchServiceInterface;
+
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
 
@@ -230,10 +251,8 @@ public class ChatActivity extends MainActivity
     if (!permissionToRecordAccepted) finish();
 
     if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      Toast.makeText(this, "You may now place a call", Toast.LENGTH_LONG).show();
     } else {
-      Toast.makeText(this, "This application needs permission to use your microphone to function properly.", Toast
-        .LENGTH_LONG).show();
+
     }
 
   }
@@ -260,7 +279,6 @@ public class ChatActivity extends MainActivity
     recordButton.setOnRecordClickListener(new OnRecordClickListener() {
       @Override
       public void onClick(View v) {
-//        Toast.makeText(ChatActivity.this, "RECORD BUTTON CLICKED", Toast.LENGTH_SHORT).show();
         sendTextMessage();
         Log.d("RecordButton", "RECORD BUTTON CLICKED");
       }
@@ -347,7 +365,6 @@ public class ChatActivity extends MainActivity
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
           if (dataSnapshot.getValue() != null) {
-
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
             Message newMessage = new Message();
@@ -505,16 +522,12 @@ public class ChatActivity extends MainActivity
 
     String userId = (String) idFriend.get(0);
     if (userId.isEmpty()) {
-      Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
       return;
     }
 
     try {
       Call call = getSinchServiceInterface().callUser(userId);
       if (call == null) {
-        // Service failed for some reason, show a Toast and abort
-        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-          + "placing a call.", Toast.LENGTH_LONG).show();
         return;
       }
       String callId = call.getCallId();
@@ -530,16 +543,12 @@ public class ChatActivity extends MainActivity
 
     String userId = (String) idFriend.get(0);
     if (userId.isEmpty()) {
-      Toast.makeText(this, "Please enter a user to call", Toast.LENGTH_LONG).show();
       return;
     }
 
     try {
       Call call = getSinchServiceInterface().callUserVideo(userId);
       if (call == null) {
-        // Service failed for some reason, show a Toast and abort
-        Toast.makeText(this, "Service is not started. Try stopping the service and starting it again before "
-          + "placing a call.", Toast.LENGTH_LONG).show();
         return;
       }
       String callId = call.getCallId();
@@ -800,12 +809,10 @@ public class ChatActivity extends MainActivity
   //SINCH
   @Override
   public void onStartFailed(SinchError error) {
-    Toast.makeText(this, error.toString(), Toast.LENGTH_LONG).show();
   }
 
   @Override
   public void onStarted() {
-    Toast.makeText(this, "Audio call started", Toast.LENGTH_LONG).show();
   }
 
   @Override

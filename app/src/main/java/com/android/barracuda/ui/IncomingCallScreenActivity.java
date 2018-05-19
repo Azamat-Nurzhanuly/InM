@@ -5,18 +5,21 @@ import android.content.pm.PackageManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.model.AudioPlayer;
+import com.android.barracuda.model.User;
 import com.android.barracuda.service.SinchService;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.PushPair;
 import com.sinch.android.rtc.calling.Call;
@@ -24,6 +27,7 @@ import com.sinch.android.rtc.calling.CallEndCause;
 import com.sinch.android.rtc.calling.CallListener;
 import com.sinch.android.rtc.video.VideoCallListener;
 
+import java.util.HashMap;
 import java.util.List;
 
 public class IncomingCallScreenActivity extends ChatActivity {
@@ -31,6 +35,7 @@ public class IncomingCallScreenActivity extends ChatActivity {
   static final String TAG = IncomingCallScreenActivity.class.getSimpleName();
   private String mCallId;
   private AudioPlayer mAudioPlayer;
+  private TextView mCallState;
 
   @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
@@ -38,10 +43,12 @@ public class IncomingCallScreenActivity extends ChatActivity {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.incoming);
 
-    Button answer = (Button) findViewById(R.id.answerButton);
+    FloatingActionButton answer = (FloatingActionButton) findViewById(R.id.answerButton);
     answer.setOnClickListener(mClickListener);
-    Button decline = (Button) findViewById(R.id.declineButton);
+    FloatingActionButton decline = (FloatingActionButton) findViewById(R.id.declineButton);
     decline.setOnClickListener(mClickListener);
+
+    mCallState = (TextView) findViewById(R.id.callState);
 
     mAudioPlayer = new AudioPlayer(this);
     mAudioPlayer.playRingtone();
@@ -53,8 +60,36 @@ public class IncomingCallScreenActivity extends ChatActivity {
     Call call = getSinchServiceInterface().getCall(mCallId);
     if (call != null) {
       call.addCallListener(new SinchCallListener());
-      TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
-      remoteUser.setText(call.getRemoteUserId());
+      final TextView remoteUser = (TextView) findViewById(R.id.remoteUser);
+
+      System.out.println(FirebaseDatabase.getInstance().getReference().child("user/" + call.getRemoteUserId()));
+
+      FirebaseDatabase.getInstance().getReference().child("user/" + call.getRemoteUserId()).addValueEventListener(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot snapshot) {
+          HashMap hashUser = (HashMap) snapshot.getValue();
+          User userInfo = new User();
+          assert hashUser != null;
+          userInfo.name = (String) hashUser.get("name");
+          userInfo.phoneNumber = (String) hashUser.get("phoneNumber");
+          userInfo.avata = (String) hashUser.get("avata");
+          remoteUser.setText(userInfo.name);
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+        }
+      });
+
+
+      if (call.getDetails().isVideoOffered()) {
+
+        mCallState.setText("Видео звонок");
+
+      } else {
+        mCallState.setText("Аудио звонок");
+      }
+
     } else {
       Log.e(TAG, "Started with invalid callId, aborting");
       finish();
@@ -80,10 +115,7 @@ public class IncomingCallScreenActivity extends ChatActivity {
 
   public void onRequestPermissionsResult(int requestCode, String[] permissions, int[] grantResults) {
     if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-      Toast.makeText(this, "You may now answer the call", Toast.LENGTH_LONG).show();
     } else {
-      Toast.makeText(this, "This application needs permission to use your microphone to function properly.", Toast
-        .LENGTH_LONG).show();
     }
   }
 
@@ -122,17 +154,18 @@ public class IncomingCallScreenActivity extends ChatActivity {
     }
 
 
-
     //VIDEO CALL
 
     @Override
     public void onVideoTrackAdded(Call call) {
       // Display some kind of icon showing it's a video call
     }
+
     @Override
     public void onVideoTrackPaused(Call call) {
       // Display some kind of icon showing it's a video call
     }
+
     @Override
     public void onVideoTrackResumed(Call call) {
       // Display some kind of icon showing it's a video call
