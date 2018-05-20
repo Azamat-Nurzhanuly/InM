@@ -40,7 +40,7 @@ public final class PublicKeysDB {
     values.put(TableStruct.TIMESTAMP, new Date().getTime());
 
     ContentValues toUpdate = new ContentValues();
-    values.put(TableStruct.ID, 1);
+    toUpdate.put(TableStruct.ID, 1);
 
     db.delete(TableStruct.TABLE_NAME, "id=1", null);
     db.update(TableStruct.TABLE_NAME, toUpdate, "id=2", null);
@@ -50,7 +50,10 @@ public final class PublicKeysDB {
   public Key getKey(long timestamp) {
     Key key = null;
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      try (Cursor cursor = db.rawQuery("select * from " + TableStruct.TABLE_NAME + " where timestamp < " + timestamp, null)) {
+      String sql = "select " +
+        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + ", " + TableStruct.TIMESTAMP +
+        " from " + TableStruct.TABLE_NAME + " where timestamp < " + timestamp;
+      try (Cursor cursor = db.rawQuery(sql, null)) {
         if (cursor.moveToNext()) {
           key = new Key();
           int i = 0;

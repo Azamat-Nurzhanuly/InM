@@ -6,7 +6,6 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListFriend;
 
@@ -39,7 +38,7 @@ public final class FriendDB {
     values.put(FeedEntry.COLUMN_NAME_ID_ROOM, friend.idRoom);
     values.put(FeedEntry.COLUMN_NAME_AVATA, friend.avata);
     // Insert the new row, returning the primary key value of the new row
-    return db.insert(FeedEntry.TABLE_NAME, null, values);
+    return db.insertWithOnConflict(FeedEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
   }
 
 
@@ -47,6 +46,14 @@ public final class FriendDB {
     for (Friend friend : listFriend.getListFriend()) {
       addFriend(friend);
     }
+  }
+
+  public void removeAllFirend() {
+    ListFriend listFriend = new ListFriend();
+    SQLiteDatabase db = mDbHelper.getReadableDatabase();
+    // Define a projection that specifies which columns from the database
+// you will actually use after this query.
+    db.delete(FeedEntry.TABLE_NAME, null, null);
   }
 
   public ListFriend getListFriend() {

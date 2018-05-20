@@ -9,7 +9,7 @@ public class StaticConfig {
   public static String STR_EXTRA_USERNAME = "username";
   public static String STR_EXTRA_PASSWORD = "password";
   public static String STR_DEFAULT_BASE64 = "default";
-  public static String UID = "";
+  public static String UID = "803619516500076";
   //TODO only use this UID for debug mode
 //    public static String UID = "6kU0SbJPF5QJKZTfvW1BqKolrx22";
   public static String INTENT_KEY_CHAT_FRIEND = "friendname";
@@ -23,5 +23,6 @@ public class StaticConfig {
   public static String SINCH_KEY = "b77572b7-a9cc-4dc8-b7ad-09254cf7182d";
   public static String SINCH_SECRET = "PkUMsoJsDk+8uGzCEerM5A==";
   public static String SINCH_HOST = "clientapi.sinch.com";
-  public static final long KEY_LIFETIME = 24 * 60 * 60 * 1000; //1 DAY
+  //  public static final long KEY_LIFETIME = 24 * 60 * 60 * 1000; //1 DAY
+  public static final long KEY_LIFETIME = 60 * 1000; //1 MIN
 }

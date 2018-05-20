@@ -20,9 +20,10 @@ public class PublicKeyWorker {
 
   public static void updatePublicKeys(Context context) {
     if (context == null) throw new NullPointerException("Context can not be null");
-    Key keys = PublicKeysDB.getInstance(context).getKey();
+    long now = new Date().getTime();
+    Key keys = PublicKeysDB.getInstance(context).getKey(now);
 
-    if (keys == null || keys.timestamp + StaticConfig.KEY_LIFETIME > new Date().getTime()) {
+    if (keys == null || keys.timestamp + StaticConfig.KEY_LIFETIME < now) {
       try {
         registerNewPublicKey(context);
       } catch (NoSuchAlgorithmException e) {
@@ -38,10 +39,12 @@ public class PublicKeyWorker {
     kpg.initialize(512);
     KeyPair kp = kpg.generateKeyPair();
     DHParameterSpec params = ((DHPublicKey) kp.getPublic()).getParams();
+
     pks.g = params.getG().toString();
     pks.p = params.getP().toString();
-    pks.key = ((DHPublicKey) kp.getPublic()).getY().toString();
-    String privateKey = ((DHPublicKey) kp.getPrivate()).getY().toString();
+    pks.key = (((javax.crypto.interfaces.DHPublicKey) kp.getPublic()).getY()).toString();
+
+    String privateKey = (((javax.crypto.interfaces.DHPrivateKey) kp.getPrivate()).getX()).toString();
 
     FirebaseDatabase.getInstance().getReference()
       .child(FBaseEntities.PUBLIC_KEYS + FBaseEntities.DELIM + StaticConfig.UID).push().setValue(pks);

@@ -114,7 +114,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         user = firebaseAuth.getCurrentUser();
         if (user != null) {
-          StaticConfig.UID = user.getUid();
+          //HERE
+          if ("485212245227365".equals(user.getUid()))
+            StaticConfig.UID = user.getUid();
+
           Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
           Toast.makeText(MainActivity.this, "User signed in: " + user.getUid(),
             Toast.LENGTH_SHORT).show();
@@ -123,6 +126,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
           saveUserInfo();
           PublicKeyWorker.updatePublicKeys(getApplicationContext());
         } else {
+          PublicKeyWorker.updatePublicKeys(getApplicationContext());
 
           Log.d(TAG, "onAuthStateChanged:signed_out");
 

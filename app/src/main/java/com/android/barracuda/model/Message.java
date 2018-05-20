@@ -9,4 +9,17 @@ public class Message {
   public String key;
   public FileModel fileModel;
   public long timestamp;
+
+  @Override
+  public String toString() {
+    return "Message{" +
+      "idSender='" + idSender + '\'' +
+      ", idReceiver='" + idReceiver + '\'' +
+      ", friendId='" + friendId + '\'' +
+      ", text='" + text + '\'' +
+      ", key='" + key + '\'' +
+      ", fileModel=" + fileModel +
+      ", timestamp=" + timestamp +
+      '}';
+  }
 }

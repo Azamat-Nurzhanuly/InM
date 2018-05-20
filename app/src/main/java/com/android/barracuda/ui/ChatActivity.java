@@ -25,22 +25,13 @@ import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.MenuItem;
-import android.view.MotionEvent;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.ImageButton;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.SeekBar;
-import android.widget.TextView;
-
+import android.view.*;
+import android.widget.*;
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
+import com.android.barracuda.cypher.CypherWorker;
+import com.android.barracuda.cypher.exceptions.NoKeyException;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.fab.Fab;
@@ -50,22 +41,13 @@ import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.service.SinchService;
 import com.bumptech.glide.Glide;
-import com.devlomi.record_view.OnBasketAnimationEnd;
-import com.devlomi.record_view.OnRecordClickListener;
-import com.devlomi.record_view.OnRecordListener;
-import com.devlomi.record_view.RecordButton;
-import com.devlomi.record_view.RecordView;
+import com.devlomi.record_view.*;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -73,14 +55,13 @@ import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
+import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
@@ -370,14 +351,31 @@ public class ChatActivity extends MainActivity
             Message newMessage = new Message();
             newMessage.idSender = (String) mapMessage.get("idSender");
             newMessage.idReceiver = (String) mapMessage.get("idReceiver");
+            newMessage.friendId = (String) mapMessage.get("friendId");
             newMessage.timestamp = (long) mapMessage.get("timestamp");
+            newMessage.key = (String) mapMessage.get("key");
+
+            boolean hasFile = mapMessage.get("fileModel") != null;
 
             if (mapMessage.get("text") != null) {
               newMessage.text = (String) mapMessage.get("text");
+              try {
+                CypherWorker.decrypt(newMessage, getApplicationContext());
+              } catch (Exception e) {
+                if (!(e instanceof NoKeyException)) {
+                  e.printStackTrace();
+                  return;
+                }
+
+                Log.d(getClass().getSimpleName(), "Could not decrypt", e);
+
+                if (!hasFile) return;
+                else newMessage.text = "Could not decrypt. Cause: no key";
+              }
             }
 
 
-            if (mapMessage.get("fileModel") != null) {
+            if (hasFile) {
               FileModel fileModel = new FileModel();
               HashMap fileHash = (HashMap) mapMessage.get("fileModel");
               if (fileHash.containsKey("type"))
@@ -570,8 +568,12 @@ public class ChatActivity extends MainActivity
       newMessage.fileModel = null;
       newMessage.idSender = StaticConfig.UID;
       newMessage.idReceiver = roomId;
+
+      if (idFriend.size() == 1)
+        newMessage.friendId = idFriend.get(0).toString();
+
       newMessage.timestamp = System.currentTimeMillis();
-      FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
+      CypherWorker.encryptAndSend(newMessage, this);
     }
   }
 

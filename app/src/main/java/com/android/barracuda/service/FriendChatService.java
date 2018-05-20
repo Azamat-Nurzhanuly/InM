@@ -15,7 +15,6 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Log;
-
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
@@ -24,11 +23,7 @@ import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.Group;
 import com.android.barracuda.model.ListFriend;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
+import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,6 +53,7 @@ public class FriendChatService extends Service {
     mapMark = new HashMap<>();
     mapQuery = new HashMap<>();
     mapChildEventListenerMap = new HashMap<>();
+
     listFriend = FriendDB.getInstance(this).getListFriend();
     listGroup = GroupDB.getInstance(this).getListGroups();
     listKey = new ArrayList<>();
