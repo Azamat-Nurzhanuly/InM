@@ -41,6 +41,7 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
+import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
@@ -186,6 +187,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
     @Override
     public void onClick(final View view) {
+
       new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
         .setTopColorRes(R.color.colorPrimary)
         .setTitle("Add friend")
@@ -379,9 +381,6 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     });
   }
 
-  /**
-   * Truy cap bang user lay thong tin id nguoi dung
-   */
   private void getAllFriendInfo(final int index) {
     if (index == listFriendID.size()) {
       //save list friend

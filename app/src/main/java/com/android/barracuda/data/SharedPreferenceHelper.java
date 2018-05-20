@@ -15,6 +15,7 @@ public class SharedPreferenceHelper {
   private static String SHARE_KEY_PHONE_NUMBER = "phoneNumber";
   private static String SHARE_KEY_AVATA = "avata";
   private static String SHARE_KEY_UID = "uid";
+  private static String SHARE_COLOR = "color";
 
 
   private SharedPreferenceHelper() {
@@ -52,6 +53,10 @@ public class SharedPreferenceHelper {
 
   public String getUID() {
     return preferences.getString(SHARE_KEY_UID, "");
+  }
+  public String getColor() { return preferences.getString(SHARE_COLOR, "1"); }
+  public void saveColor(String colorName) {
+    editor.putString(SHARE_COLOR, colorName);
   }
 
 }

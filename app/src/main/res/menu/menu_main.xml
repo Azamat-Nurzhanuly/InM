@@ -21,7 +21,35 @@
         android:id="@+id/chats"
         android:orderInCategory="103"
         android:title="@string/chats"
-        app:showAsAction="never" />
+        app:showAsAction="never">
+
+        <menu>
+            <item
+                android:id="@+id/chats.themes"
+                android:orderInCategory="201"
+                android:title="@string/themes"
+                app:showAsAction="never"/>
+            <item
+                android:id="@+id/chats.copies"
+                android:orderInCategory="202"
+                android:title="@string/copy"
+                app:showAsAction="never">
+                <menu>
+                    <item
+                        android:id="@+id/chats.copies.copy"
+                        android:orderInCategory="301"
+                        android:title="@string/create_copy"
+                        app:showAsAction="never"/>
+                    <item
+                        android:id="@+id/chats.copies.recover"
+                        android:orderInCategory="302"
+                        android:title="@string/recover"
+                        app:showAsAction="never"/>
+                </menu>
+            </item>
+        </menu>
+
+    </item>
     <item
         android:id="@+id/notification"
         android:orderInCategory="104"

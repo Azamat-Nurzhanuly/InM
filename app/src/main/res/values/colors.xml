@@ -14,4 +14,9 @@
     <color name="grey_800">#212121</color>
     <color name="fab_color">#a4a4a4</color>
     <color name="fab_sheet_color">#FFFFFF</color>
+
+    <color name="purple">#863f97</color>
+    <color name="darkBlue">#0f2143</color>
+    <color name="blue">#3099c8</color>
+    <color name="orange">#f1764d</color>
 </resources>

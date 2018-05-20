@@ -47,6 +47,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,6 +68,10 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
   public static String STR_GROUP_FRAGMENT = "GROUP";
   public static String STR_INFO_FRAGMENT = "INFO";
   public static String STR_INFO_CALL = "CALL";
+  public static final String COLOR_DARK_BLUE = "dark_blue";
+  public static final String COLOR_BLUE = "blue";
+  public static final String COLOR_PURPLE = "purple";
+  public static final String COLOR_ORANGE = "orange";
 
   private FloatingActionButton floatButton;
   private ViewPagerAdapter adapter;
@@ -87,9 +92,66 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     mAuth.signOut();
   }
 
+  public void onColorClick(View view) {
+
+    switch (view.getId()) {
+      case R.id.colorDarkBlue: {
+        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_DARK_BLUE);
+        recreate();
+        break;
+      }
+      case R.id.colorBlue: {
+        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_BLUE);
+        recreate();
+        break;
+      }
+      case R.id.colorPurple: {
+        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_PURPLE);
+        recreate();
+        break;
+      }
+      case R.id.colorOrange: {
+        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_ORANGE);
+        recreate();
+        break;
+      }
+    }
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    final String color = SharedPreferenceHelper.getInstance(MainActivity.this).getColor();
+
+    Log.d(MainActivity.TAG, color);
+
+    switch (color) {
+      case COLOR_DARK_BLUE: {
+        getApplication().setTheme(R.style.AppDarkBlueTheme);
+        setTheme(R.style.AppDarkBlueTheme);
+        break;
+      }
+      case COLOR_BLUE: {
+        getApplication().setTheme(R.style.AppBlueTheme);
+        setTheme(R.style.AppBlueTheme);
+        break;
+      }
+      case COLOR_PURPLE: {
+        getApplication().setTheme(R.style.AppPurpleTheme);
+        setTheme(R.style.AppPurpleTheme);
+        break;
+      }
+      case COLOR_ORANGE: {
+        getApplication().setTheme(R.style.AppOrangeTheme);
+        setTheme(R.style.AppOrangeTheme);
+        break;
+      }
+      default: {
+        getApplication().setTheme(R.style.AppDarkBlueTheme);
+        setTheme(R.style.AppDarkBlueTheme);
+      }
+    }
 
     //SINCH
     getApplicationContext().bindService(new Intent(this, SinchService.class), this,
@@ -376,6 +438,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
         Intent profIntent = new Intent(this, ProfileActivity.class);
         startActivity(profIntent);
         break;
+      }
+      case R.id.chats_themes: {
+
+        new LovelyCustomDialog(this)
+          .setView(R.layout.color_selector)
+          .show();
       }
       default:
     }
