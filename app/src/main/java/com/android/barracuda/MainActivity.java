@@ -3,6 +3,7 @@ package com.android.barracuda;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -60,7 +61,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
+public class MainActivity extends BarracudaActivity implements ServiceConnection {
 
   private ViewPager viewPager;
   private TabLayout tabLayout = null;
@@ -68,10 +69,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
   public static String STR_GROUP_FRAGMENT = "GROUP";
   public static String STR_INFO_FRAGMENT = "INFO";
   public static String STR_INFO_CALL = "CALL";
-  public static final String COLOR_DARK_BLUE = "dark_blue";
-  public static final String COLOR_BLUE = "blue";
-  public static final String COLOR_PURPLE = "purple";
-  public static final String COLOR_ORANGE = "orange";
 
   private FloatingActionButton floatButton;
   private ViewPagerAdapter adapter;
@@ -96,23 +93,43 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     switch (view.getId()) {
       case R.id.colorDarkBlue: {
-        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_DARK_BLUE);
-        recreate();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_DARK_BLUE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         break;
       }
       case R.id.colorBlue: {
-        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_BLUE);
-        recreate();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_BLUE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         break;
       }
       case R.id.colorPurple: {
-        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_PURPLE);
-        recreate();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_PURPLE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         break;
       }
       case R.id.colorOrange: {
-        SharedPreferenceHelper.getInstance(MainActivity.this).saveColor(COLOR_ORANGE);
-        recreate();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_ORANGE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
         break;
       }
     }
@@ -122,36 +139,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
 
-    final String color = SharedPreferenceHelper.getInstance(MainActivity.this).getColor();
-
-    Log.d(MainActivity.TAG, color);
-
-    switch (color) {
-      case COLOR_DARK_BLUE: {
-        getApplication().setTheme(R.style.AppDarkBlueTheme);
-        setTheme(R.style.AppDarkBlueTheme);
-        break;
-      }
-      case COLOR_BLUE: {
-        getApplication().setTheme(R.style.AppBlueTheme);
-        setTheme(R.style.AppBlueTheme);
-        break;
-      }
-      case COLOR_PURPLE: {
-        getApplication().setTheme(R.style.AppPurpleTheme);
-        setTheme(R.style.AppPurpleTheme);
-        break;
-      }
-      case COLOR_ORANGE: {
-        getApplication().setTheme(R.style.AppOrangeTheme);
-        setTheme(R.style.AppOrangeTheme);
-        break;
-      }
-      default: {
-        getApplication().setTheme(R.style.AppDarkBlueTheme);
-        setTheme(R.style.AppDarkBlueTheme);
-      }
-    }
+    setTheme();
 
     //SINCH
     getApplicationContext().bindService(new Intent(this, SinchService.class), this,
@@ -210,7 +198,6 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
       .build();
     mCloudFunctions = retrofit.create(CloudFunctions.class);
   }
-
 
   @Override
   protected void onStart() {
