@@ -1,5 +1,6 @@
 package com.android.barracuda.cypher;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
 import com.android.barracuda.cypher.exceptions.NoKeyException;
@@ -10,6 +11,7 @@ import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.model.cypher.Key;
 import com.android.barracuda.model.cypher.PublicKeys;
+import com.android.barracuda.model.cypher.PublicKeysDb;
 import com.android.barracuda.util.AuthUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -24,39 +26,32 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-import java.util.HashMap;
 
 public class CypherWorker {
 
   public static void encryptAndSend(final Message msg, final Context context) {
-    final Key key = KeyStorageDB.getInstance(context).getSecretKeyForRoom(msg.idReceiver);
-
-    FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + FBaseEntities.DELIM + msg.friendId)
-      .orderByKey().limitToLast(1).addListenerForSingleValueEvent(new ValueEventListener() {
+    FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + "/" + msg.friendId + "/1").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) throws RuntimeException {
-        HashMap map = ((HashMap) dataSnapshot.getValue());
-        if (map == null || map.isEmpty()) return;
+        PublicKeys pks = dataSnapshot.getValue(PublicKeys.class);
 
-        HashMap value = (HashMap) map.values().iterator().next();
-        PublicKeys pk = new PublicKeys();
-        pk.key = (String) value.get("key");
-        pk.p = (String) value.get("p");
-        pk.g = (String) value.get("g");
+        if (pks == null || pks.key == null) {
+          sendMessage(msg);
+          return;
+        }
 
-        if (pk.key == null) return;
+        Key key = KeyStorageDB.getInstance(context).getKeyByFriendsPublic(pks.key);
         try {
-          if (key == null || !pk.key.equals(key.pubKey.toString())) {
-            Key newKey = handlePublicKey(msg.friendId, pk, context);
-            doEncrypt(msg, newKey);
+          if (key == null) {
+            Key newKey = handlePublicKey(msg.friendId, pks, context);
+            doEncrypt(msg, newKey, pks);
           } else {
-            doEncrypt(msg, key);
+            doEncrypt(msg, key, pks);
           }
+          sendMessage(msg);
         } catch (Exception e) {
           e.printStackTrace();
         }
-        FirebaseDatabase.getInstance().getReference().child("message/" + msg.idReceiver).push().setValue(msg);
       }
 
       @Override
@@ -71,22 +66,19 @@ public class CypherWorker {
     if (msg.idSender.equals(StaticConfig.UID)) {
       secretKey = KeyStorageDB.getInstance(context).getSecretKeyByMyPublic(msg.key);
     } else {
-      secretKey = KeyStorageDB.getInstance(context).getSecretKeyFor(msg.key);
+      secretKey = KeyStorageDB.getInstance(context).getSecretKeyByFriendsPublic(msg.key);
 
       if (secretKey == null) {
         BigInteger friendPublicKey = new BigInteger(msg.key);
 
-        Key keys = PublicKeysDB.getInstance(context).getKey(msg.timestamp);
+        PublicKeysDb ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.recKeyTs);
 
-        secretKey = new BigInteger(subArray(calcSharedSecretKey(keys.p, keys.ownPrvKey, friendPublicKey).toByteArray(), 0, 256 / 8));
+        secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 256 / 8));
 
         Key key = new Key();
         key.roomId = msg.idReceiver;
-        key.p = keys.p;
-        key.g = keys.g;
         key.pubKey = friendPublicKey;
-        key.ownPubKey = keys.ownPubKey;
-        key.ownPrvKey = keys.ownPrvKey;
+        key.ownPubKey = ownPubKeys.pubKey;
         key.key = secretKey;
         key.timestamp = msg.timestamp;
 
@@ -104,6 +96,10 @@ public class CypherWorker {
 
   }
 
+  private static void sendMessage(Message msg) {
+    FirebaseDatabase.getInstance().getReference().child("message/" + msg.idReceiver).push().setValue(msg);
+  }
+
   private static BigInteger calcSharedSecretKey(BigInteger p, BigInteger privateKey, BigInteger friendPubKey) {
     return friendPubKey.modPow(privateKey, p);
   }
@@ -119,32 +115,30 @@ public class CypherWorker {
 
     BigInteger publicKey = ((javax.crypto.interfaces.DHPublicKey) dkp.getPublic()).getY();
     BigInteger privateKey = ((javax.crypto.interfaces.DHPrivateKey) dkp.getPrivate()).getX();
-    BigInteger firendPubKey = new BigInteger(keys.key);
-    BigInteger secretKey = new BigInteger(subArray(calcSharedSecretKey(p, privateKey, firendPubKey).toByteArray(), 0, 256 / 8));
+    BigInteger friendPubKey = new BigInteger(keys.key);
+    BigInteger secretKey = new BigInteger(subArray(calcSharedSecretKey(p, privateKey, friendPubKey).toByteArray(), 0, 256 / 8));
 
-    k.p = p;
-    k.g = g;
-    k.pubKey = firendPubKey;
+    k.pubKey = friendPubKey;
     k.ownPubKey = publicKey;
-    k.ownPrvKey = privateKey;
     k.roomId = AuthUtils.userIdToRoomId(userId);
     k.key = secretKey;
     k.userId = userId;
-    k.timestamp = new Date().getTime();
+    k.timestamp = System.currentTimeMillis();
 
     KeyStorageDB.getInstance(context).addKey(k);
 
     return k;
   }
 
-  private static void doEncrypt(Message msg, Key key) throws Exception {
+  private static void doEncrypt(Message msg, Key key, PublicKeys pks) throws Exception {
     msg.text = encryptText(msg.text, key.key.toByteArray());
     msg.key = key.ownPubKey.toString();
+    msg.recKeyTs = pks.timestamp;
   }
 
   private static String decryptText(String encrypted, byte[] key) throws Exception {
     SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-    Cipher cipher = Cipher.getInstance("AES");
+    @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES");
     cipher.init(Cipher.DECRYPT_MODE, skeySpec);
 
     return new String(cipher.doFinal(Base64.decode(encrypted, Base64.DEFAULT))) + "\nKey=" + new BigInteger(key).toString();
@@ -152,7 +146,7 @@ public class CypherWorker {
 
   private static String encryptText(String text, byte[] key) throws Exception {
     SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
-    Cipher cipher = Cipher.getInstance("AES");
+    @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES");
     cipher.init(Cipher.ENCRYPT_MODE, skeySpec);
 
     byte[] encrypted = cipher.doFinal(text.getBytes());

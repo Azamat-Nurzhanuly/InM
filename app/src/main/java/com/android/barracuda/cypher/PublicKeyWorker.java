@@ -7,6 +7,7 @@ import com.android.barracuda.data.PublicKeysDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.cypher.Key;
 import com.android.barracuda.model.cypher.PublicKeys;
+import com.android.barracuda.model.cypher.PublicKeysDb;
 import com.google.firebase.database.FirebaseDatabase;
 
 import javax.crypto.interfaces.DHPublicKey;
@@ -14,14 +15,13 @@ import javax.crypto.spec.DHParameterSpec;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.NoSuchAlgorithmException;
-import java.util.Date;
 
 public class PublicKeyWorker {
 
   public static void updatePublicKeys(Context context) {
     if (context == null) throw new NullPointerException("Context can not be null");
-    long now = new Date().getTime();
-    Key keys = PublicKeysDB.getInstance(context).getKey(now);
+    long now = System.currentTimeMillis();
+    PublicKeysDb keys = PublicKeysDB.getInstance(context).getKey(now);
 
     if (keys == null || keys.timestamp + StaticConfig.KEY_LIFETIME < now) {
       try {
@@ -43,11 +43,12 @@ public class PublicKeyWorker {
     pks.g = params.getG().toString();
     pks.p = params.getP().toString();
     pks.key = (((javax.crypto.interfaces.DHPublicKey) kp.getPublic()).getY()).toString();
+    pks.timestamp = System.currentTimeMillis();
 
     String privateKey = (((javax.crypto.interfaces.DHPrivateKey) kp.getPrivate()).getX()).toString();
 
     FirebaseDatabase.getInstance().getReference()
-      .child(FBaseEntities.PUBLIC_KEYS + FBaseEntities.DELIM + StaticConfig.UID).push().setValue(pks);
+      .child(FBaseEntities.PUBLIC_KEYS + "/" + StaticConfig.UID + "/1").setValue(pks);
 
     PublicKeysDB.getInstance(context).setKey(pks, privateKey);
   }

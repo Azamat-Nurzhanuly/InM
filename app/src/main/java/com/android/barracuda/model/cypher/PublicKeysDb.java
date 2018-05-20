@@ -1,17 +1,12 @@
 package com.android.barracuda.model.cypher;
 
-
 import java.math.BigInteger;
 
-public class Key {
-  public String roomId;
-  public String userId;
-
+public class PublicKeysDb {
+  public int id;
+  public BigInteger p;
+  public BigInteger g;
   public BigInteger pubKey;
-
-  public BigInteger ownPubKey;
-
-  public BigInteger key;
-
+  public BigInteger prvKey;
   public long timestamp;
 }

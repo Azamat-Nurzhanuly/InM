@@ -24,5 +24,5 @@ public class StaticConfig {
   public static String SINCH_SECRET = "PkUMsoJsDk+8uGzCEerM5A==";
   public static String SINCH_HOST = "clientapi.sinch.com";
   //  public static final long KEY_LIFETIME = 24 * 60 * 60 * 1000; //1 DAY
-  public static final long KEY_LIFETIME = 60 * 1000; //1 MIN
+  public static final long KEY_LIFETIME = 2 * 60 * 1000;
 }

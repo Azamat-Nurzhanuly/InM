@@ -6,11 +6,12 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import com.android.barracuda.model.cypher.Key;
+import com.android.barracuda.model.cypher.PublicKeysDb;
 import com.android.barracuda.model.cypher.PublicKeys;
 
 import java.math.BigInteger;
-import java.util.Date;
+import java.util.ArrayList;
+import java.util.List;
 
 public final class PublicKeysDB {
   private static PublicKeysDBHelper mDbHelper = null;
@@ -28,6 +29,30 @@ public final class PublicKeysDB {
     return instance;
   }
 
+  public List<PublicKeysDb> getAllKeys() {
+    List<PublicKeysDb> keys = new ArrayList<>();
+    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String sql = "select id, " +
+        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + ", " + TableStruct.TIMESTAMP +
+        " from " + TableStruct.TABLE_NAME;
+      try (Cursor cursor = db.rawQuery(sql, null)) {
+        while (cursor.moveToNext()) {
+          PublicKeysDb key = new PublicKeysDb();
+          int i = 0;
+          key.id = cursor.getInt(i++);
+          key.p = new BigInteger(cursor.getString(i++));
+          key.g = new BigInteger(cursor.getString(i++));
+          key.pubKey = new BigInteger(cursor.getString(i++));
+          key.prvKey = new BigInteger(cursor.getString(i++));
+          key.timestamp = cursor.getLong(i);
+
+          keys.add(key);
+        }
+      }
+    }
+    return keys;
+  }
+
   public void setKey(PublicKeys keys, String privateKey) {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -37,7 +62,7 @@ public final class PublicKeysDB {
     values.put(TableStruct.G, keys.g);
     values.put(TableStruct.PUB_KEY, keys.key);
     values.put(TableStruct.PRV_KEY, privateKey);
-    values.put(TableStruct.TIMESTAMP, new Date().getTime());
+    values.put(TableStruct.TIMESTAMP, keys.timestamp);
 
     ContentValues toUpdate = new ContentValues();
     toUpdate.put(TableStruct.ID, 1);
@@ -47,21 +72,45 @@ public final class PublicKeysDB {
     db.insert(TableStruct.TABLE_NAME, null, values);
   }
 
-  public Key getKey(long timestamp) {
-    Key key = null;
+  public PublicKeysDb getKey(long timestamp) {
+    PublicKeysDb key = null;
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String table = "(select max(timestamp) as timestamp from " + TableStruct.TABLE_NAME + " where timestamp<" + timestamp + ") nt";
       String sql = "select " +
-        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + ", " + TableStruct.TIMESTAMP +
-        " from " + TableStruct.TABLE_NAME + " where timestamp < " + timestamp;
+        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + ", nt.timestamp" +
+        " from " + TableStruct.TABLE_NAME + " t " +
+        " inner join " + table + " on nt.timestamp = t.timestamp";
       try (Cursor cursor = db.rawQuery(sql, null)) {
         if (cursor.moveToNext()) {
-          key = new Key();
+          key = new PublicKeysDb();
           int i = 0;
 
           key.p = new BigInteger(cursor.getString(i++));
           key.g = new BigInteger(cursor.getString(i++));
-          key.ownPubKey = new BigInteger(cursor.getString(i++));
-          key.ownPrvKey = new BigInteger(cursor.getString(i++));
+          key.pubKey = new BigInteger(cursor.getString(i++));
+          key.prvKey = new BigInteger(cursor.getString(i++));
+          key.timestamp = cursor.getLong(i);
+        }
+      }
+    }
+    return key;
+  }
+
+  public PublicKeysDb getKeyByTimestamp(long timestamp) {
+    PublicKeysDb key = null;
+    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String sql = "select " +
+        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + "," + TableStruct.TIMESTAMP +
+        " from " + TableStruct.TABLE_NAME + " where timestamp=" + timestamp;
+      try (Cursor cursor = db.rawQuery(sql, null)) {
+        if (cursor.moveToNext()) {
+          key = new PublicKeysDb();
+          int i = 0;
+
+          key.p = new BigInteger(cursor.getString(i++));
+          key.g = new BigInteger(cursor.getString(i++));
+          key.pubKey = new BigInteger(cursor.getString(i++));
+          key.prvKey = new BigInteger(cursor.getString(i++));
           key.timestamp = cursor.getLong(i);
         }
       }

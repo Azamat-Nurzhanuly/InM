@@ -348,17 +348,10 @@ public class ChatActivity extends MainActivity
           if (dataSnapshot.getValue() != null) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
-            Message newMessage = new Message();
-            newMessage.idSender = (String) mapMessage.get("idSender");
-            newMessage.idReceiver = (String) mapMessage.get("idReceiver");
-            newMessage.friendId = (String) mapMessage.get("friendId");
-            newMessage.timestamp = (long) mapMessage.get("timestamp");
-            newMessage.key = (String) mapMessage.get("key");
+            Message newMessage = dataSnapshot.getValue(Message.class);
+            if (newMessage == null) return;
 
-            boolean hasFile = mapMessage.get("fileModel") != null;
-
-            if (mapMessage.get("text") != null) {
-              newMessage.text = (String) mapMessage.get("text");
+            if (newMessage.text != null) {
               try {
                 CypherWorker.decrypt(newMessage, getApplicationContext());
               } catch (Exception e) {
@@ -369,13 +362,14 @@ public class ChatActivity extends MainActivity
 
                 Log.d(getClass().getSimpleName(), "Could not decrypt", e);
 
-                if (!hasFile) return;
-                else newMessage.text = "Could not decrypt. Cause: no key";
+//                if (newMessage.fileModel == null) return;
+//                else
+                newMessage.text = "Could not decrypt. Cause: no key\n" + newMessage.text;
               }
             }
 
 
-            if (hasFile) {
+            if (newMessage.fileModel != null) {
               FileModel fileModel = new FileModel();
               HashMap fileHash = (HashMap) mapMessage.get("fileModel");
               if (fileHash.containsKey("type"))

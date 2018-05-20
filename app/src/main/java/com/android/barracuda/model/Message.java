@@ -7,6 +7,7 @@ public class Message {
   public String friendId;
   public String text;
   public String key;
+  public long recKeyTs;
   public FileModel fileModel;
   public long timestamp;
 
@@ -18,6 +19,7 @@ public class Message {
       ", friendId='" + friendId + '\'' +
       ", text='" + text + '\'' +
       ", key='" + key + '\'' +
+      ", recKeyTs=" + recKeyTs +
       ", fileModel=" + fileModel +
       ", timestamp=" + timestamp +
       '}';

@@ -1,32 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-  android:layout_width="match_parent"
-  android:layout_height="match_parent"
-  android:background="@color/colorIndivateTab"
-  android:orientation="vertical">
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorIndivateTab"
+                android:orientation="vertical">
 
 
-    <Button
-      android:text="Call"
-      android:id="@+id/chat_audio_call_button"
-      android:layout_width="wrap_content"
-      android:background="#000"
-      android:textColor="#fff"
-      android:layout_height="wrap_content"
-      android:textSize="16sp"
-      android:enabled="false"
-      />
-    <Button
-      android:text="video"
-      android:id="@+id/chat_video_call_button"
-      android:layout_width="wrap_content"
-      android:background="#000"
-      android:textColor="#fff"
-      android:layout_height="wrap_content"
-      android:textSize="16sp"
-      android:layout_marginLeft="100dp"
-      android:enabled="false"
-      />
+  <Button
+    android:text="Call"
+    android:id="@+id/chat_audio_call_button"
+    android:layout_width="wrap_content"
+    android:background="#000"
+    android:textColor="#fff"
+    android:layout_height="wrap_content"
+    android:textSize="16sp"
+    android:enabled="false"
+  />
+  <Button
+    android:text="video"
+    android:id="@+id/chat_video_call_button"
+    android:layout_width="wrap_content"
+    android:background="#000"
+    android:textColor="#fff"
+    android:layout_height="wrap_content"
+    android:textSize="16sp"
+    android:layout_marginLeft="100dp"
+    android:enabled="false"
+  />
 
 
   <View
@@ -34,7 +34,7 @@
     android:layout_width="match_parent"
     android:layout_height="1dp"
     android:layout_above="@id/btnSend"
-    android:background="@color/grey_200" />
+    android:background="@color/grey_200"/>
 
   <android.support.v7.widget.RecyclerView
     android:id="@+id/recyclerChat"
@@ -57,7 +57,7 @@
     <com.gordonwong.materialsheetfab.DimOverlayFrameLayout
       android:id="@+id/overlay"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" />
+      android:layout_height="match_parent"/>
 
     <!-- Circular reveal container for the sheet -->
     <io.codetail.widget.RevealLinearLayout
@@ -89,7 +89,7 @@
             android:background="#00000000"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/document" />
+            android:src="@drawable/document"/>
 
           <ImageButton
             android:id="@+id/btn_choose_camera"
@@ -98,7 +98,7 @@
             android:background="#00000000"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/camera" />
+            android:src="@drawable/camera"/>
 
           <ImageButton
             android:id="@+id/btn_choose_gallery"
@@ -107,7 +107,7 @@
             android:background="#00000000"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/gallery" />
+            android:src="@drawable/gallery"/>
         </LinearLayout>
 
         <LinearLayout
@@ -125,7 +125,7 @@
             android:background="#00000000"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/music" />
+            android:src="@drawable/music"/>
 
           <ImageButton
             android:id="@+id/btn_choose_place"
@@ -134,7 +134,7 @@
             android:background="#00000000"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/location" />
+            android:src="@drawable/location"/>
 
           <ImageButton
             android:id="@+id/btn_choose_contact"
@@ -143,7 +143,7 @@
             android:background="#00000000"
             android:padding="10dp"
             android:scaleType="centerInside"
-            android:src="@drawable/contacts" />
+            android:src="@drawable/contacts"/>
         </LinearLayout>
 
 
@@ -166,7 +166,7 @@
     android:paddingEnd="7dp"
     android:paddingStart="7dp"
     android:textColorHint="#aeafaf"
-    android:textSize="15sp" />
+    android:textSize="15sp"/>
 
   <ImageButton
     android:id="@+id/btnSend"
@@ -178,15 +178,15 @@
     android:padding="10dp"
     android:scaleType="centerInside"
     android:src="@drawable/ic_send"
-    android:visibility="invisible" />
+    android:visibility="invisible"/>
 
   <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/parent_layout"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".ui.ChatActivity">
+                  xmlns:app="http://schemas.android.com/apk/res-auto"
+                  xmlns:tools="http://schemas.android.com/tools"
+                  android:id="@+id/parent_layout"
+                  android:layout_width="match_parent"
+                  android:layout_height="match_parent"
+                  tools:context=".ui.ChatActivity">
 
     <com.devlomi.record_view.RecordView
       android:id="@+id/record_view"
@@ -196,7 +196,7 @@
       android:layout_toLeftOf="@id/record_button"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
       app:slide_to_cancel_margin_right="10dp"
-      app:slide_to_cancel_text="Slide To Cancel" />
+      app:slide_to_cancel_text="Slide To Cancel"/>
 
     <com.devlomi.record_view.RecordButton
       android:id="@+id/record_button"
@@ -205,7 +205,7 @@
       android:layout_alignParentBottom="true"
       android:layout_alignParentRight="true"
       android:scaleType="centerInside"
-      app:src="@drawable/record" />
+      app:src="@drawable/record"/>
 
 
   </RelativeLayout>
