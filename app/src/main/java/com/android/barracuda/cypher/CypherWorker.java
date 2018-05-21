@@ -12,7 +12,6 @@ import com.android.barracuda.model.Message;
 import com.android.barracuda.model.cypher.Key;
 import com.android.barracuda.model.cypher.PublicKeys;
 import com.android.barracuda.model.cypher.PublicKeysDb;
-import com.android.barracuda.util.AuthUtils;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -40,13 +39,28 @@ public class CypherWorker {
           return;
         }
 
-        Key key = KeyStorageDB.getInstance(context).getKeyByFriendsPublic(pks.key);
+        long recKeyTs = pks.timestamp;
+
+        Key key = KeyStorageDB.getInstance(context).getKey(pks.timestamp, msg.idReceiver);
+
+        if (key == null) {
+          PublicKeysDb ownPubKeys = PublicKeysDB.getInstance(context).getKey(System.currentTimeMillis());
+          if (ownPubKeys == null) {
+            sendMessage(msg);
+            return;
+          }
+          key = KeyStorageDB.getInstance(context).getKey(ownPubKeys.timestamp, msg.idReceiver);
+          if (key != null) recKeyTs = ownPubKeys.timestamp;
+        }
+
         try {
           if (key == null) {
-            Key newKey = handlePublicKey(msg.friendId, pks, context);
-            doEncrypt(msg, newKey, pks);
+            Key newKey = handlePublicKey(msg, pks, context);
+            doEncrypt(msg, newKey);
           } else {
-            doEncrypt(msg, key, pks);
+            msg.recKeyTs = recKeyTs;
+            msg.key = key.ownPubKey.toString();
+            doEncrypt(msg, key);
           }
           sendMessage(msg);
         } catch (Exception e) {
@@ -61,12 +75,9 @@ public class CypherWorker {
 
   public static void decrypt(Message msg, Context context) throws NoKeyException {
     if (msg.key == null) return;
-    BigInteger secretKey;
+    BigInteger secretKey = KeyStorageDB.getInstance(context).getSecretKey(msg.recKeyTs, msg.idReceiver);
 
-    if (msg.idSender.equals(StaticConfig.UID)) {
-      secretKey = KeyStorageDB.getInstance(context).getSecretKeyByMyPublic(msg.key);
-    } else {
-      secretKey = KeyStorageDB.getInstance(context).getSecretKeyByFriendsPublic(msg.key);
+    if (!msg.idSender.equals(StaticConfig.UID)) {
 
       if (secretKey == null) {
         BigInteger friendPublicKey = new BigInteger(msg.key);
@@ -75,16 +86,10 @@ public class CypherWorker {
 
         secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 256 / 8));
 
-        Key key = new Key();
-        key.roomId = msg.idReceiver;
-        key.pubKey = friendPublicKey;
-        key.ownPubKey = ownPubKeys.pubKey;
-        key.key = secretKey;
-        key.timestamp = msg.timestamp;
-
-        KeyStorageDB.getInstance(context).addKey(key);
+        addKey(msg.recKeyTs, msg.idReceiver, msg.friendId, friendPublicKey, ownPubKeys.pubKey, secretKey, System.currentTimeMillis(), context);
       }
     }
+
     if (secretKey == null) throw new NoKeyException("No key");
 
     try {
@@ -104,10 +109,9 @@ public class CypherWorker {
     return friendPubKey.modPow(privateKey, p);
   }
 
-  private static Key handlePublicKey(String userId, PublicKeys keys, Context context) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
-    Key k = new Key();
-    BigInteger p = new BigInteger(keys.p);
-    BigInteger g = new BigInteger(keys.g);
+  private static Key handlePublicKey(Message msg, PublicKeys friendKeys, Context context) throws NoSuchAlgorithmException, InvalidAlgorithmParameterException {
+    BigInteger p = new BigInteger(friendKeys.p);
+    BigInteger g = new BigInteger(friendKeys.g);
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("DiffieHellman");
     DHParameterSpec param = new DHParameterSpec(p, g);
     kpg.initialize(param);
@@ -115,25 +119,32 @@ public class CypherWorker {
 
     BigInteger publicKey = ((javax.crypto.interfaces.DHPublicKey) dkp.getPublic()).getY();
     BigInteger privateKey = ((javax.crypto.interfaces.DHPrivateKey) dkp.getPrivate()).getX();
-    BigInteger friendPubKey = new BigInteger(keys.key);
+    BigInteger friendPubKey = new BigInteger(friendKeys.key);
     BigInteger secretKey = new BigInteger(subArray(calcSharedSecretKey(p, privateKey, friendPubKey).toByteArray(), 0, 256 / 8));
 
-    k.pubKey = friendPubKey;
-    k.ownPubKey = publicKey;
-    k.roomId = AuthUtils.userIdToRoomId(userId);
-    k.key = secretKey;
-    k.userId = userId;
-    k.timestamp = System.currentTimeMillis();
+    msg.key = publicKey.toString();
+    msg.recKeyTs = friendKeys.timestamp;
+
+    return addKey(friendKeys.timestamp, msg.idReceiver, msg.friendId, friendPubKey, publicKey, secretKey, System.currentTimeMillis(), context);
+  }
+
+  private static Key addKey(long friendKeyTs, String roomId, String friendId, BigInteger pubKey, BigInteger ownPubKey, BigInteger key, long timestamp, Context context) {
+    Key k = new Key();
+    k.friendKeyTs = friendKeyTs;
+    k.roomId = roomId;
+    k.friendId = friendId;
+    k.pubKey = pubKey;
+    k.ownPubKey = ownPubKey;
+    k.key = key;
+    k.timestamp = timestamp;
 
     KeyStorageDB.getInstance(context).addKey(k);
 
     return k;
   }
 
-  private static void doEncrypt(Message msg, Key key, PublicKeys pks) throws Exception {
+  private static void doEncrypt(Message msg, Key key) throws Exception {
     msg.text = encryptText(msg.text, key.key.toByteArray());
-    msg.key = key.ownPubKey.toString();
-    msg.recKeyTs = pks.timestamp;
   }
 
   private static String decryptText(String encrypted, byte[] key) throws Exception {

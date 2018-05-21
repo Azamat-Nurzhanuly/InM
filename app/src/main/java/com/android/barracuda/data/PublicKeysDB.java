@@ -32,9 +32,7 @@ public final class PublicKeysDB {
   public List<PublicKeysDb> getAllKeys() {
     List<PublicKeysDb> keys = new ArrayList<>();
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      String sql = "select id, " +
-        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + ", " + TableStruct.TIMESTAMP +
-        " from " + TableStruct.TABLE_NAME;
+      String sql = "select * from " + TableStruct.TABLE_NAME;
       try (Cursor cursor = db.rawQuery(sql, null)) {
         while (cursor.moveToNext()) {
           PublicKeysDb key = new PublicKeysDb();
@@ -73,27 +71,12 @@ public final class PublicKeysDB {
   }
 
   public PublicKeysDb getKey(long timestamp) {
-    PublicKeysDb key = null;
-    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      String table = "(select max(timestamp) as timestamp from " + TableStruct.TABLE_NAME + " where timestamp<" + timestamp + ") nt";
-      String sql = "select " +
-        TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + ", nt.timestamp" +
-        " from " + TableStruct.TABLE_NAME + " t " +
-        " inner join " + table + " on nt.timestamp = t.timestamp";
-      try (Cursor cursor = db.rawQuery(sql, null)) {
-        if (cursor.moveToNext()) {
-          key = new PublicKeysDb();
-          int i = 0;
-
-          key.p = new BigInteger(cursor.getString(i++));
-          key.g = new BigInteger(cursor.getString(i++));
-          key.pubKey = new BigInteger(cursor.getString(i++));
-          key.prvKey = new BigInteger(cursor.getString(i++));
-          key.timestamp = cursor.getLong(i);
-        }
-      }
+    PublicKeysDb ret = null;
+    List<PublicKeysDb> allKeys = getAllKeys();
+    for (PublicKeysDb key : allKeys) {
+      if(key.timestamp < timestamp) ret = key;
     }
-    return key;
+    return ret;
   }
 
   public PublicKeysDb getKeyByTimestamp(long timestamp) {
