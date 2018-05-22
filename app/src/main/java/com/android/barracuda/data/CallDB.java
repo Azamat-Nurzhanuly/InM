@@ -33,10 +33,10 @@ public final class CallDB {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
     // Create a new map of values, where column names are the keys
     ContentValues values = new ContentValues();
-    values.put(FeedEntry.COLUMN_NAME_ID, call.id);
+    values.put(FeedEntry.COLUMN_NAME_ID, call.callId);
+    values.put(FeedEntry.COLUMN_NAME_FRIEND_ID, call.id);
     values.put(FeedEntry.COLUMN_NAME_NAME, call.name);
     values.put(FeedEntry.COLUMN_NAME_PHONE_NUMBER, call.phoneNumber);
-    values.put(FeedEntry.COLUMN_NAME_ID_ROOM, call.idRoom);
     values.put(FeedEntry.COLUMN_NAME_AVATA, call.avata);
     values.put(FeedEntry.COLUMN_NAME_TYPE, call.type);
     // Insert the new row, returning the primary key value of the new row
@@ -59,10 +59,10 @@ public final class CallDB {
       Cursor cursor = db.rawQuery("select * from " + FeedEntry.TABLE_NAME, null);
       while (cursor.moveToNext()) {
         Call call = new Call();
-        call.id = cursor.getString(0);
-        call.name = cursor.getString(1);
-        call.phoneNumber = cursor.getString(2);
-        call.idRoom = cursor.getString(3);
+        call.callId = cursor.getString(0);
+        call.id = cursor.getString(1);
+        call.name = cursor.getString(2);
+        call.phoneNumber = cursor.getString(3);
         call.type = cursor.getString(4);
         call.avata = cursor.getString(5);
         listCall.getListCall().add(call);
@@ -82,11 +82,11 @@ public final class CallDB {
 
   /* Inner class that defines the table contents */
   public static class FeedEntry implements BaseColumns {
-    static final String TABLE_NAME = "friend";
-    static final String COLUMN_NAME_ID = "friendID";
+    static final String TABLE_NAME = "calls";
+    static final String COLUMN_NAME_ID = "call_id";
+    static final String COLUMN_NAME_FRIEND_ID = "friend_id";
     static final String COLUMN_NAME_NAME = "name";
     static final String COLUMN_NAME_PHONE_NUMBER = "phoneNumber";
-    static final String COLUMN_NAME_ID_ROOM = "idRoom";
     static final String COLUMN_NAME_AVATA = "avata";
     static final String COLUMN_NAME_TYPE = "type";
   }
@@ -96,9 +96,9 @@ public final class CallDB {
   private static final String SQL_CREATE_ENTRIES =
     "CREATE TABLE " + FeedEntry.TABLE_NAME + " (" +
       FeedEntry.COLUMN_NAME_ID + " TEXT PRIMARY KEY," +
+      FeedEntry.COLUMN_NAME_FRIEND_ID + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_PHONE_NUMBER + TEXT_TYPE + COMMA_SEP +
-      FeedEntry.COLUMN_NAME_ID_ROOM + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_AVATA + TEXT_TYPE + " )";
 

@@ -43,7 +43,6 @@ import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
-import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
@@ -77,7 +76,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
   private CountDownTimer detectFriendOnline;
   public static int ACTION_START_CHAT = 1;
 
-  public static final String ACTION_DELETE_FRIEND = "com.android.rivchat.DELETE_FRIEND";
+  public static final String ACTION_DELETE_FRIEND = "DELETE_FRIEND";
 
   private BroadcastReceiver deleteFriendReceiver;
 
@@ -258,7 +257,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
               user.avata = (String) userMap.get("avata");
               user.id = id;
               user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
-              checkBeforAddFriend(id, user);
+              checkBeforeAddFriend(id, user);
             }
           }
         }
@@ -273,7 +272,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     /**
      * Lay danh sach friend cua một UID
      */
-    private void checkBeforAddFriend(final String idFriend, Friend userInfo) {
+    private void checkBeforeAddFriend(final String idFriend, Friend userInfo) {
       dialogWait.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
         .setTitle("Add friend....")
@@ -550,7 +549,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
-            if (listFriend.getListFriend().get(position).message != null &&
+            if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
               listFriend.getListFriend().get(position).message.text != null &&
               listFriend.getListFriend() != null) {
               if (mapMark.get(id) != null) {
