@@ -166,10 +166,6 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
         if (user != null) {
           StaticConfig.UID = user.getUid();
           Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-          Toast.makeText(MainActivity.this, "User signed in: " + user.getUid(),
-            Toast.LENGTH_SHORT).show();
-
-
           saveUserInfo();
         } else {
 
