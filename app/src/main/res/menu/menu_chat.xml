@@ -12,7 +12,7 @@
         android:icon="@drawable/audio_call"
         app:showAsAction="always"
         android:title="@string/audio_call"
-        android:enabled="false"/>
+        android:enabled="false" />
     <item
         android:id="@+id/video_call"
         android:orderInCategory="102"
