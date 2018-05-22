@@ -1,8 +1,8 @@
-package com.android.barracuda.model.cypher;
+package com.android.barracuda.cypher.models;
 
 import java.math.BigInteger;
 
-public class PublicKeysDb {
+public class PublicKeys {
   public int id;
   public BigInteger p;
   public BigInteger g;

@@ -31,6 +31,8 @@ import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.cypher.CypherWorker;
+import com.android.barracuda.cypher.GroupChatCypherWorker;
+import com.android.barracuda.cypher.PrivateChatCypherWorker;
 import com.android.barracuda.cypher.exceptions.NoKeyException;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
@@ -140,6 +142,8 @@ public class ChatActivity extends MainActivity
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
 
+  CypherWorker cypherWorker;
+
   @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
   protected void onCreate(Bundle savedInstanceState) {
@@ -148,6 +152,13 @@ public class ChatActivity extends MainActivity
     Intent intentData = getIntent();
     idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
+
+    if (idFriend.size() > 1) {
+      cypherWorker = new GroupChatCypherWorker(roomId, this);
+    } else {
+      cypherWorker = new PrivateChatCypherWorker(roomId, idFriend.get(0).toString(), this);
+    }
+
     String nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
 
     consersation = new Consersation();
@@ -353,7 +364,7 @@ public class ChatActivity extends MainActivity
 
             if (newMessage.text != null) {
               try {
-                CypherWorker.decrypt(newMessage, getApplicationContext());
+                cypherWorker.decrypt(newMessage);
               } catch (Exception e) {
                 if (!(e instanceof NoKeyException)) {
                   e.printStackTrace();
@@ -361,6 +372,8 @@ public class ChatActivity extends MainActivity
                 }
 
                 Log.d(getClass().getSimpleName(), "Could not decrypt", e);
+
+                // FIXME: 5/22/18 Раскомментить при релизе
 
 //                if (newMessage.fileModel == null) return;
 //                else
@@ -567,7 +580,7 @@ public class ChatActivity extends MainActivity
         newMessage.friendId = idFriend.get(0).toString();
 
       newMessage.timestamp = System.currentTimeMillis();
-      CypherWorker.encryptAndSend(newMessage, this);
+      cypherWorker.encryptAndSend(newMessage);
     }
   }
 

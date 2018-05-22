@@ -1,6 +1,6 @@
-package com.android.barracuda.model.cypher;
+package com.android.barracuda.cypher.models;
 
-public class PublicKeys {
+public class PublicKeysToFb {
   public String p;
   public String g;
   public String key;

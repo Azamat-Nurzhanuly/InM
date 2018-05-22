@@ -6,8 +6,8 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import com.android.barracuda.model.cypher.PublicKeysDb;
-import com.android.barracuda.model.cypher.PublicKeys;
+import com.android.barracuda.cypher.models.PublicKeys;
+import com.android.barracuda.cypher.models.PublicKeysToFb;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
@@ -29,29 +29,20 @@ public final class PublicKeysDB {
     return instance;
   }
 
-  public List<PublicKeysDb> getAllKeys() {
-    List<PublicKeysDb> keys = new ArrayList<>();
+  public List<PublicKeys> getAllKeys() {
+    List<PublicKeys> keys = new ArrayList<>();
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
       String sql = "select * from " + TableStruct.TABLE_NAME;
       try (Cursor cursor = db.rawQuery(sql, null)) {
         while (cursor.moveToNext()) {
-          PublicKeysDb key = new PublicKeysDb();
-          int i = 0;
-          key.id = cursor.getInt(i++);
-          key.p = new BigInteger(cursor.getString(i++));
-          key.g = new BigInteger(cursor.getString(i++));
-          key.pubKey = new BigInteger(cursor.getString(i++));
-          key.prvKey = new BigInteger(cursor.getString(i++));
-          key.timestamp = cursor.getLong(i);
-
-          keys.add(key);
+          keys.add(fromCursor(cursor));
         }
       }
     }
     return keys;
   }
 
-  public void setKey(PublicKeys keys, String privateKey) {
+  public void setKey(PublicKeysToFb keys, String privateKey) {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
     ContentValues values = new ContentValues();
@@ -70,24 +61,27 @@ public final class PublicKeysDB {
     db.insert(TableStruct.TABLE_NAME, null, values);
   }
 
-  public PublicKeysDb getKey(long timestamp) {
-    PublicKeysDb ret = null;
-    List<PublicKeysDb> allKeys = getAllKeys();
-    for (PublicKeysDb key : allKeys) {
-      if(key.timestamp < timestamp) ret = key;
+  public PublicKeys getLast() {
+    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String sql = "select * from " + TableStruct.TABLE_NAME + " order by id desc limit 1";
+      try (Cursor cursor = db.rawQuery(sql, null)) {
+        if (cursor.moveToNext()) {
+          return fromCursor(cursor);
+        }
+      }
     }
-    return ret;
+    return null;
   }
 
-  public PublicKeysDb getKeyByTimestamp(long timestamp) {
-    PublicKeysDb key = null;
+  public PublicKeys getKeyByTimestamp(long timestamp) {
+    PublicKeys key = null;
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
       String sql = "select " +
         TableStruct.P + "," + TableStruct.G + "," + TableStruct.PUB_KEY + "," + TableStruct.PRV_KEY + "," + TableStruct.TIMESTAMP +
         " from " + TableStruct.TABLE_NAME + " where timestamp=" + timestamp;
       try (Cursor cursor = db.rawQuery(sql, null)) {
         if (cursor.moveToNext()) {
-          key = new PublicKeysDb();
+          key = new PublicKeys();
           int i = 0;
 
           key.p = new BigInteger(cursor.getString(i++));
@@ -98,6 +92,19 @@ public final class PublicKeysDB {
         }
       }
     }
+    return key;
+  }
+
+  private PublicKeys fromCursor(Cursor cursor) {
+    PublicKeys key = new PublicKeys();
+    int i = 0;
+    key.id = cursor.getInt(i++);
+    key.p = new BigInteger(cursor.getString(i++));
+    key.g = new BigInteger(cursor.getString(i++));
+    key.pubKey = new BigInteger(cursor.getString(i++));
+    key.prvKey = new BigInteger(cursor.getString(i++));
+    key.timestamp = cursor.getLong(i);
+
     return key;
   }
 

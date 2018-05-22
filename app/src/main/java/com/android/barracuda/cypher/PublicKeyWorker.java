@@ -4,10 +4,10 @@ import android.content.Context;
 import android.util.Log;
 import com.android.barracuda.data.FBaseEntities;
 import com.android.barracuda.data.PublicKeysDB;
+import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
-import com.android.barracuda.model.cypher.Key;
-import com.android.barracuda.model.cypher.PublicKeys;
-import com.android.barracuda.model.cypher.PublicKeysDb;
+import com.android.barracuda.cypher.models.PublicKeysToFb;
+import com.android.barracuda.cypher.models.PublicKeys;
 import com.google.firebase.database.FirebaseDatabase;
 
 import javax.crypto.interfaces.DHPublicKey;
@@ -21,7 +21,7 @@ public class PublicKeyWorker {
   public static void updatePublicKeys(Context context) {
     if (context == null) throw new NullPointerException("Context can not be null");
     long now = System.currentTimeMillis();
-    PublicKeysDb keys = PublicKeysDB.getInstance(context).getKey(now);
+    PublicKeys keys = PublicKeysDB.getInstance(context).getLast();
 
     if (keys == null || keys.timestamp + StaticConfig.KEY_LIFETIME < now) {
       try {
@@ -33,7 +33,7 @@ public class PublicKeyWorker {
   }
 
   private static void registerNewPublicKey(Context context) throws NoSuchAlgorithmException {
-    PublicKeys pks = new PublicKeys();
+    PublicKeysToFb pks = new PublicKeysToFb();
 
     KeyPairGenerator kpg = KeyPairGenerator.getInstance("DiffieHellman");
     kpg.initialize(512);

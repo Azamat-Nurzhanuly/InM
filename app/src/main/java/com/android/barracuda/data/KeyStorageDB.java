@@ -6,7 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
-import com.android.barracuda.model.cypher.Key;
+import com.android.barracuda.cypher.models.Key;
 
 import java.math.BigInteger;
 import java.util.ArrayList;
