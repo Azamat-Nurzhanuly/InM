@@ -150,7 +150,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
     setContentView(R.layout.activity_main);
 
-    getSupportActionBar().setTitle("Barracuda");
+    getSupportActionBar().setTitle(R.string.app_name);
 
     viewPager = (ViewPager) findViewById(R.id.viewpager);
     floatButton = (FloatingActionButton) findViewById(R.id.fab);

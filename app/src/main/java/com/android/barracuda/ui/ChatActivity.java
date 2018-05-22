@@ -490,6 +490,12 @@ public class ChatActivity extends MainActivity
         videoCall();
         break;
       }
+      case android.R.id.home: {
+        Intent result = new Intent();
+        result.putExtra("idFriend", idFriend.get(0));
+        setResult(RESULT_OK, result);
+        this.finish();
+      }
     }
 
     return true;
