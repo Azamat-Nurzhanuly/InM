@@ -25,6 +25,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.android.barracuda.ContactsActivity;
+import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
 import com.android.barracuda.data.SharedPreferenceHelper;
@@ -196,31 +198,34 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onClick(final View view) {
 
-      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
-        .setTopColorRes(R.color.colorPrimary)
-        .setTitle("Add friend")
-        .setMessage("Enter friend's phone number")
-        .setIcon(R.drawable.ic_add_friend)
-        .setInputType(InputType.TYPE_CLASS_PHONE)
-        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
-          @Override
-          public boolean check(String text) {
-            Pattern VALID_EMAIL_ADDRESS_REGEX =
-              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
-            return matcher.find();
-          }
-        })
-        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-          @Override
-          public void onTextInputConfirmed(String text) {
-            //Tim id user id
-            findIDPhoneNumber(text);
-            //Check xem da ton tai ban ghi friend chua
-            //Ghi them 1 ban ghi
-          }
-        })
-        .show();
+//      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
+//        .setTopColorRes(R.color.colorPrimary)
+//        .setTitle("Add friend")
+//        .setMessage("Enter friend's phone number")
+//        .setIcon(R.drawable.ic_add_friend)
+//        .setInputType(InputType.TYPE_CLASS_PHONE)
+//        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
+//          @Override
+//          public boolean check(String text) {
+//            Pattern VALID_EMAIL_ADDRESS_REGEX =
+//              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
+//            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
+//            return matcher.find();
+//          }
+//        })
+//        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+//          @Override
+//          public void onTextInputConfirmed(String text) {
+//            //Tim id user id
+//            findIDPhoneNumber(text);
+//            //Check xem da ton tai ban ghi friend chua
+//            //Ghi them 1 ban ghi
+//          }
+//        })
+//        .show();
+
+      Intent profIntent = new Intent(getActivity(), ContactsActivity.class);
+      startActivity(profIntent);
     }
 
     private void findIDPhoneNumber(String phoneNumber) {
