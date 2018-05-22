@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -26,6 +27,7 @@ import android.widget.TextView;
 
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
+import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
@@ -56,6 +58,12 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.content.Context.MODE_PRIVATE;
+import static com.android.barracuda.BarracudaActivity.COLOR_BLUE;
+import static com.android.barracuda.BarracudaActivity.COLOR_DARK_BLUE;
+import static com.android.barracuda.BarracudaActivity.COLOR_ORANGE;
+import static com.android.barracuda.BarracudaActivity.COLOR_PURPLE;
 
 public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
