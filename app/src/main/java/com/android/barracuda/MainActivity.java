@@ -150,14 +150,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
     setContentView(R.layout.activity_main);
 
-    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    if (toolbar != null) {
-      if(getSupportActionBar() == null) {
-        setSupportActionBar(toolbar);
-      }
-        getSupportActionBar().setTitle("Barracuda");
-
-    }
+    getSupportActionBar().setTitle("Barracuda");
 
     viewPager = (ViewPager) findViewById(R.id.viewpager);
     floatButton = (FloatingActionButton) findViewById(R.id.fab);
