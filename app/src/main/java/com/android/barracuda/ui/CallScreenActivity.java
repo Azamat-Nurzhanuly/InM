@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
 import android.util.Log;
+import android.view.Menu;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.LinearLayout;
@@ -61,6 +62,12 @@ public class CallScreenActivity extends ChatActivity {
         }
       });
     }
+  }
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+
+    return false;
   }
 
   @RequiresApi(api = Build.VERSION_CODES.M)

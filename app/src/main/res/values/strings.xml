@@ -49,4 +49,7 @@
     <string name="version">Версия</string>
     <string name="title_activity_profile">ProfileActivity</string>
 
+    <string name="audio_call">Аудио вызов</string>
+    <string name="video_call">Видео вызов</string>
+
 </resources>

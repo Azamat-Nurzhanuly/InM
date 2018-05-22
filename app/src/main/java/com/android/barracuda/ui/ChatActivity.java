@@ -26,6 +26,7 @@ import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
@@ -37,6 +38,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
@@ -152,25 +154,42 @@ public class ChatActivity extends MainActivity
   public MaterialSheetFab materialSheetFab;
   public Fab fab = null;
 
-  //SINCH call
-  private Button chat_audio_call_button;
-  private Button chat_video_call_button;
+  private Context context;
 
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
+
+  MenuItem audio_call;
+  MenuItem video_call;
+  private boolean audioVideoServiceConnected = false;
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.menu_chat, menu);
+
+    audio_call = menu.getItem(1);
+    video_call = menu.getItem(2);
+
+    if(audioVideoServiceConnected) {
+      audio_call.setEnabled(true);
+      video_call.setEnabled(true);
+    }
+
+    return true;
+  }
 
   @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_chat);
+    context = this;
     Intent intentData = getIntent();
     idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
     String nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
 
     consersation = new Consersation();
-
 
     btn_choose_doc = (ImageButton) findViewById(R.id.btn_choose_doc);
     btn_choose_camera = (ImageButton) findViewById(R.id.btn_choose_camera);
@@ -231,12 +250,6 @@ public class ChatActivity extends MainActivity
 //        }
 //      }
 //    });
-
-    chat_audio_call_button = (Button) findViewById(R.id.chat_audio_call_button);
-    chat_video_call_button = (Button) findViewById(R.id.chat_video_call_button);
-
-    chat_audio_call_button.setOnClickListener(this);
-    chat_video_call_button.setOnClickListener(this);
   }
 
 
@@ -463,12 +476,22 @@ public class ChatActivity extends MainActivity
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    if (item.getItemId() == android.R.id.home) {
-      Intent result = new Intent();
-      result.putExtra("idFriend", idFriend.get(0));
-      setResult(RESULT_OK, result);
-      this.finish();
+
+    switch(item.getItemId()) {
+      case R.id.about: {
+        Toast.makeText(context, "Version 1.0", Toast.LENGTH_LONG).show();
+        break;
+      }
+      case R.id.audio_call: {
+        audioCall();
+        break;
+      }
+      case R.id.video_call: {
+        videoCall();
+        break;
+      }
     }
+
     return true;
   }
 
@@ -506,14 +529,6 @@ public class ChatActivity extends MainActivity
 
       case R.id.btn_choose_place:
         chooseMedia(PLACE_PICKER_REQUEST);
-        break;
-
-      case R.id.chat_audio_call_button:
-        audioCall();
-        break;
-
-      case R.id.chat_video_call_button:
-        videoCall();
         break;
     }
   }
@@ -818,8 +833,16 @@ public class ChatActivity extends MainActivity
   @Override
   protected void onServiceConnected() {
     getSinchServiceInterface().setStartListener(this);
-    chat_audio_call_button.setEnabled(true);
-    chat_video_call_button.setEnabled(true);
+
+    audioVideoServiceConnected = true;
+
+    if(audio_call != null) {
+      audio_call.setEnabled(true);
+    }
+
+    if(video_call != null) {
+      video_call.setEnabled(true);
+    }
   }
 }
 
