@@ -441,7 +441,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
   @Override
   public void onListFragmentInteraction(DummyContent.DummyItem item) {
-   //TODO
+   //TODO finish contacts interaction listener
   }
 
   class ViewPagerAdapter extends FragmentPagerAdapter {
