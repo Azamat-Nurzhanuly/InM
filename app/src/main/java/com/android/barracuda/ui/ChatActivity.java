@@ -81,6 +81,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -272,7 +273,7 @@ public class ChatActivity extends MainActivity
 
   private void initAudioRecord() {
     // Record to the external cache directory for visibility
-    mFileName = getExternalCacheDir().getAbsolutePath();
+    mFileName = getExternalCacheDir() != null ? getExternalCacheDir().getAbsolutePath() : "";
     mFileName += "/audioMessage.3gp";
 
     ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);

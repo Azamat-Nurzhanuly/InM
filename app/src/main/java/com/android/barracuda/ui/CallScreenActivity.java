@@ -1,5 +1,6 @@
 package com.android.barracuda.ui;
 
+import android.content.Context;
 import android.media.AudioManager;
 import android.os.Build;
 import android.os.Bundle;
@@ -14,6 +15,8 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import com.android.barracuda.R;
+import com.android.barracuda.data.CallDB;
+
 import com.android.barracuda.model.AudioPlayer;
 import com.android.barracuda.model.User;
 import com.android.barracuda.service.SinchService;
@@ -29,6 +32,8 @@ import com.sinch.android.rtc.calling.CallState;
 import com.sinch.android.rtc.video.VideoCallListener;
 import com.sinch.android.rtc.video.VideoController;
 
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -51,6 +56,9 @@ public class CallScreenActivity extends ChatActivity {
   private TextView mCallState;
   private TextView mCallerName;
 
+  private static Context mContext;
+
+
   private class UpdateCallDurationTask extends TimerTask {
 
     @Override
@@ -64,6 +72,14 @@ public class CallScreenActivity extends ChatActivity {
     }
   }
 
+  public static Context getContext() {
+    return mContext;
+  }
+
+  public static void setContext(Context context) {
+    mContext = context;
+  }
+
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
 
@@ -74,6 +90,7 @@ public class CallScreenActivity extends ChatActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+    setContext(this);
     setContentView(R.layout.callscreen);
 
     mAudioPlayer = new AudioPlayer(this);
@@ -227,6 +244,32 @@ public class CallScreenActivity extends ChatActivity {
     public void onCallProgressing(Call call) {
       Log.d(TAG, "Call progressing");
       mAudioPlayer.playProgressTone();
+
+      final String id = call.getRemoteUserId();
+      final String callId = call.getRemoteUserId();
+
+      FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+
+          if (dataSnapshot.getValue() != null) {
+            com.android.barracuda.model.Call call = new com.android.barracuda.model.Call();
+            HashMap mapUserInfo = (HashMap) dataSnapshot.getValue();
+            call.name = (String) mapUserInfo.get("name");
+            call.phoneNumber = (String) mapUserInfo.get("phoneNumber");
+            call.avata = (String) mapUserInfo.get("avata");
+            call.id = id;
+            call.callId = String.valueOf(new Date().getTime());
+            CallDB.getInstance(getContext()).addCall(call);
+          }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+      });
     }
 
     @Override
