@@ -11,6 +11,8 @@ import com.android.barracuda.cypher.models.Key;
 import java.math.BigInteger;
 import java.util.ArrayList;
 
+import static com.android.barracuda.data.KeyStorageDB.TableStruct.*;
+
 public final class KeyStorageDB {
   private static KeyStorageDBHelper mDbHelper = null;
 
@@ -32,37 +34,24 @@ public final class KeyStorageDB {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
     ContentValues values = new ContentValues();
-    values.put(TableStruct.PUB_KEY_TS, key.friendKeyTs);
-    values.put(TableStruct.ROOM_ID, key.roomId);
-    values.put(TableStruct.FRIEND_ID, key.friendId);
-    values.put(TableStruct.PUB_KEY, key.pubKey.toString());
-    values.put(TableStruct.OWN_PUB_KEY, key.ownPubKey.toString());
-    values.put(TableStruct.KEY, key.key.toString());
-    values.put(TableStruct.TIMESTAMP, key.timestamp);
+    values.put(PUB_KEY_TS, key.friendKeyTs);
+    values.put(ROOM_ID, key.roomId);
+    values.put(FRIEND_ID, key.friendId);
+    values.put(PUB_KEY, key.pubKey.toString());
+    values.put(OWN_PUB_KEY, key.ownPubKey.toString());
+    values.put(KEY, key.key.toString());
+    values.put(TIMESTAMP, key.timestamp);
 
-    db.insert(TableStruct.TABLE_NAME, null, values);
+    db.insert(TABLE_NAME, null, values);
   }
 
   public ArrayList<Key> getKeyList() {
     ArrayList<Key> list = new ArrayList<>();
 
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      try (Cursor cursor = db.rawQuery("select " + TableStruct.PUB_KEY_TS + "," + TableStruct.ROOM_ID + ", " + TableStruct.FRIEND_ID + ", "
-        + TableStruct.PUB_KEY + ", " + TableStruct.OWN_PUB_KEY + ", " + TableStruct.KEY + ", "
-        + TableStruct.TIMESTAMP +
-        " from " + TableStruct.TABLE_NAME, null)) {
+      try (Cursor cursor = db.rawQuery("select * from " + TABLE_NAME, null)) {
         while (cursor.moveToNext()) {
-          Key key = new Key();
-          int i = 0;
-          key.friendKeyTs = cursor.getLong(i++);
-          key.roomId = cursor.getString(i++);
-          key.friendId = cursor.getString(i++);
-          key.pubKey = new BigInteger(cursor.getString(i++));
-          key.ownPubKey = new BigInteger(cursor.getString(i++));
-          key.key = new BigInteger(cursor.getString(i++));
-          key.timestamp = cursor.getLong(i);
-
-          list.add(key);
+          list.add(extractKeyFromCursor(cursor));
         }
       }
     }
@@ -72,7 +61,7 @@ public final class KeyStorageDB {
 
   public BigInteger getSecretKey(long friendPubKeyTs, String roomId) {
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      String sql = "select " + TableStruct.KEY + " from " + TableStruct.TABLE_NAME + " where " + TableStruct.PUB_KEY_TS + "=? and " + TableStruct.ROOM_ID + "=?";
+      String sql = "select " + KEY + " from " + TABLE_NAME + " where " + PUB_KEY_TS + "=? and " + ROOM_ID + "=?";
       try (Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(friendPubKeyTs), roomId})) {
         if (cursor.moveToNext()) return new BigInteger(cursor.getString(0));
       }
@@ -82,24 +71,41 @@ public final class KeyStorageDB {
   }
 
   public Key getKey(long friendKeyTs, String roomId) {
-    Key key = null;
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      String sql = "select * from " + TableStruct.TABLE_NAME + " where " + TableStruct.PUB_KEY_TS + "=? and " + TableStruct.ROOM_ID + "=?";
+      String sql = "select * from " + TABLE_NAME + " where " + PUB_KEY_TS + "=? and " + ROOM_ID + "=?";
       try (Cursor cursor = db.rawQuery(sql, new String[]{String.valueOf(friendKeyTs), roomId})) {
         if (cursor.moveToNext()) {
-          key = new Key();
-          int i = 0;
-          key.friendKeyTs = cursor.getLong(i++);
-          key.roomId = cursor.getString(i++);
-          key.friendId = cursor.getString(i++);
-          key.pubKey = new BigInteger(cursor.getString(i++));
-          key.ownPubKey = new BigInteger(cursor.getString(i++));
-          key.key = new BigInteger(cursor.getString(i++));
-          key.timestamp = cursor.getLong(i);
+          return extractKeyFromCursor(cursor);
+        } else {
+          return null;
         }
       }
     }
+  }
 
+  public Key getLastKeyForRoom(String roomId) {
+    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String sql = "select * from " + TABLE_NAME + " where " + ROOM_ID + "=? order by " + PUB_KEY_TS + " desc limit 1";
+      try (Cursor cursor = db.rawQuery(sql, new String[]{roomId})) {
+        if (cursor.moveToNext()) {
+          return extractKeyFromCursor(cursor);
+        } else {
+          return null;
+        }
+      }
+    }
+  }
+
+  private Key extractKeyFromCursor(Cursor cursor) {
+    Key key = new Key();
+    int i = 0;
+    key.friendKeyTs = cursor.getLong(i++);
+    key.roomId = cursor.getString(i++);
+    key.friendId = cursor.getString(i++);
+    key.pubKey = new BigInteger(cursor.getString(i++));
+    key.ownPubKey = new BigInteger(cursor.getString(i++));
+    key.key = new BigInteger(cursor.getString(i++));
+    key.timestamp = cursor.getLong(i);
     return key;
   }
 
@@ -115,7 +121,7 @@ public final class KeyStorageDB {
     static final String TIMESTAMP = "timestamp";
   }
 
-  private static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS " + TableStruct.TABLE_NAME + ";";
+  private static final String SQL_DROP_TABLE = "DROP TABLE IF EXISTS " + TABLE_NAME + ";";
 
   private void dropTable() {
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
@@ -130,15 +136,15 @@ public final class KeyStorageDB {
   }
 
   private static final String SQL_CREATE_TABLE =
-    "CREATE TABLE IF NOT EXISTS " + TableStruct.TABLE_NAME + "(" +
-      TableStruct.PUB_KEY_TS + " INTEGER," +
-      TableStruct.ROOM_ID + " TEXT," +
-      TableStruct.FRIEND_ID + " TEXT," +
-      TableStruct.PUB_KEY + " TEXT," +
-      TableStruct.OWN_PUB_KEY + " TEXT," +
-      TableStruct.KEY + " TEXT," +
-      TableStruct.TIMESTAMP + " INTEGER," +
-      "PRIMARY KEY(" + TableStruct.PUB_KEY_TS + "," + TableStruct.ROOM_ID + ")" +
+    "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + "(" +
+      PUB_KEY_TS + " INTEGER," +
+      ROOM_ID + " TEXT," +
+      FRIEND_ID + " TEXT," +
+      PUB_KEY + " TEXT," +
+      OWN_PUB_KEY + " TEXT," +
+      KEY + " TEXT," +
+      TIMESTAMP + " INTEGER," +
+      "PRIMARY KEY(" + PUB_KEY_TS + "," + ROOM_ID + ")" +
       ");";
 
   private static class KeyStorageDBHelper extends SQLiteOpenHelper {

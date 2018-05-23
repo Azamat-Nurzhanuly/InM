@@ -2,6 +2,8 @@ package com.android.barracuda.cypher.models;
 
 
 import java.math.BigInteger;
+import java.util.Date;
+import java.util.TimeZone;
 
 public class Key {
   public long friendKeyTs;
@@ -24,6 +26,11 @@ public class Key {
     key.timestamp = this.timestamp;
 
     return key;
+  }
+
+  public static void main(String[] args) {
+    long now = System.currentTimeMillis();
+    System.out.println(new Date(now - TimeZone.getDefault().getOffset(now)));
   }
 
 }

@@ -2,7 +2,7 @@ package com.android.barracuda.cypher.models;
 
 import java.math.BigInteger;
 
-public class PublicKeys {
+public class DHKeys {
   public int id;
   public BigInteger p;
   public BigInteger g;

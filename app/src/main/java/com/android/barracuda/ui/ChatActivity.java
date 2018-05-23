@@ -154,7 +154,7 @@ public class ChatActivity extends MainActivity
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
 
     if (idFriend.size() > 1) {
-      cypherWorker = new GroupChatCypherWorker(roomId, this);
+      cypherWorker = new GroupChatCypherWorker(roomId, idFriend, this);
     } else {
       cypherWorker = new PrivateChatCypherWorker(roomId, idFriend.get(0).toString(), this);
     }
@@ -373,14 +373,9 @@ public class ChatActivity extends MainActivity
 
                 Log.d(getClass().getSimpleName(), "Could not decrypt", e);
 
-                // FIXME: 5/22/18 Раскомментить при релизе
-
-//                if (newMessage.fileModel == null) return;
-//                else
                 newMessage.text = "Could not decrypt. Cause: no key\n" + newMessage.text;
               }
             }
-
 
             if (newMessage.fileModel != null) {
               FileModel fileModel = new FileModel();
