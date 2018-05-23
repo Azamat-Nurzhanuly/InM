@@ -42,7 +42,7 @@ public class PrivateChatCypherWorker implements CypherWorker {
   public void encryptAndSend(final Message msg) {
     FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + "/" + msg.friendId + "/1").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
-      public void onDataChange(DataSnapshot dataSnapshot) throws RuntimeException {
+      public void onDataChange(DataSnapshot dataSnapshot) {
         PublicKeysToFb pks = dataSnapshot.getValue(PublicKeysToFb.class);
 
         if (pks == null || pks.key == null) {
@@ -94,19 +94,6 @@ public class PrivateChatCypherWorker implements CypherWorker {
     });
   }
 
-  private Key checkAndGetLastKey(long pksTimestamp, String roomId) {
-    if (lastKey != null && lastKey.friendKeyTs == pksTimestamp && lastKey.roomId.equals(roomId)) {
-      return lastKey.copy();
-    }
-    return null;
-  }
-
-  private void setLastKey(Key key) {
-    synchronized (this) {
-      lastKey = key;
-    }
-  }
-
   @Override
   public void decrypt(Message msg) throws NoKeyException {
     if (msg.key == null) return;
@@ -133,6 +120,19 @@ public class PrivateChatCypherWorker implements CypherWorker {
     } catch (Exception e) {
       if (e instanceof NoKeyException) throw (NoKeyException) e;
       e.printStackTrace();
+    }
+  }
+
+  private Key checkAndGetLastKey(long pksTimestamp, String roomId) {
+    if (lastKey != null && lastKey.friendKeyTs == pksTimestamp && lastKey.roomId.equals(roomId)) {
+      return lastKey.copy();
+    }
+    return null;
+  }
+
+  private void setLastKey(Key key) {
+    synchronized (this) {
+      lastKey = key;
     }
   }
 
