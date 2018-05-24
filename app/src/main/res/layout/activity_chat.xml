@@ -11,16 +11,8 @@
     android:layout_width="match_parent"
     android:layout_height="1dp"
     android:layout_above="@id/btnSend"
-    and<View
-    aound="@color/grey_200" />
+    android:background="@color/grey_200" />
 
-  <FrameLayout
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-
-    <include layout="@layout/media_attach_menu" />
-
-  </FrameLayout>
 
   <android.support.v7.widget.RecyclerView
     android:id="@+id/recyclerChat"
@@ -86,6 +78,10 @@
       android:scaleType="centerInside"
       app:src="@drawable/record" />
 
+
   </RelativeLayout>
+
+  <include layout="@layout/media_attach_menu" />
+
 </RelativeLayout>
 
