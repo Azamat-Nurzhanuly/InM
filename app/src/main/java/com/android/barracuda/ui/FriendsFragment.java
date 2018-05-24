@@ -554,35 +554,37 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
-            if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
-              listFriend.getListFriend().get(position).message.text != null &&
-              listFriend.getListFriend() != null) {
-              if (mapMark.get(id) != null) {
-                if (!mapMark.get(id)) {
-                  listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+            if(position < listFriend.getListFriend().size()) {
+              if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
+                listFriend.getListFriend().get(position).message.text != null &&
+                listFriend.getListFriend() != null) {
+                if (mapMark.get(id) != null) {
+                  if (!mapMark.get(id)) {
+                    listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+                  } else {
+                    listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                  }
+                  notifyDataSetChanged();
+                  mapMark.put(id, false);
                 } else {
                   listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                  notifyDataSetChanged();
                 }
-                notifyDataSetChanged();
-                mapMark.put(id, false);
-              } else {
-                listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
-                notifyDataSetChanged();
               }
-            }
 
-            if (listFriend.getListFriend().get(position).message != null &&
-              listFriend.getListFriend().get(position).message.fileModel != null &&
-              listFriend.getListFriend() != null) {
+              if (listFriend.getListFriend().get(position).message != null &&
+                listFriend.getListFriend().get(position).message.fileModel != null &&
+                listFriend.getListFriend() != null) {
 
                 listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
                 notifyDataSetChanged();
 
+              }
+
+              //TODO for fileModel
+
+              listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
             }
-
-            //TODO for fileModel
-
-            listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
           }
 
           @Override

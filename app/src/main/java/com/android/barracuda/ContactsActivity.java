@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -19,13 +20,22 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ContactsActivity extends AppCompatActivity {
+public class ContactsActivity extends BarracudaActivity {
 
   ListView contactsList;
 
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    setTheme();
+
+    getSupportActionBar().setTitle("Контакты");
+
+    ActionBar ab = getSupportActionBar();
+    assert ab != null;
+    ab.setDisplayHomeAsUpEnabled(true);
+
     setContentView(R.layout.activity_contacts);
 
     contactsList = (ListView) findViewById(R.id.contacts);
@@ -44,6 +54,7 @@ public class ContactsActivity extends AppCompatActivity {
       // Iterate through the cursor
       do {
         // Get the contacts name
+
         String name = cursor.getString(cursor.getColumnIndex(ContactsContract.Contacts.DISPLAY_NAME));
         contacts.add(name);
       } while (cursor.moveToNext());
