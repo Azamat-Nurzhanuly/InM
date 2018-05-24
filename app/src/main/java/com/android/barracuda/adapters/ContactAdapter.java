@@ -13,8 +13,11 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.barracuda.R;
+
+import org.w3c.dom.Text;
 
 public class ContactAdapter extends CursorRecyclerViewAdapter<ContactAdapter.ContactsViewHolder> {
 
@@ -31,13 +34,19 @@ public class ContactAdapter extends CursorRecyclerViewAdapter<ContactAdapter.Con
 
   @Override
   public void onBindViewHolder(ContactsViewHolder viewHolder, Cursor cursor) {
+
     String username = cursor.getString(cursor.getColumnIndex(
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
         ContactsContract.Data.DISPLAY_NAME_PRIMARY : ContactsContract.Data
         .DISPLAY_NAME
     ));
 
+    String number = cursor.getString(cursor.getColumnIndex(
+      ContactsContract.CommonDataKinds.Phone.NUMBER
+    ));
+
     viewHolder.setUsername(username);
+    viewHolder.setNumber(number);
     long contactId = getItemId(cursor.getPosition());
     long photoId = cursor.getLong(cursor.getColumnIndex(
       ContactsContract.Data.PHOTO_ID
@@ -55,6 +64,7 @@ public class ContactAdapter extends CursorRecyclerViewAdapter<ContactAdapter.Con
 
   public static class ContactsViewHolder extends RecyclerView.ViewHolder {
     TextView textViewContactUsername;
+    TextView textViewContactNumber;
     ImageView imageViewContactDisplay;
 
     public ContactsViewHolder(View itemView) {
@@ -63,10 +73,15 @@ public class ContactAdapter extends CursorRecyclerViewAdapter<ContactAdapter.Con
         .contact_username);
       imageViewContactDisplay = (ImageView) itemView.findViewById(R.id
         .image_view_contact_display);
+      textViewContactNumber = (TextView) itemView.findViewById(R.id.contact_number);
     }
 
     public void setUsername(String username) {
       textViewContactUsername.setText(username);
+    }
+
+    public void setNumber(String number) {
+      textViewContactNumber.setText(number);
     }
   }
 }
