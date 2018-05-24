@@ -52,5 +52,6 @@
 
     <string name="audio_call">Аудио вызов</string>
     <string name="video_call">Видео вызов</string>
+    <string name="media">Медиа</string>
 
 </resources>

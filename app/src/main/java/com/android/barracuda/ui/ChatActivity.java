@@ -1,6 +1,8 @@
 package com.android.barracuda.ui;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -31,7 +33,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.Button;
+import android.view.animation.AccelerateDecelerateInterpolator;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
@@ -81,9 +83,10 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+import io.codetail.animation.SupportAnimator;
+import io.codetail.animation.ViewAnimationUtils;
 
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
@@ -123,13 +126,11 @@ public class ChatActivity extends MainActivity
   private ArrayList<CharSequence> idFriend;
   private Consersation consersation;
 
+  //attach files
+  private LinearLayout attach_file_view;
+  private ImageButton gallery_btn, photo_btn, video_btn, audio_btn, location_btn, contact_btn;
+  private boolean attach_hidden = true;
 
-  private ImageButton btn_choose_doc;
-  private ImageButton btn_choose_camera;
-  private ImageButton btn_choose_gallery;
-  private ImageButton btn_choose_audio;
-  private ImageButton btn_choose_place;
-  private ImageButton btn_choose_contact;
 
   //audio recording
   private RecordButton recordButton;
@@ -171,7 +172,7 @@ public class ChatActivity extends MainActivity
     audio_call = menu.getItem(1);
     video_call = menu.getItem(2);
 
-    if(audioVideoServiceConnected) {
+    if (audioVideoServiceConnected) {
       audio_call.setEnabled(true);
       video_call.setEnabled(true);
     }
@@ -192,20 +193,6 @@ public class ChatActivity extends MainActivity
 
     consersation = new Consersation();
 
-    btn_choose_doc = (ImageButton) findViewById(R.id.btn_choose_doc);
-    btn_choose_camera = (ImageButton) findViewById(R.id.btn_choose_camera);
-    btn_choose_gallery = (ImageButton) findViewById(R.id.btn_choose_gallery);
-    btn_choose_audio = (ImageButton) findViewById(R.id.btn_choose_audio);
-    btn_choose_place = (ImageButton) findViewById(R.id.btn_choose_place);
-    btn_choose_contact = (ImageButton) findViewById(R.id.btn_choose_contact);
-
-    btn_choose_doc.setOnClickListener(this);
-    btn_choose_camera.setOnClickListener(this);
-    btn_choose_gallery.setOnClickListener(this);
-    btn_choose_audio.setOnClickListener(this);
-    btn_choose_place.setOnClickListener(this);
-    btn_choose_contact.setOnClickListener(this);
-
 
     String base64AvataUser = SharedPreferenceHelper.getInstance(this).getUserInfo().avata;
     if (!base64AvataUser.equals(StaticConfig.STR_DEFAULT_BASE64)) {
@@ -214,43 +201,33 @@ public class ChatActivity extends MainActivity
     } else {
       bitmapAvataUser = null;
     }
+
+    initAttachFileButtons();
     initAudioButtons();
     initAudioRecord();
 
 
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     initEditText(nameFriend);
+  }
 
+  private void initAttachFileButtons() {
+    attach_file_view = (LinearLayout) findViewById(R.id.reveal_items);
+    attach_file_view.setVisibility(View.INVISIBLE);
 
-//    fab = (Fab) findViewById(R.id.fab);
-//    final View sheetView = findViewById(R.id.fab_sheet);
-//    sheetView.setFocusable(true);
-//
-//    View overlay = findViewById(R.id.overlay);
-//    int sheetColor = getResources().getColor(R.color.fab_sheet_color);
-//    int fabColor = getResources().getColor(R.color.fab_color);
+    gallery_btn = (ImageButton) findViewById(R.id.gallery_img_btn);
+    photo_btn = (ImageButton) findViewById(R.id.photo_img_btn);
+    video_btn = (ImageButton) findViewById(R.id.video_img_btn);
+    audio_btn = (ImageButton) findViewById(R.id.audio_img_btn);
+    location_btn = (ImageButton) findViewById(R.id.location_img_btn);
+    contact_btn = (ImageButton) findViewById(R.id.contact_img_btn);
 
-    // Initialize material sheet FAB
-//    materialSheetFab = new MaterialSheetFab<>(fab, sheetView, overlay,
-//      sheetColor, fabColor);
-//
-//    fab.setOnClickListener(new View.OnClickListener() {
-//      @Override
-//      public void onClick(View v) {
-//        materialSheetFab.showSheet();
-//      }
-//    });
-//
-//    sheetView.setFocusable(true);
-//
-//    sheetView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//      @Override
-//      public void onFocusChange(View v, boolean hasFocus) {
-//        if (!hasFocus) {
-//          materialSheetFab.hideSheet();
-//        }
-//      }
-//    });
+    gallery_btn.setOnClickListener(this);
+    photo_btn.setOnClickListener(this);
+    video_btn.setOnClickListener(this);
+    audio_btn.setOnClickListener(this);
+    location_btn.setOnClickListener(this);
+    contact_btn.setOnClickListener(this);
   }
 
 
@@ -329,9 +306,17 @@ public class ChatActivity extends MainActivity
 
       @Override
       public void onCancel() {
-        recorder.stop();
-        recorder.reset();
-        recorder = null;
+
+        try {
+          recorder.stop();
+          recorder.reset();
+          recorder = null;
+        } catch (Exception e) {
+          recorder = null;
+          Log.w("stop recrod", e);
+        }
+
+
         //On Swipe To Cancel
         Log.d("RecordView", "onCancel");
 
@@ -478,7 +463,7 @@ public class ChatActivity extends MainActivity
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
 
-    switch(item.getItemId()) {
+    switch (item.getItemId()) {
       case R.id.about: {
         Toast.makeText(context, "Version 1.0", Toast.LENGTH_LONG).show();
         break;
@@ -496,10 +481,83 @@ public class ChatActivity extends MainActivity
         result.putExtra("idFriend", idFriend.get(0));
         setResult(RESULT_OK, result);
         this.finish();
+        break;
       }
+
+      case R.id.attach_btn:
+        openAttachItemMenu();
+        break;
     }
 
     return true;
+  }
+
+  private void openAttachItemMenu() {
+
+    int cx = (attach_file_view.getLeft() + attach_file_view.getRight());
+    int cy = attach_file_view.getTop();
+    int radius = Math.max(attach_file_view.getWidth(), attach_file_view.getHeight());
+
+    //Below Android LOLIPOP Version
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+      SupportAnimator animator =
+        ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, 0, radius);
+      animator.setInterpolator(new AccelerateDecelerateInterpolator());
+      animator.setDuration(700);
+
+      SupportAnimator animator_reverse = animator.reverse();
+
+      if (attach_hidden) {
+        attach_file_view.setVisibility(View.VISIBLE);
+        animator.start();
+        attach_hidden = false;
+      } else {
+        animator_reverse.addListener(new SupportAnimator.AnimatorListener() {
+          @Override
+          public void onAnimationStart() {
+
+          }
+
+          @Override
+          public void onAnimationEnd() {
+            attach_file_view.setVisibility(View.INVISIBLE);
+            attach_hidden = true;
+
+          }
+
+          @Override
+          public void onAnimationCancel() {
+
+          }
+
+          @Override
+          public void onAnimationRepeat() {
+
+          }
+        });
+        animator_reverse.start();
+      }
+    }
+    // Android LOLIPOP And ABOVE Version
+    else {
+      if (attach_hidden) {
+        Animator anim = android.view.ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, 0, radius);
+        attach_file_view.setVisibility(View.VISIBLE);
+        anim.start();
+        attach_hidden = false;
+      } else {
+        Animator anim = android.view.ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, radius, 0);
+        anim.addListener(new AnimatorListenerAdapter() {
+          @Override
+          public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            attach_file_view.setVisibility(View.INVISIBLE);
+            attach_hidden = true;
+          }
+        });
+        anim.start();
+      }
+    }
   }
 
   @Override
@@ -514,27 +572,27 @@ public class ChatActivity extends MainActivity
   public void onClick(View view) {
 
     switch (view.getId()) {
-      case R.id.btn_choose_audio:
+      case R.id.audio_img_btn:
         chooseMedia(AUDIO_PICKER_REQUEST);
         break;
 
-      case R.id.btn_choose_camera:
+      case R.id.photo_img_btn:
         chooseMedia(IMAGE_CAMERA_REQUEST);
         break;
 
-      case R.id.btn_choose_contact:
+      case R.id.video_img_btn:
+        chooseMedia(0);
+        break;
+
+      case R.id.contact_img_btn:
         chooseMedia(CONTACT_PICKER_REQUEST);
         break;
 
-      case R.id.btn_choose_doc:
-        chooseMedia(DOC_PICKER_REQUEST);
-        break;
-
-      case R.id.btn_choose_gallery:
+      case R.id.gallery_img_btn:
         chooseMedia(IMAGE_GALLERY_REQUEST);
         break;
 
-      case R.id.btn_choose_place:
+      case R.id.location_img_btn:
         chooseMedia(PLACE_PICKER_REQUEST);
         break;
     }
@@ -843,11 +901,11 @@ public class ChatActivity extends MainActivity
 
     audioVideoServiceConnected = true;
 
-    if(audio_call != null) {
+    if (audio_call != null) {
       audio_call.setEnabled(true);
     }
 
-    if(video_call != null) {
+    if (video_call != null) {
       video_call.setEnabled(true);
     }
   }

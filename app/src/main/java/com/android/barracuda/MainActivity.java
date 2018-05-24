@@ -283,6 +283,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     adapter.addFrag(new CallListFragment(), STR_INFO_CALL);
 
     floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
+
     viewPager.setAdapter(adapter);
     viewPager.setOffscreenPageLimit(3);
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
