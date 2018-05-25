@@ -13,8 +13,6 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -29,10 +27,8 @@ import com.android.barracuda.service.ServiceUtils;
 import com.android.barracuda.service.SinchService;
 import com.android.barracuda.service.cloud.CloudFunctions;
 import com.android.barracuda.ui.CallListFragment;
-import com.android.barracuda.ui.ContactsFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
-import com.android.barracuda.ui.dummy.DummyContent;
 import com.facebook.accountkit.AccessToken;
 import com.facebook.accountkit.Account;
 import com.facebook.accountkit.AccountKit;
@@ -65,7 +61,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
-public class MainActivity extends BarracudaActivity implements ServiceConnection, ContactsFragment.OnListFragmentInteractionListener {
+public class MainActivity extends BarracudaActivity implements ServiceConnection {
 
   private ViewPager viewPager;
   private TabLayout tabLayout = null;
@@ -275,16 +271,12 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     int[] tabIcons = {
       R.drawable.ic_tab_person,
       R.drawable.ic_tab_group,
-      R.drawable.ic_call,
-      R.drawable.ic_contact
+      R.drawable.ic_call
     };
 
     tabLayout.getTabAt(0).setIcon(tabIcons[0]);
     tabLayout.getTabAt(1).setIcon(tabIcons[1]);
     tabLayout.getTabAt(2).setIcon(tabIcons[2]);
-    tabLayout.getTabAt(3).setIcon(tabIcons[3]);
-
-
   }
 
   private void setupViewPager(ViewPager viewPager) {
@@ -295,9 +287,8 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     //TODO tabs
     adapter.addFrag(new CallListFragment(), STR_INFO_CALL);
 
-    adapter.addFrag(new ContactsFragment(), STR_CONTACTS);
-
     floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
+
     viewPager.setAdapter(adapter);
     viewPager.setOffscreenPageLimit(3);
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -442,11 +433,6 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     }
 
     return super.onOptionsItemSelected(item);
-  }
-
-  @Override
-  public void onListFragmentInteraction(DummyContent.DummyItem item) {
-   //TODO finish contacts interaction listener
   }
 
   class ViewPagerAdapter extends FragmentPagerAdapter {

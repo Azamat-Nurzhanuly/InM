@@ -25,6 +25,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 
+import com.android.barracuda.ContactsActivity;
+import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
 import com.android.barracuda.data.SharedPreferenceHelper;
@@ -195,31 +197,34 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onClick(final View view) {
 
-      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
-        .setTopColorRes(R.color.colorPrimary)
-        .setTitle("Add friend")
-        .setMessage("Enter friend's phone number")
-        .setIcon(R.drawable.ic_add_friend)
-        .setInputType(InputType.TYPE_CLASS_PHONE)
-        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
-          @Override
-          public boolean check(String text) {
-            Pattern VALID_EMAIL_ADDRESS_REGEX =
-              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
-            return matcher.find();
-          }
-        })
-        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-          @Override
-          public void onTextInputConfirmed(String text) {
-            //Tim id user id
-            findIDPhoneNumber(text);
-            //Check xem da ton tai ban ghi friend chua
-            //Ghi them 1 ban ghi
-          }
-        })
-        .show();
+//      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
+//        .setTopColorRes(R.color.colorPrimary)
+//        .setTitle("Add friend")
+//        .setMessage("Enter friend's phone number")
+//        .setIcon(R.drawable.ic_add_friend)
+//        .setInputType(InputType.TYPE_CLASS_PHONE)
+//        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
+//          @Override
+//          public boolean check(String text) {
+//            Pattern VALID_EMAIL_ADDRESS_REGEX =
+//              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
+//            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
+//            return matcher.find();
+//          }
+//        })
+//        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+//          @Override
+//          public void onTextInputConfirmed(String text) {
+//            //Tim id user id
+//            findIDPhoneNumber(text);
+//            //Check xem da ton tai ban ghi friend chua
+//            //Ghi them 1 ban ghi
+//          }
+//        })
+//        .show();
+
+      Intent profIntent = new Intent(getActivity(), ContactsActivity.class);
+      startActivity(profIntent);
     }
 
     private void findIDPhoneNumber(String phoneNumber) {
@@ -549,35 +554,37 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
-            if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
-              listFriend.getListFriend().get(position).message.text != null &&
-              listFriend.getListFriend() != null) {
-              if (mapMark.get(id) != null) {
-                if (!mapMark.get(id)) {
-                  listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+            if(position < listFriend.getListFriend().size()) {
+              if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
+                listFriend.getListFriend().get(position).message.text != null &&
+                listFriend.getListFriend() != null) {
+                if (mapMark.get(id) != null) {
+                  if (!mapMark.get(id)) {
+                    listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+                  } else {
+                    listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                  }
+                  notifyDataSetChanged();
+                  mapMark.put(id, false);
                 } else {
                   listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                  notifyDataSetChanged();
                 }
-                notifyDataSetChanged();
-                mapMark.put(id, false);
-              } else {
-                listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
-                notifyDataSetChanged();
               }
-            }
 
-            if (listFriend.getListFriend().get(position).message != null &&
-              listFriend.getListFriend().get(position).message.fileModel != null &&
-              listFriend.getListFriend() != null) {
+              if (listFriend.getListFriend().get(position).message != null &&
+                listFriend.getListFriend().get(position).message.fileModel != null &&
+                listFriend.getListFriend() != null) {
 
                 listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
                 notifyDataSetChanged();
 
+              }
+
+              //TODO for fileModel
+
+              listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
             }
-
-            //TODO for fileModel
-
-            listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
           }
 
           @Override
