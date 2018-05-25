@@ -17,6 +17,7 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 
 import com.android.barracuda.R;
@@ -42,6 +43,10 @@ import java.util.HashMap;
 import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.support.v4.content.ContextCompat.getDrawable;
+import static com.android.barracuda.data.StaticConfig.CALL_INCOMING;
+import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
 
 public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -124,7 +129,6 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
 
   @Override
   public void onRefresh() {
-
     dataListCalls = CallDB.getInstance(getContext()).getListCall();
     ListCallAdapter adapter = new ListCallAdapter(getContext(), dataListCalls, this);
 
@@ -177,7 +181,6 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   private ListCall listCall;
   private Context context;
   public static Map<String, Query> mapQuery;
-  public static Map<String, DatabaseReference> mapQueryOnline;
   public static Map<String, ChildEventListener> mapChildListener;
   public static Map<String, ChildEventListener> mapChildListenerOnline;
   public static Map<String, Boolean> mapMark;
@@ -191,7 +194,6 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     mapChildListener = new HashMap<>();
     mapMark = new HashMap<>();
     mapChildListenerOnline = new HashMap<>();
-    mapQueryOnline = new HashMap<>();
     this.fragment = fragment;
     dialogWaitDeleting = new LovelyProgressDialog(context);
   }
@@ -209,41 +211,43 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
       final String name = listCall.getListCall().get(position).name;
       final String id = listCall.getListCall().get(position).id;
       final String avata = listCall.getListCall().get(position).avata;
+      final String type = listCall.getListCall().get(position).type;
+
       ((ItemCallViewHolder) holder).txtName.setText(name);
 
       ((View) ((ItemCallViewHolder) holder).txtName.getParent().getParent().getParent())
               .setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                  ((ItemCallViewHolder) holder).txtName.setTypeface(Typeface.DEFAULT);
-                  Intent intent = new Intent(context, ChatActivity.class);
-                  intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, name);
-                  ArrayList<CharSequence> idFriend = new ArrayList<CharSequence>();
-                  idFriend.add(id);
-                  intent.putCharSequenceArrayListExtra(StaticConfig.INTENT_KEY_CHAT_ID, idFriend);
-                  ChatActivity.bitmapAvataFriend = new HashMap<>();
-                  if (!avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
-                    byte[] decodedString = Base64.decode(avata, Base64.DEFAULT);
-                    ChatActivity.bitmapAvataFriend.put(id, BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length));
-                  } else {
-                    ChatActivity.bitmapAvataFriend.put(id, BitmapFactory.decodeResource(context.getResources(), R.drawable.default_avata));
-                  }
-
-                  mapMark.put(id, null);
-                  fragment.startActivityForResult(intent, FriendsFragment.ACTION_START_CHAT);
+//                  ((ItemCallViewHolder) holder).txtName.setTypeface(Typeface.DEFAULT);
+//                  Intent intent = new Intent(context, ChatActivity.class);
+//                  intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, name);
+//                  ArrayList<CharSequence> idFriend = new ArrayList<CharSequence>();
+//                  idFriend.add(id);
+//                  intent.putCharSequenceArrayListExtra(StaticConfig.INTENT_KEY_CHAT_ID, idFriend);
+//                  ChatActivity.bitmapAvataFriend = new HashMap<>();
+//                  if (!avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
+//                    byte[] decodedString = Base64.decode(avata, Base64.DEFAULT);
+//                    ChatActivity.bitmapAvataFriend.put(id, BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length));
+//                  } else {
+//                    ChatActivity.bitmapAvataFriend.put(id, BitmapFactory.decodeResource(context.getResources(), R.drawable.default_avata));
+//                  }
+//
+//                  mapMark.put(id, null);
+//                  fragment.startActivityForResult(intent, FriendsFragment.ACTION_START_CHAT);
                 }
               });
-
-      ((View) ((ItemCallViewHolder) holder).txtName.getParent().getParent().getParent())
-              .setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View view) {
-                  return true;
-                }
-              });
-
 
       if (listCall.getListCall().get(position) != null) {
+
+        if(CALL_OUTGOING.equalsIgnoreCase(type)){
+          ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.out_call_history);
+        }
+        else{
+            if(CALL_INCOMING.equalsIgnoreCase(type)) {
+                ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.inc_call_history);
+            }
+        }
 
         ((ItemCallViewHolder) holder).txtTime.setVisibility(View.VISIBLE);
         if (!listCall.getListCall().get(position).message.text.startsWith(id)) {
@@ -323,46 +327,6 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
       }
 
-
-      if (mapQueryOnline.get(id) == null && mapChildListenerOnline.get(id) == null) {
-        mapQueryOnline.put(id, FirebaseDatabase.getInstance().getReference().child("user/" + id + "/status"));
-        mapChildListenerOnline.put(id, new ChildEventListener() {
-          @Override
-          public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            if (dataSnapshot.getValue() != null && dataSnapshot.getKey().equals("isOnline")) {
-              Log.d("FriendsFragment add " + id, (boolean) dataSnapshot.getValue() + "");
-              listCall.getListCall().get(position).status.isOnline = (boolean) dataSnapshot.getValue();
-              notifyDataSetChanged();
-            }
-          }
-
-          @Override
-          public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-            if (dataSnapshot.getValue() != null && dataSnapshot.getKey().equals("isOnline")) {
-              Log.d("FriendsFragment change " + id, (boolean) dataSnapshot.getValue() + "");
-              listCall.getListCall().get(position).status.isOnline = (boolean) dataSnapshot.getValue();
-              notifyDataSetChanged();
-            }
-          }
-
-          @Override
-          public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-          }
-
-          @Override
-          public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-          }
-
-          @Override
-          public void onCancelled(DatabaseError databaseError) {
-
-          }
-        });
-        mapQueryOnline.get(id).addChildEventListener(mapChildListenerOnline.get(id));
-      }
-
       if (listCall.getListCall().get(position).status.isOnline) {
         ((ItemCallViewHolder) holder).avata.setBorderWidth(10);
       } else {
@@ -379,12 +343,14 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 class ItemCallViewHolder extends RecyclerView.ViewHolder {
   public CircleImageView avata;
+  public ImageView type;
   public TextView txtName, txtTime;
   private Context context;
 
   ItemCallViewHolder(Context context, View itemView) {
     super(itemView);
     avata = (CircleImageView) itemView.findViewById(R.id.icon_avata);
+    type = (ImageView) itemView.findViewById(R.id.type);
     txtName = (TextView) itemView.findViewById(R.id.txtName);
     txtTime = (TextView) itemView.findViewById(R.id.txtTime);
     this.context = context;

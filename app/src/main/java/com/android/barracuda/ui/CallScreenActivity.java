@@ -40,6 +40,8 @@ import java.util.Locale;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
+
 public class CallScreenActivity extends ChatActivity {
 
 
@@ -72,11 +74,11 @@ public class CallScreenActivity extends ChatActivity {
     }
   }
 
-  public static Context getContext() {
+  private static Context getContext() {
     return mContext;
   }
 
-  public static void setContext(Context context) {
+  private static void setContext(Context context) {
     mContext = context;
   }
 
@@ -244,7 +246,10 @@ public class CallScreenActivity extends ChatActivity {
     public void onCallProgressing(Call call) {
       Log.d(TAG, "Call progressing");
       mAudioPlayer.playProgressTone();
+      saveCallInCallsHistory(call);
+    }
 
+    private void saveCallInCallsHistory(Call call) {
       final String id = call.getRemoteUserId();
       final String callId = call.getRemoteUserId();
 
@@ -260,6 +265,7 @@ public class CallScreenActivity extends ChatActivity {
             call.phoneNumber = (String) mapUserInfo.get("phoneNumber");
             call.avata = (String) mapUserInfo.get("avata");
             call.id = id;
+            call.type = CALL_OUTGOING;
             call.callId = String.valueOf(new Date().getTime());
             CallDB.getInstance(getContext()).addCall(call);
           }

@@ -24,4 +24,9 @@ public class StaticConfig {
   public static String SINCH_SECRET = "PkUMsoJsDk+8uGzCEerM5A==";
   public static String SINCH_HOST = "clientapi.sinch.com";
 
+
+  //type of call
+
+  public final static String CALL_OUTGOING = "outgoing";
+  public final static String CALL_INCOMING = "incoming";
 }

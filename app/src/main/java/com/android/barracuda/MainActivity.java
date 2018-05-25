@@ -21,6 +21,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import com.android.barracuda.data.CallDB;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.User;
@@ -190,6 +191,10 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
       .build();
     mCloudFunctions = retrofit.create(CloudFunctions.class);
+
+
+    //Create Table Calls
+    CallDB.getInstance(this).createDB();
   }
 
   @Override

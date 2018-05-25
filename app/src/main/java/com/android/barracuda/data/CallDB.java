@@ -6,6 +6,7 @@ import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 import com.android.barracuda.model.Call;
 import com.android.barracuda.model.ListCall;
@@ -80,6 +81,16 @@ public final class CallDB {
     db.execSQL(SQL_CREATE_ENTRIES);
   }
 
+  public void createDB() {
+    SQLiteDatabase db = mDbHelper.getWritableDatabase();
+    try {
+      db.execSQL(SQL_CREATE_ENTRIES);
+    }
+    catch (Exception e){
+      Log.w("Calls table", e);
+    }
+  }
+
   /* Inner class that defines the table contents */
   public static class FeedEntry implements BaseColumns {
     static final String TABLE_NAME = "calls";
@@ -115,6 +126,7 @@ public final class CallDB {
       super(context, DATABASE_NAME, null, DATABASE_VERSION);
     }
 
+    @Override
     public void onCreate(SQLiteDatabase db) {
       db.execSQL(SQL_CREATE_ENTRIES);
     }
