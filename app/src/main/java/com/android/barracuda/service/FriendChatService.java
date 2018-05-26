@@ -17,16 +17,21 @@ import android.util.Base64;
 import android.util.Log;
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
+import com.android.barracuda.cypher.GroupChatCypherWorker;
+import com.android.barracuda.cypher.PrivateChatCypherWorker;
+import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.data.FriendDB;
 import com.android.barracuda.data.GroupDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.Group;
 import com.android.barracuda.model.ListFriend;
+import com.android.barracuda.model.Message;
 import com.google.firebase.database.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 
@@ -89,8 +94,8 @@ public class FriendChatService extends Service {
                     mapBitmap.put(friend.idRoom, BitmapFactory.decodeResource(getResources(), R.drawable.default_avata));
                   }
                 }
-                createNotify(friend.name, (String) ((HashMap) dataSnapshot.getValue()).get("text"), friend.idRoom.hashCode(), mapBitmap.get(friend.idRoom), false);
-
+                Message message = dataSnapshot.getValue(Message.class);
+                decryptAndNotifyPrivate(friend, message);
               } else {
                 mapMark.put(friend.idRoom, true);
               }
@@ -127,11 +132,13 @@ public class FriendChatService extends Service {
           mapChildEventListenerMap.put(group.id, new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+              final Message message = dataSnapshot.getValue(Message.class);
+
               if (mapMark.get(group.id) != null && mapMark.get(group.id)) {
                 if (mapBitmap.get(group.id) == null) {
                   mapBitmap.put(group.id, BitmapFactory.decodeResource(getResources(), R.drawable.ic_notify_group));
                 }
-                createNotify(group.groupInfo.get("name"), (String) ((HashMap) dataSnapshot.getValue()).get("text"), group.id.hashCode(), mapBitmap.get(group.id), true);
+                decryptAndNotifyGroup(group, message);
               } else {
                 mapMark.put(group.id, true);
               }
@@ -165,6 +172,31 @@ public class FriendChatService extends Service {
     } else {
       stopSelf();
     }
+  }
+
+  private void decryptAndNotifyPrivate(final Friend friend, final Message message) {
+    new PrivateChatCypherWorker(friend.idRoom, friend.id, getApplicationContext())
+      .decrypt(message, new MessageActivityCallback() {
+        @Override
+        public void processMessage(Message msg) {
+          createNotify(friend.name, msg.text, friend.idRoom.hashCode(), mapBitmap.get(friend.idRoom), false);
+        }
+      });
+  }
+
+  private void decryptAndNotifyGroup(final Group group, final Message message) {
+    List<CharSequence> friendsIds = new ArrayList<>();
+    for (Friend friend : group.listFriend.getListFriend()) {
+      friendsIds.add(friend.id);
+    }
+
+    new GroupChatCypherWorker(group.id, friendsIds, getApplicationContext())
+      .decrypt(message, new MessageActivityCallback() {
+        @Override
+        public void processMessage(Message msg) {
+          createNotify(group.groupInfo.get("name"), message.text, group.id.hashCode(), mapBitmap.get(group.id), true);
+        }
+      });
   }
 
   public void stopNotify(String id) {
