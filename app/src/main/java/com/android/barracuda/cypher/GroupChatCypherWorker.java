@@ -40,72 +40,9 @@ public class GroupChatCypherWorker extends CypherWorker {
   public void encrypt(Message msg, MessageActivityCallback afterEncrypted) throws Exception {
     initLastKey();
     Key key = lastKey;
-    checkLastKey(key);
+    refreshLastKey(key);
     encryptInner(msg);
     afterEncrypted.processMessage(msg);
-  }
-
-  private void checkLastKey(Key key) {
-    initLastKey();
-
-    long now = System.currentTimeMillis();
-    if (key == null || key.timestamp + StaticConfig.KEY_LIFETIME < now) {
-      BigInteger newKey = randomKey();
-
-      for (CharSequence friend : friends) {
-        if (StaticConfig.UID.equals(friend.toString())) continue;
-        Message msg = new Message();
-        msg.idSender = StaticConfig.UID;
-        msg.idReceiver = roomId;
-        msg.friendId = friend.toString();
-        msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
-        msg.timestamp = now;
-
-        sendEncryptedNewKey(friend.toString(), msg);
-      }
-
-      setLastKey(addKey(now, roomId, null, null, null, newKey, now));
-    }
-  }
-
-  private void sendEncryptedNewKey(final String friendId, final Message msg) {
-    FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + "/" + friendId + "/1").addListenerForSingleValueEvent(new ValueEventListener() {
-      @Override
-      public void onDataChange(DataSnapshot dataSnapshot) {
-        PublicKeysFb pks = dataSnapshot.getValue(PublicKeysFb.class);
-
-        if (pks == null || pks.key == null) return;
-
-        try {
-          Key key = handlePublicKey(msg, pks);
-          msg.text = encryptText(msg.text, key.key.toByteArray());
-          msg.recKeyTs = pks.timestamp;
-          sendMessageTo(msg, FBaseEntities.GR_KEY + "/" + roomId + "/" + friendId);
-        } catch (Exception e) {
-          Log.e("CypherWorker", "Error", e);
-        }
-      }
-
-      @Override
-      public void onCancelled(DatabaseError databaseError) {}
-    });
-  }
-
-  private BigInteger randomKey() {
-    byte arr[] = new byte[32];
-    new Random().nextBytes(arr);
-    BigInteger key = new BigInteger(arr);
-    return key.abs();
-  }
-
-  private void encryptInner(Message msg) throws Exception {
-    if (lastKey != null)
-      doEncrypt(msg, lastKey);
-  }
-
-  private void initLastKey() {
-    if (this.lastKey == null)
-      setLastKey(KeyStorageDB.getInstance(context).getLastKeyForRoom(roomId));
   }
 
   @Override
@@ -138,7 +75,7 @@ public class GroupChatCypherWorker extends CypherWorker {
               try {
                 BigInteger newKey = encryptKeyFromMessage(keyMsg);
                 if (newKey == null) continue;
-                setLastKey(addKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp));
+                setLastKey(addKey(newKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp)));
                 removeKey(entry.getKey());
                 if (keyMsg.timestamp == msg.recKeyTs) {
                   try {
@@ -177,6 +114,79 @@ public class GroupChatCypherWorker extends CypherWorker {
 
       afterDecrypted.processMessage(msg);
     }
+  }
+
+  //*******************************************************************************************************
+
+  private void refreshLastKey(Key key) {
+    initLastKey();
+
+    long now = System.currentTimeMillis();
+    if (key == null || key.timestamp + StaticConfig.KEY_LIFETIME < now) {
+      BigInteger newKey = randomKey();
+
+      for (CharSequence friend : friends) {
+        if (StaticConfig.UID.equals(friend.toString())) continue;
+        Message msg = new Message();
+        msg.idSender = StaticConfig.UID;
+        msg.idReceiver = roomId;
+        msg.friendId = friend.toString();
+        msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
+        msg.timestamp = now;
+
+        sendEncryptedNewKey(friend.toString(), msg);
+      }
+
+      setLastKey(addKey(now, roomId, null, null, null, newKey, now));
+    }
+  }
+
+  private void sendEncryptedNewKey(final String friendId, final Message msg) {
+    FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + "/" + friendId + "/1").addListenerForSingleValueEvent(new ValueEventListener() {
+      @Override
+      public void onDataChange(DataSnapshot dataSnapshot) {
+        PublicKeysFb pks = dataSnapshot.getValue(PublicKeysFb.class);
+
+        if (pks == null || pks.key == null) return;
+
+        try {
+          Key key = handlePublicKey(roomId, null, pks);
+          msg.text = encryptText(msg.text, key.key.toByteArray());
+          msg.key = key.ownPubKey.toString();
+          msg.recKeyTs = pks.timestamp;
+          sendMessageTo(msg, FBaseEntities.GR_KEY + "/" + roomId + "/" + friendId);
+        } catch (Exception e) {
+          Log.e("CypherWorker", "Error", e);
+        }
+      }
+
+      @Override
+      public void onCancelled(DatabaseError databaseError) {}
+    });
+  }
+
+  protected void sendMessageTo(Message msg, String entity) {
+    FirebaseDatabase.getInstance().getReference().child(entity).push().setValue(msg);
+  }
+
+
+  private BigInteger randomKey() {
+    byte arr[] = new byte[32];
+    new Random().nextBytes(arr);
+    BigInteger key = new BigInteger(arr);
+    return key.abs();
+  }
+
+  private void encryptInner(Message msg) throws Exception {
+    if (lastKey != null) {
+      msg.text = encryptText(msg.text, lastKey.key.toByteArray());
+      msg.recKeyTs = lastKey.timestamp;
+    }
+  }
+
+  private void initLastKey() {
+    if (this.lastKey == null)
+      setLastKey(KeyStorageDB.getInstance(context).getLastKeyForRoom(roomId));
   }
 
   private BigInteger encryptKeyFromMessage(Message msg) throws Exception {
