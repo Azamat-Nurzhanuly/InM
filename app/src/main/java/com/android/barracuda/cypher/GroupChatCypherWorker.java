@@ -81,7 +81,7 @@ public class GroupChatCypherWorker extends CypherWorker {
                   try {
                     msg.text = decryptText(msg.text, newKey.toByteArray());
                   } catch (Exception e) {
-                    msg.text = "Could not decrypt.\n" + e.getMessage();
+                    msg.text = "Could not decrypt. Cause " + e.getMessage();
                     Log.e("CypherWorker", "Error", e);
                   }
                   afterDecrypted.processMessage(msg);
@@ -94,7 +94,7 @@ public class GroupChatCypherWorker extends CypherWorker {
             }
           }
           if (count == 0 || !decrypted) {
-            msg.text = "Could not decrypt. Cause: no key\n" + msg.text;
+            msg.text = "Could not decrypt. Cause: no key for " + msg.text;
             afterDecrypted.processMessage(msg);
           }
         }
@@ -108,7 +108,7 @@ public class GroupChatCypherWorker extends CypherWorker {
       try {
         msg.text = decryptText(msg.text, secretKey.toByteArray());
       } catch (Exception e) {
-        msg.text = "Could not decrypt.\n" + e.getMessage();
+        msg.text = "Could not decrypt. Cause: " + e.getMessage();
         Log.e("CypherWorker", "Error", e);
       }
 
