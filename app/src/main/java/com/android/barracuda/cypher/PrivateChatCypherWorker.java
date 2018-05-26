@@ -108,7 +108,7 @@ public class PrivateChatCypherWorker extends CypherWorker {
       Log.e("CypherWorker", "No key");
     } else {
       try {
-        msg.text = decryptText(msg.text, secretKey.toByteArray()) + "\nEncrypted: " + msg.text;
+        msg.text = decryptText(msg.text, secretKey.toByteArray());
       } catch (Exception e) {
         msg.text = "Could not decrypt. Cause: no key\n" + e.getMessage();
         Log.e("CypherWorker", "Error", e);

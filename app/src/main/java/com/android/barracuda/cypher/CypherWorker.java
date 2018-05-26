@@ -99,7 +99,8 @@ public abstract class CypherWorker {
     @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES");
     cipher.init(Cipher.DECRYPT_MODE, skeySpec);
 
-    return new String(cipher.doFinal(Base64.decode(encrypted, Base64.DEFAULT))) + ((StaticConfig.TEST_MODE) ? "\nKey=" + new BigInteger(key).toString() : "");
+    return new String(cipher.doFinal(Base64.decode(encrypted, Base64.DEFAULT)))
+      + ((StaticConfig.TEST_MODE) ? ("\nKey=" + new BigInteger(key).toString() + "\nEncrypted: " + encrypted) : "");
   }
 
   protected String encryptText(String text, byte[] key) throws Exception {

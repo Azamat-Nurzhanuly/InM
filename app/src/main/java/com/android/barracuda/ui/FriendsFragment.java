@@ -1,11 +1,6 @@
 package com.android.barracuda.ui;
 
-import android.content.BroadcastReceiver;
-import android.content.Context;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.IntentFilter;
-import android.content.SharedPreferences;
+import android.content.*;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -17,54 +12,32 @@ import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.text.InputType;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-
 import com.android.barracuda.ContactsActivity;
-import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
+import com.android.barracuda.cypher.PrivateChatCypherWorker;
+import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.data.FriendDB;
-import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
-import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListFriend;
+import com.android.barracuda.model.Message;
 import com.android.barracuda.service.ServiceUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.*;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
-import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static android.content.Context.MODE_PRIVATE;
-import static com.android.barracuda.BarracudaActivity.COLOR_BLUE;
-import static com.android.barracuda.BarracudaActivity.COLOR_DARK_BLUE;
-import static com.android.barracuda.BarracudaActivity.COLOR_ORANGE;
-import static com.android.barracuda.BarracudaActivity.COLOR_PURPLE;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -552,38 +525,29 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mapChildListener.put(id, new ChildEventListener() {
           @Override
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-            HashMap mapMessage = (HashMap) dataSnapshot.getValue();
+            Message message = dataSnapshot.getValue(Message.class);
+            if (message == null) return;
 
-            if(position < listFriend.getListFriend().size()) {
+            if (position < listFriend.getListFriend().size()) {
               if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
                 listFriend.getListFriend().get(position).message.text != null &&
                 listFriend.getListFriend() != null) {
-                if (mapMark.get(id) != null) {
-                  if (!mapMark.get(id)) {
-                    listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
-                  } else {
-                    listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
-                  }
-                  notifyDataSetChanged();
-                  mapMark.put(id, false);
-                } else {
-                  listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
-                  notifyDataSetChanged();
-                }
+
+                decryptAndAddToList(idRoom, id, position, message);
               }
 
               if (listFriend.getListFriend().get(position).message != null &&
                 listFriend.getListFriend().get(position).message.fileModel != null &&
                 listFriend.getListFriend() != null) {
 
-                listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
+                listFriend.getListFriend().get(position).message.fileModel = message.fileModel;
                 notifyDataSetChanged();
 
               }
 
               //TODO for fileModel
 
-              listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
+              listFriend.getListFriend().get(position).message.timestamp = message.timestamp;
             }
           }
 
@@ -671,6 +635,27 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     } else {
       ((ItemFriendViewHolder) holder).avata.setBorderWidth(0);
     }
+  }
+
+  private void decryptAndAddToList(String idRoom, final String id, final int position, Message message) {
+    new PrivateChatCypherWorker(idRoom, listFriend.getListFriend().get(position).id, context).decrypt(message,
+      new MessageActivityCallback() {
+        @Override
+        public void processMessage(Message msg) {
+          if (mapMark.get(id) != null) {
+            if (!mapMark.get(id)) {
+              listFriend.getListFriend().get(position).message.text = id + msg.text;
+            } else {
+              listFriend.getListFriend().get(position).message.text = msg.text;
+            }
+            notifyDataSetChanged();
+            mapMark.put(id, false);
+          } else {
+            listFriend.getListFriend().get(position).message.text = msg.text;
+            notifyDataSetChanged();
+          }
+        }
+      });
   }
 
   @Override

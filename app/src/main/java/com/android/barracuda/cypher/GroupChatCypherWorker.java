@@ -79,7 +79,7 @@ public class GroupChatCypherWorker extends CypherWorker {
                 removeKey(entry.getKey());
                 if (keyMsg.timestamp == msg.recKeyTs) {
                   try {
-                    msg.text = decryptText(msg.text, newKey.toByteArray()) + "\nEncrypted: " + msg.text;
+                    msg.text = decryptText(msg.text, newKey.toByteArray());
                   } catch (Exception e) {
                     msg.text = "Could not decrypt.\n" + e.getMessage();
                     Log.e("CypherWorker", "Error", e);
@@ -106,7 +106,7 @@ public class GroupChatCypherWorker extends CypherWorker {
     } else {
 
       try {
-        msg.text = decryptText(msg.text, secretKey.toByteArray()) + "\nEncrypted: " + msg.text;
+        msg.text = decryptText(msg.text, secretKey.toByteArray());
       } catch (Exception e) {
         msg.text = "Could not decrypt.\n" + e.getMessage();
         Log.e("CypherWorker", "Error", e);
