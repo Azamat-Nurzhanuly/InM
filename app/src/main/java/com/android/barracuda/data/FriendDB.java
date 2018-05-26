@@ -8,6 +8,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListFriend;
+import com.android.barracuda.util.AuthUtils;
 
 public final class FriendDB {
   private static FriendDBHelper mDbHelper = null;
@@ -41,7 +42,6 @@ public final class FriendDB {
     return db.insertWithOnConflict(FeedEntry.TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_REPLACE);
   }
 
-
   public void addListFriend(ListFriend listFriend) {
     for (Friend friend : listFriend.getListFriend()) {
       addFriend(friend);
@@ -66,9 +66,6 @@ public final class FriendDB {
       while (cursor.moveToNext()) {
         Friend friend = new Friend();
         friend.id = cursor.getString(0);
-
-        if (StaticConfig.TEST_MODE)
-          if (!("803619516500076".equals(friend.id) || "485212245227365".equals(friend.id))) continue;
 
         friend.name = cursor.getString(1);
         friend.phoneNumber = cursor.getString(2);

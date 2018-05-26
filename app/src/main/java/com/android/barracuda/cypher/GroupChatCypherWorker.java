@@ -75,7 +75,7 @@ public class GroupChatCypherWorker extends CypherWorker {
               try {
                 BigInteger newKey = encryptKeyFromMessage(keyMsg);
                 if (newKey == null) continue;
-                setLastKey(addKey(newKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp)));
+                setLastKey(addKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp));
                 removeKey(entry.getKey());
                 if (keyMsg.timestamp == msg.recKeyTs) {
                   try {

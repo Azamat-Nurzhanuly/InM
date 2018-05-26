@@ -9,7 +9,6 @@ import com.android.barracuda.cypher.models.PublicKeysFb;
 import com.android.barracuda.data.KeyStorageDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Message;
-import com.google.firebase.database.FirebaseDatabase;
 
 import javax.crypto.Cipher;
 import javax.crypto.spec.DHParameterSpec;
@@ -73,7 +72,7 @@ public abstract class CypherWorker {
     return key;
   }
 
-  protected Key newKey(long friendKeyTs, String roomId, String friendId, BigInteger pubKey, BigInteger ownPubKey, BigInteger key, long timestamp) {
+  private Key newKey(long friendKeyTs, String roomId, String friendId, BigInteger pubKey, BigInteger ownPubKey, BigInteger key, long timestamp) {
     Key k = new Key();
     k.friendKeyTs = friendKeyTs;
     k.roomId = roomId;
