@@ -1,6 +1,11 @@
 package com.android.barracuda.ui;
 
-import android.content.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.DialogInterface;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
@@ -19,27 +24,47 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+
+import com.android.barracuda.ContactsActivity;
+import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
+import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListFriend;
 import com.android.barracuda.service.ServiceUtils;
-import com.android.barracuda.util.AuthUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.*;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
+import com.google.firebase.database.ValueEventListener;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+
+import static android.content.Context.MODE_PRIVATE;
+import static com.android.barracuda.BarracudaActivity.COLOR_BLUE;
+import static com.android.barracuda.BarracudaActivity.COLOR_DARK_BLUE;
+import static com.android.barracuda.BarracudaActivity.COLOR_ORANGE;
+import static com.android.barracuda.BarracudaActivity.COLOR_PURPLE;
 
 public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -53,7 +78,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
   private CountDownTimer detectFriendOnline;
   public static int ACTION_START_CHAT = 1;
 
-  public static final String ACTION_DELETE_FRIEND = "com.android.rivchat.DELETE_FRIEND";
+  public static final String ACTION_DELETE_FRIEND = "DELETE_FRIEND";
 
   private BroadcastReceiver deleteFriendReceiver;
 
@@ -171,31 +196,35 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
     @Override
     public void onClick(final View view) {
-      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
-        .setTopColorRes(R.color.colorPrimary)
-        .setTitle("Add friend")
-        .setMessage("Enter friend's phone number")
-        .setIcon(R.drawable.ic_add_friend)
-        .setInputType(InputType.TYPE_CLASS_PHONE)
-        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
-          @Override
-          public boolean check(String text) {
-            Pattern VALID_EMAIL_ADDRESS_REGEX =
-              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
-            return matcher.find();
-          }
-        })
-        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-          @Override
-          public void onTextInputConfirmed(String text) {
-            //Tim id user id
-            findIDPhoneNumber(text);
-            //Check xem da ton tai ban ghi friend chua
-            //Ghi them 1 ban ghi
-          }
-        })
-        .show();
+
+//      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
+//        .setTopColorRes(R.color.colorPrimary)
+//        .setTitle("Add friend")
+//        .setMessage("Enter friend's phone number")
+//        .setIcon(R.drawable.ic_add_friend)
+//        .setInputType(InputType.TYPE_CLASS_PHONE)
+//        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
+//          @Override
+//          public boolean check(String text) {
+//            Pattern VALID_EMAIL_ADDRESS_REGEX =
+//              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
+//            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
+//            return matcher.find();
+//          }
+//        })
+//        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+//          @Override
+//          public void onTextInputConfirmed(String text) {
+//            //Tim id user id
+//            findIDPhoneNumber(text);
+//            //Check xem da ton tai ban ghi friend chua
+//            //Ghi them 1 ban ghi
+//          }
+//        })
+//        .show();
+
+      Intent profIntent = new Intent(getActivity(), ContactsActivity.class);
+      startActivity(profIntent);
     }
 
     private void findIDPhoneNumber(String phoneNumber) {
@@ -232,8 +261,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
               user.phoneNumber = (String) userMap.get("phoneNumber");
               user.avata = (String) userMap.get("avata");
               user.id = id;
-              user.idRoom = AuthUtils.userIdToRoomId(id);
-              checkBeforAddFriend(id, user);
+              user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
+              checkBeforeAddFriend(id, user);
             }
           }
         }
@@ -248,7 +277,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     /**
      * Lay danh sach friend cua một UID
      */
-    private void checkBeforAddFriend(final String idFriend, Friend userInfo) {
+    private void checkBeforeAddFriend(final String idFriend, Friend userInfo) {
       dialogWait.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
         .setTitle("Add friend....")
@@ -364,9 +393,6 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     });
   }
 
-  /**
-   * Truy cap bang user lay thong tin id nguoi dung
-   */
   private void getAllFriendInfo(final int index) {
     if (index == listFriendID.size()) {
       //save list friend
@@ -386,7 +412,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
             user.phoneNumber = (String) mapUserInfo.get("phoneNumber");
             user.avata = (String) mapUserInfo.get("avata");
             user.id = id;
-            user.idRoom = AuthUtils.userIdToRoomId(id);
+            user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
             dataListFriend.getListFriend().add(user);
             FriendDB.getInstance(getContext()).addFriend(user);
           }
@@ -528,35 +554,37 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
-            if (listFriend.getListFriend().get(position).message != null &&
-              listFriend.getListFriend().get(position).message.text != null &&
-              listFriend.getListFriend() != null) {
-              if (mapMark.get(id) != null) {
-                if (!mapMark.get(id)) {
-                  listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+            if(position < listFriend.getListFriend().size()) {
+              if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
+                listFriend.getListFriend().get(position).message.text != null &&
+                listFriend.getListFriend() != null) {
+                if (mapMark.get(id) != null) {
+                  if (!mapMark.get(id)) {
+                    listFriend.getListFriend().get(position).message.text = id + mapMessage.get("text");
+                  } else {
+                    listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                  }
+                  notifyDataSetChanged();
+                  mapMark.put(id, false);
                 } else {
                   listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
+                  notifyDataSetChanged();
                 }
-                notifyDataSetChanged();
-                mapMark.put(id, false);
-              } else {
-                listFriend.getListFriend().get(position).message.text = (String) mapMessage.get("text");
-                notifyDataSetChanged();
               }
+
+              if (listFriend.getListFriend().get(position).message != null &&
+                listFriend.getListFriend().get(position).message.fileModel != null &&
+                listFriend.getListFriend() != null) {
+
+                listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
+                notifyDataSetChanged();
+
+              }
+
+              //TODO for fileModel
+
+              listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
             }
-
-            if (listFriend.getListFriend().get(position).message != null &&
-              listFriend.getListFriend().get(position).message.fileModel != null &&
-              listFriend.getListFriend() != null) {
-
-              listFriend.getListFriend().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
-              notifyDataSetChanged();
-
-            }
-
-            //TODO for fileModel
-
-            listFriend.getListFriend().get(position).message.timestamp = (long) mapMessage.get("timestamp");
           }
 
           @Override
@@ -587,12 +615,15 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         mapMark.put(id, true);
       }
     }
-    if (listFriend.getListFriend().get(position).avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
+    if (StaticConfig.STR_DEFAULT_BASE64.equals(listFriend.getListFriend().get(position).avata)) {
       ((ItemFriendViewHolder) holder).avata.setImageResource(R.drawable.default_avata);
     } else {
-      byte[] decodedString = Base64.decode(listFriend.getListFriend().get(position).avata, Base64.DEFAULT);
-      Bitmap src = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-      ((ItemFriendViewHolder) holder).avata.setImageBitmap(src);
+
+      if (listFriend.getListFriend().get(position).avata != null) {
+        byte[] decodedString = Base64.decode(listFriend.getListFriend().get(position).avata, Base64.DEFAULT);
+        Bitmap src = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+        ((ItemFriendViewHolder) holder).avata.setImageBitmap(src);
+      }
     }
 
 

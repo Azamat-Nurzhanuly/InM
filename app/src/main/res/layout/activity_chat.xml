@@ -2,39 +2,17 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                xmlns:tools="http://schemas.android.com/tools"
                 android:background="@color/colorIndivateTab"
                 android:orientation="vertical">
-
-
-  <Button
-    android:text="Call"
-    android:id="@+id/chat_audio_call_button"
-    android:layout_width="wrap_content"
-    android:background="#000"
-    android:textColor="#fff"
-    android:layout_height="wrap_content"
-    android:textSize="16sp"
-    android:enabled="false"
-  />
-  <Button
-    android:text="video"
-    android:id="@+id/chat_video_call_button"
-    android:layout_width="wrap_content"
-    android:background="#000"
-    android:textColor="#fff"
-    android:layout_height="wrap_content"
-    android:textSize="16sp"
-    android:layout_marginLeft="100dp"
-    android:enabled="false"
-  />
-
 
   <View
     android:id="@+id/line"
     android:layout_width="match_parent"
     android:layout_height="1dp"
     android:layout_above="@id/btnSend"
-    android:background="@color/grey_200"/>
+    android:background="@color/grey_200" />
+
 
   <android.support.v7.widget.RecyclerView
     android:id="@+id/recyclerChat"
@@ -43,113 +21,6 @@
     android:layout_above="@id/line">
 
   </android.support.v7.widget.RecyclerView>
-
-  <RelativeLayout
-    android:visibility="invisible"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:layout_above="@id/btnSend">
-
-    <!-- Your FAB implementation -->
-
-
-    <!-- Overlay that dims the screen -->
-    <com.gordonwong.materialsheetfab.DimOverlayFrameLayout
-      android:id="@+id/overlay"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"/>
-
-    <!-- Circular reveal container for the sheet -->
-    <io.codetail.widget.RevealLinearLayout
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:gravity="end|bottom"
-      android:orientation="vertical">
-
-      <!-- Sheet that contains your items -->
-      <android.support.v7.widget.CardView
-        android:id="@+id/fab_sheet"
-        android:layout_width="250dp"
-        android:layout_height="150dp"
-        android:layout_marginBottom="50dp">
-
-        <!-- TODO: Put your sheet items here -->
-
-        <LinearLayout
-          android:id="@+id/buttons_container_top"
-          android:layout_width="match_parent"
-          android:layout_height="75dp"
-
-          android:orientation="horizontal">
-
-          <ImageButton
-            android:id="@+id/btn_choose_doc"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/document"/>
-
-          <ImageButton
-            android:id="@+id/btn_choose_camera"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/camera"/>
-
-          <ImageButton
-            android:id="@+id/btn_choose_gallery"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/gallery"/>
-        </LinearLayout>
-
-        <LinearLayout
-          android:id="@+id/buttons_container_bottom"
-          android:layout_width="match_parent"
-          android:layout_height="75dp"
-          android:layout_alignParentBottom="true"
-          android:layout_marginTop="75dp"
-          android:orientation="horizontal">
-
-          <ImageButton
-            android:id="@+id/btn_choose_audio"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/music"/>
-
-          <ImageButton
-            android:id="@+id/btn_choose_place"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/location"/>
-
-          <ImageButton
-            android:id="@+id/btn_choose_contact"
-            android:layout_width="80dp"
-            android:layout_height="match_parent"
-            android:background="#00000000"
-            android:padding="10dp"
-            android:scaleType="centerInside"
-            android:src="@drawable/contacts"/>
-        </LinearLayout>
-
-
-      </android.support.v7.widget.CardView>
-    </io.codetail.widget.RevealLinearLayout>
-  </RelativeLayout>
 
   <EditText
     android:id="@+id/editWriteMessage"
@@ -166,7 +37,7 @@
     android:paddingEnd="7dp"
     android:paddingStart="7dp"
     android:textColorHint="#aeafaf"
-    android:textSize="15sp"/>
+    android:textSize="15sp" />
 
   <ImageButton
     android:id="@+id/btnSend"
@@ -178,7 +49,7 @@
     android:padding="10dp"
     android:scaleType="centerInside"
     android:src="@drawable/ic_send"
-    android:visibility="invisible"/>
+    android:visibility="invisible" />
 
   <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
                   xmlns:app="http://schemas.android.com/apk/res-auto"
@@ -196,7 +67,7 @@
       android:layout_toLeftOf="@id/record_button"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
       app:slide_to_cancel_margin_right="10dp"
-      app:slide_to_cancel_text="Slide To Cancel"/>
+      app:slide_to_cancel_text="Slide To Cancel" />
 
     <com.devlomi.record_view.RecordButton
       android:id="@+id/record_button"
@@ -205,20 +76,12 @@
       android:layout_alignParentBottom="true"
       android:layout_alignParentRight="true"
       android:scaleType="centerInside"
-      app:src="@drawable/record"/>
+      app:src="@drawable/record" />
 
 
   </RelativeLayout>
 
-  <!--<com.android.barracuda.fab.Fab-->
-  <!--android:id="@+id/fab"-->
-  <!--android:layout_width="45dp"-->
-  <!--android:layout_height="45dp"-->
-  <!--android:layout_alignParentBottom="true"-->
-  <!--android:layout_alignParentEnd="true"-->
-  <!--android:layout_marginRight="45dp"-->
-  <!--android:background="#00000000"-->
-  <!--android:padding="10dp"-->
-  <!--android:scaleType="centerInside" />-->
+  <include layout="@layout/media_attach_menu" />
+
 </RelativeLayout>
 

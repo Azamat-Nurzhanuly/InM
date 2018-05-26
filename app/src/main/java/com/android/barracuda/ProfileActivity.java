@@ -54,18 +54,17 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ProfileActivity extends AppCompatActivity {
+public class ProfileActivity extends BarracudaActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_profile);
-        Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
 
-        if(toolbar != null) {
-            setSupportActionBar(toolbar);
-            getSupportActionBar().setTitle("Настройка профиля");
-        }
+        setTheme();
+
+        setContentView(R.layout.activity_profile);
+
+        getSupportActionBar().setTitle("Настройка профиля");
 
         ActionBar ab = getSupportActionBar();
         assert ab != null;

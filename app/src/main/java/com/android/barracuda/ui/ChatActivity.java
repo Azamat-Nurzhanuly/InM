@@ -1,6 +1,8 @@
 package com.android.barracuda.ui;
 
 import android.Manifest;
+import android.animation.Animator;
+import android.animation.AnimatorListenerAdapter;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
@@ -25,15 +27,24 @@ import android.text.TextWatcher;
 import android.text.format.DateFormat;
 import android.util.Base64;
 import android.util.Log;
-import android.view.*;
-import android.widget.*;
+import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuItem;
+import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.animation.AccelerateDecelerateInterpolator;
+import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.SeekBar;
+import android.widget.TextView;
+import android.widget.Toast;
+
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
-import com.android.barracuda.cypher.CypherWorker;
-import com.android.barracuda.cypher.GroupChatCypherWorker;
-import com.android.barracuda.cypher.PrivateChatCypherWorker;
-import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.fab.Fab;
@@ -43,13 +54,22 @@ import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.service.SinchService;
 import com.bumptech.glide.Glide;
-import com.devlomi.record_view.*;
+import com.devlomi.record_view.OnBasketAnimationEnd;
+import com.devlomi.record_view.OnRecordClickListener;
+import com.devlomi.record_view.OnRecordListener;
+import com.devlomi.record_view.RecordButton;
+import com.devlomi.record_view.RecordView;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.database.*;
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
@@ -57,13 +77,16 @@ import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
-import de.hdodenhof.circleimageview.CircleImageView;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+
+import de.hdodenhof.circleimageview.CircleImageView;
+import io.codetail.animation.SupportAnimator;
+import io.codetail.animation.ViewAnimationUtils;
 
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
@@ -103,13 +126,11 @@ public class ChatActivity extends MainActivity
   private ArrayList<CharSequence> idFriend;
   private Consersation consersation;
 
+  //attach files
+  private LinearLayout attach_file_view;
+  private ImageButton gallery_btn, photo_btn, video_btn, audio_btn, location_btn, contact_btn;
+  private boolean attach_hidden = true;
 
-  private ImageButton btn_choose_doc;
-  private ImageButton btn_choose_camera;
-  private ImageButton btn_choose_gallery;
-  private ImageButton btn_choose_audio;
-  private ImageButton btn_choose_place;
-  private ImageButton btn_choose_contact;
 
   //audio recording
   private RecordButton recordButton;
@@ -135,12 +156,29 @@ public class ChatActivity extends MainActivity
   public MaterialSheetFab materialSheetFab;
   public Fab fab = null;
 
-  //SINCH call
-  private Button chat_audio_call_button;
-  private Button chat_video_call_button;
+  private Context context;
 
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
+
+  MenuItem audio_call;
+  MenuItem video_call;
+  private boolean audioVideoServiceConnected = false;
+
+  @Override
+  public boolean onCreateOptionsMenu(Menu menu) {
+    getMenuInflater().inflate(R.menu.menu_chat, menu);
+
+    audio_call = menu.getItem(1);
+    video_call = menu.getItem(2);
+
+    if (audioVideoServiceConnected) {
+      audio_call.setEnabled(true);
+      video_call.setEnabled(true);
+    }
+
+    return true;
+  }
 
   CypherWorker cypherWorker;
 
@@ -149,6 +187,7 @@ public class ChatActivity extends MainActivity
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_chat);
+    context = this;
     Intent intentData = getIntent();
     idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
@@ -164,21 +203,6 @@ public class ChatActivity extends MainActivity
     consersation = new Consersation();
 
 
-    btn_choose_doc = (ImageButton) findViewById(R.id.btn_choose_doc);
-    btn_choose_camera = (ImageButton) findViewById(R.id.btn_choose_camera);
-    btn_choose_gallery = (ImageButton) findViewById(R.id.btn_choose_gallery);
-    btn_choose_audio = (ImageButton) findViewById(R.id.btn_choose_audio);
-    btn_choose_place = (ImageButton) findViewById(R.id.btn_choose_place);
-    btn_choose_contact = (ImageButton) findViewById(R.id.btn_choose_contact);
-
-    btn_choose_doc.setOnClickListener(this);
-    btn_choose_camera.setOnClickListener(this);
-    btn_choose_gallery.setOnClickListener(this);
-    btn_choose_audio.setOnClickListener(this);
-    btn_choose_place.setOnClickListener(this);
-    btn_choose_contact.setOnClickListener(this);
-
-
     String base64AvataUser = SharedPreferenceHelper.getInstance(this).getUserInfo().avata;
     if (!base64AvataUser.equals(StaticConfig.STR_DEFAULT_BASE64)) {
       byte[] decodedString = Base64.decode(base64AvataUser, Base64.DEFAULT);
@@ -186,49 +210,33 @@ public class ChatActivity extends MainActivity
     } else {
       bitmapAvataUser = null;
     }
+
+    initAttachFileButtons();
     initAudioButtons();
     initAudioRecord();
 
 
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     initEditText(nameFriend);
+  }
 
+  private void initAttachFileButtons() {
+    attach_file_view = (LinearLayout) findViewById(R.id.reveal_items);
+    attach_file_view.setVisibility(View.INVISIBLE);
 
-//    fab = (Fab) findViewById(R.id.fab);
-//    final View sheetView = findViewById(R.id.fab_sheet);
-//    sheetView.setFocusable(true);
-//
-//    View overlay = findViewById(R.id.overlay);
-//    int sheetColor = getResources().getColor(R.color.fab_sheet_color);
-//    int fabColor = getResources().getColor(R.color.fab_color);
+    gallery_btn = (ImageButton) findViewById(R.id.gallery_img_btn);
+    photo_btn = (ImageButton) findViewById(R.id.photo_img_btn);
+    video_btn = (ImageButton) findViewById(R.id.video_img_btn);
+    audio_btn = (ImageButton) findViewById(R.id.audio_img_btn);
+    location_btn = (ImageButton) findViewById(R.id.location_img_btn);
+    contact_btn = (ImageButton) findViewById(R.id.contact_img_btn);
 
-    // Initialize material sheet FAB
-//    materialSheetFab = new MaterialSheetFab<>(fab, sheetView, overlay,
-//      sheetColor, fabColor);
-//
-//    fab.setOnClickListener(new View.OnClickListener() {
-//      @Override
-//      public void onClick(View v) {
-//        materialSheetFab.showSheet();
-//      }
-//    });
-//
-//    sheetView.setFocusable(true);
-//
-//    sheetView.setOnFocusChangeListener(new View.OnFocusChangeListener() {
-//      @Override
-//      public void onFocusChange(View v, boolean hasFocus) {
-//        if (!hasFocus) {
-//          materialSheetFab.hideSheet();
-//        }
-//      }
-//    });
-
-    chat_audio_call_button = (Button) findViewById(R.id.chat_audio_call_button);
-    chat_video_call_button = (Button) findViewById(R.id.chat_video_call_button);
-
-    chat_audio_call_button.setOnClickListener(this);
-    chat_video_call_button.setOnClickListener(this);
+    gallery_btn.setOnClickListener(this);
+    photo_btn.setOnClickListener(this);
+    video_btn.setOnClickListener(this);
+    audio_btn.setOnClickListener(this);
+    location_btn.setOnClickListener(this);
+    contact_btn.setOnClickListener(this);
   }
 
 
@@ -251,7 +259,7 @@ public class ChatActivity extends MainActivity
 
   private void initAudioRecord() {
     // Record to the external cache directory for visibility
-    mFileName = getExternalCacheDir().getAbsolutePath();
+    mFileName = getExternalCacheDir() != null ? getExternalCacheDir().getAbsolutePath() : "";
     mFileName += "/audioMessage.3gp";
 
     ActivityCompat.requestPermissions(this, permissions, REQUEST_RECORD_AUDIO_PERMISSION);
@@ -307,9 +315,17 @@ public class ChatActivity extends MainActivity
 
       @Override
       public void onCancel() {
-        recorder.stop();
-        recorder.reset();
-        recorder = null;
+
+        try {
+          recorder.stop();
+          recorder.reset();
+          recorder = null;
+        } catch (Exception e) {
+          recorder = null;
+          Log.w("stop recrod", e);
+        }
+
+
         //On Swipe To Cancel
         Log.d("RecordView", "onCancel");
 
@@ -347,6 +363,7 @@ public class ChatActivity extends MainActivity
   private void initEditText(String nameFriend) {
     if (idFriend != null && nameFriend != null) {
       getSupportActionBar().setTitle(nameFriend);
+
 
       linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
       recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
@@ -436,13 +453,102 @@ public class ChatActivity extends MainActivity
 
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
-    if (item.getItemId() == android.R.id.home) {
-      Intent result = new Intent();
-      result.putExtra("idFriend", idFriend.get(0));
-      setResult(RESULT_OK, result);
-      this.finish();
+
+    switch (item.getItemId()) {
+      case R.id.about: {
+        Toast.makeText(context, "Version 1.0", Toast.LENGTH_LONG).show();
+        break;
+      }
+      case R.id.audio_call: {
+        audioCall();
+        break;
+      }
+      case R.id.video_call: {
+        videoCall();
+        break;
+      }
+      case android.R.id.home: {
+        Intent result = new Intent();
+        result.putExtra("idFriend", idFriend.get(0));
+        setResult(RESULT_OK, result);
+        this.finish();
+        break;
+      }
+
+      case R.id.attach_btn:
+        openAttachItemMenu();
+        break;
     }
+
     return true;
+  }
+
+  private void openAttachItemMenu() {
+
+    int cx = (attach_file_view.getLeft() + attach_file_view.getRight());
+    int cy = attach_file_view.getTop();
+    int radius = Math.max(attach_file_view.getWidth(), attach_file_view.getHeight());
+
+    //Below Android LOLIPOP Version
+    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
+      SupportAnimator animator =
+        ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, 0, radius);
+      animator.setInterpolator(new AccelerateDecelerateInterpolator());
+      animator.setDuration(700);
+
+      SupportAnimator animator_reverse = animator.reverse();
+
+      if (attach_hidden) {
+        attach_file_view.setVisibility(View.VISIBLE);
+        animator.start();
+        attach_hidden = false;
+      } else {
+        animator_reverse.addListener(new SupportAnimator.AnimatorListener() {
+          @Override
+          public void onAnimationStart() {
+
+          }
+
+          @Override
+          public void onAnimationEnd() {
+            attach_file_view.setVisibility(View.INVISIBLE);
+            attach_hidden = true;
+
+          }
+
+          @Override
+          public void onAnimationCancel() {
+
+          }
+
+          @Override
+          public void onAnimationRepeat() {
+
+          }
+        });
+        animator_reverse.start();
+      }
+    }
+    // Android LOLIPOP And ABOVE Version
+    else {
+      if (attach_hidden) {
+        Animator anim = android.view.ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, 0, radius);
+        attach_file_view.setVisibility(View.VISIBLE);
+        anim.start();
+        attach_hidden = false;
+      } else {
+        Animator anim = android.view.ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, radius, 0);
+        anim.addListener(new AnimatorListenerAdapter() {
+          @Override
+          public void onAnimationEnd(Animator animation) {
+            super.onAnimationEnd(animation);
+            attach_file_view.setVisibility(View.INVISIBLE);
+            attach_hidden = true;
+          }
+        });
+        anim.start();
+      }
+    }
   }
 
   @Override
@@ -457,36 +563,28 @@ public class ChatActivity extends MainActivity
   public void onClick(View view) {
 
     switch (view.getId()) {
-      case R.id.btn_choose_audio:
+      case R.id.audio_img_btn:
         chooseMedia(AUDIO_PICKER_REQUEST);
         break;
 
-      case R.id.btn_choose_camera:
+      case R.id.photo_img_btn:
         chooseMedia(IMAGE_CAMERA_REQUEST);
         break;
 
-      case R.id.btn_choose_contact:
+      case R.id.video_img_btn:
+        chooseMedia(0);
+        break;
+
+      case R.id.contact_img_btn:
         chooseMedia(CONTACT_PICKER_REQUEST);
         break;
 
-      case R.id.btn_choose_doc:
-        chooseMedia(DOC_PICKER_REQUEST);
-        break;
-
-      case R.id.btn_choose_gallery:
+      case R.id.gallery_img_btn:
         chooseMedia(IMAGE_GALLERY_REQUEST);
         break;
 
-      case R.id.btn_choose_place:
+      case R.id.location_img_btn:
         chooseMedia(PLACE_PICKER_REQUEST);
-        break;
-
-      case R.id.chat_audio_call_button:
-        audioCall();
-        break;
-
-      case R.id.chat_video_call_button:
-        videoCall();
         break;
     }
   }
@@ -804,8 +902,20 @@ public class ChatActivity extends MainActivity
   @Override
   protected void onServiceConnected() {
     getSinchServiceInterface().setStartListener(this);
-    chat_audio_call_button.setEnabled(true);
-    chat_video_call_button.setEnabled(true);
+
+    audioVideoServiceConnected = true;
+
+    if (audio_call != null) {
+      audio_call.setEnabled(true);
+    }
+
+    if (video_call != null) {
+      video_call.setEnabled(true);
+    }
+import com.android.barracuda.cypher.CypherWorker;
+import com.android.barracuda.cypher.GroupChatCypherWorker;
+import com.android.barracuda.cypher.PrivateChatCypherWorker;
+import com.android.barracuda.cypher.callback.MessageActivityCallback;
   }
 }
 

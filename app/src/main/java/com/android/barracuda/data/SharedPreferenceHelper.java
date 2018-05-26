@@ -2,6 +2,7 @@ package com.android.barracuda.data;
 
 import android.content.Context;
 import android.content.SharedPreferences;
+
 import com.android.barracuda.model.User;
 
 
@@ -14,6 +15,9 @@ public class SharedPreferenceHelper {
   private static String SHARE_KEY_PHONE_NUMBER = "phoneNumber";
   private static String SHARE_KEY_AVATA = "avata";
   private static String SHARE_KEY_UID = "uid";
+
+  public static final String USER_SELECTION = "user_selection";
+  public static final String SHARE_COLOR = "color";
 
   private SharedPreferenceHelper() {
   }

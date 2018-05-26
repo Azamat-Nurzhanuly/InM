@@ -3,6 +3,7 @@ package com.android.barracuda;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.support.annotation.NonNull;
@@ -12,23 +13,28 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
 import android.support.v4.view.ViewPager;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 import com.android.barracuda.cypher.PublicKeyWorker;
+import com.android.barracuda.data.CallDB;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.User;
 import com.android.barracuda.service.ServiceUtils;
 import com.android.barracuda.service.SinchService;
 import com.android.barracuda.service.cloud.CloudFunctions;
+import com.android.barracuda.ui.CallListFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
-import com.facebook.accountkit.*;
+import com.facebook.accountkit.AccessToken;
+import com.facebook.accountkit.Account;
+import com.facebook.accountkit.AccountKit;
+import com.facebook.accountkit.AccountKitCallback;
+import com.facebook.accountkit.AccountKitError;
+import com.facebook.accountkit.AccountKitLoginResult;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
@@ -42,18 +48,20 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import okhttp3.ResponseBody;
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-import retrofit2.Retrofit;
+import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public class MainActivity extends AppCompatActivity implements ServiceConnection {
+import okhttp3.ResponseBody;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+
+public class MainActivity extends BarracudaActivity implements ServiceConnection {
 
   private ViewPager viewPager;
   private TabLayout tabLayout = null;
@@ -61,6 +69,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
   public static String STR_GROUP_FRAGMENT = "GROUP";
   public static String STR_INFO_FRAGMENT = "INFO";
   public static String STR_INFO_CALL = "CALL";
+  public static String STR_CONTACTS = "CONTACTS";
 
   private FloatingActionButton floatButton;
   private ViewPagerAdapter adapter;
@@ -81,9 +90,57 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     mAuth.signOut();
   }
 
+  public void onColorClick(View view) {
+
+    switch (view.getId()) {
+      case R.id.colorDarkBlue: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_DARK_BLUE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        break;
+      }
+      case R.id.colorBlue: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_BLUE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        break;
+      }
+      case R.id.colorPurple: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_PURPLE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        break;
+      }
+      case R.id.colorOrange: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putString(SharedPreferenceHelper.SHARE_COLOR, COLOR_ORANGE).commit();
+        finish();
+        Intent intent = new Intent(this, MainActivity.class);
+        intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
+        break;
+      }
+    }
+  }
+
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    setTheme();
 
     //SINCH
     getApplicationContext().bindService(new Intent(this, SinchService.class), this,
@@ -93,14 +150,7 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
     setContentView(R.layout.activity_main);
 
-    Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
-    if (toolbar != null) {
-      if (getSupportActionBar() == null) {
-        setSupportActionBar(toolbar);
-      }
-      getSupportActionBar().setTitle("Barracuda");
-
-    }
+    getSupportActionBar().setTitle(R.string.app_name);
 
     viewPager = (ViewPager) findViewById(R.id.viewpager);
     floatButton = (FloatingActionButton) findViewById(R.id.fab);
@@ -114,21 +164,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         user = firebaseAuth.getCurrentUser();
         if (user != null) {
-          if ("199658337315413".equals(user.getUid()) || "1512615488866778".equals(user.getUid()))
           StaticConfig.UID = user.getUid();
-//
-          if (!StaticConfig.TEST_MODE)
-            StaticConfig.UID = user.getUid();
-
           Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
-          Toast.makeText(MainActivity.this, "User signed in: " + user.getUid(),
-            Toast.LENGTH_SHORT).show();
-
-
           saveUserInfo();
           PublicKeyWorker.updatePublicKeys(getApplicationContext());
         } else {
-          PublicKeyWorker.updatePublicKeys(getApplicationContext());
 
           Log.d(TAG, "onAuthStateChanged:signed_out");
 
@@ -148,8 +188,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
       .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
       .build();
     mCloudFunctions = retrofit.create(CloudFunctions.class);
-  }
 
+
+    //Create Table Calls
+    CallDB.getInstance(this).createDB();
+  }
 
   @Override
   protected void onStart() {
@@ -229,12 +272,12 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     int[] tabIcons = {
       R.drawable.ic_tab_person,
       R.drawable.ic_tab_group,
+      R.drawable.ic_call
     };
 
     tabLayout.getTabAt(0).setIcon(tabIcons[0]);
     tabLayout.getTabAt(1).setIcon(tabIcons[1]);
-
-
+    tabLayout.getTabAt(2).setIcon(tabIcons[2]);
   }
 
   private void setupViewPager(ViewPager viewPager) {
@@ -242,8 +285,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     adapter.addFrag(new FriendsFragment(), STR_FRIEND_FRAGMENT);
     adapter.addFrag(new GroupFragment(), STR_GROUP_FRAGMENT);
 
+    //TODO tabs
+    adapter.addFrag(new CallListFragment(), STR_INFO_CALL);
 
     floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
+
     viewPager.setAdapter(adapter);
     viewPager.setOffscreenPageLimit(3);
     viewPager.addOnPageChangeListener(new ViewPager.OnPageChangeListener() {
@@ -371,18 +417,25 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
     // as you specify a parent activity in AndroidManifest.xml.
     int id = item.getItemId();
 
-    //noinspection SimplifiableIfStatement
-    if (id == R.id.about) {
-      Toast.makeText(this, "Barracuda version 1.0", Toast.LENGTH_LONG).show();
-      return true;
+    switch (item.getItemId()) {
+      case R.id.setProfile: {
+
+        Intent profIntent = new Intent(this, ProfileActivity.class);
+        startActivity(profIntent);
+        break;
+      }
+      case R.id.chats_themes: {
+
+        new LovelyCustomDialog(this)
+          .setView(R.layout.color_selector)
+          .show();
+      }
+      default:
     }
 
     return super.onOptionsItemSelected(item);
   }
 
-  /**
-   * Adapter hien thi tab
-   */
   class ViewPagerAdapter extends FragmentPagerAdapter {
     private final List<Fragment> mFragmentList = new ArrayList<>();
     private final List<String> mFragmentTitleList = new ArrayList<>();

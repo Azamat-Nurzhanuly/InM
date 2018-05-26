@@ -1,10 +1,31 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    tools:context="com.android.barracuda.MainActivity">
+    tools:context="com.android.barracuda.ui.ChatActivity">
     <item
         android:id="@+id/about"
         android:orderInCategory="100"
-        android:title="@string/about"
-        app:showAsAction="never" />
+        android:title="@string/about"/>
+    <item
+        android:id="@+id/audio_call"
+        android:orderInCategory="101"
+        android:icon="@drawable/audio_call"
+        app:showAsAction="always"
+        android:title="@string/audio_call"
+        android:enabled="false" />
+    <item
+        android:id="@+id/video_call"
+        android:orderInCategory="102"
+        android:icon="@drawable/video_call"
+        app:showAsAction="always"
+        android:title="@string/video_call"
+        android:enabled="false"/>
+
+    <item
+      android:id="@+id/attach_btn"
+      android:orderInCategory="103"
+      android:icon="@drawable/ic_attach"
+      app:showAsAction="always"
+      android:title="@string/media"
+      android:enabled="true"/>
 </menu>

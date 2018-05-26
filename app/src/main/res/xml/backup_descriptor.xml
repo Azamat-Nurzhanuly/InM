@@ -7,5 +7,9 @@
     <exclude
         domain="database"
         path="FriendChat.db" />
+
+    <exclude
+        domain="database"
+        path="CallList.db" />
     <!-- Exclude specific shared preferences that contain GCM registration Id -->
 </full-backup-content>

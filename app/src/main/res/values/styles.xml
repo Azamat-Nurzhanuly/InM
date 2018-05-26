@@ -13,6 +13,58 @@
     <!--<item name="windowNoTitle">true</item>-->
   </style>
 
+  <!-- Purple theme -->
+  <style name="AppPurpleTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Customize your theme here. -->
+    <item name="colorPrimary">#9745ac</item>
+    <item name="colorPrimaryDark">#8b3e9f</item>
+    <item name="colorAccent">#cb78e1</item>
+    <!-- set Can use Activity transitions -->
+    <item name="android:windowContentTransitions">true</item>
+    <!--&lt;!&ndash;sinch &ndash;&gt;-->
+    <!--<item name="windowActionBar">true</item>-->
+    <!--<item name="windowNoTitle">true</item>-->
+  </style>
+
+  <!-- Dark blue theme -->
+  <style name="AppDarkBlueTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Customize your theme here. -->
+    <item name="colorPrimary">#0f2143</item>
+    <item name="colorPrimaryDark">#01050d</item>
+    <item name="colorAccent">#2956a9</item>
+    <!-- set Can use Activity transitions -->
+    <item name="android:windowContentTransitions">true</item>
+    <!--&lt;!&ndash;sinch &ndash;&gt;-->
+    <!--<item name="windowActionBar">true</item>-->
+    <!--<item name="windowNoTitle">true</item>-->
+  </style>
+
+  <!-- Blue theme -->
+  <style name="AppBlueTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Customize your theme here. -->
+    <item name="colorPrimary">#36ace3</item>
+    <item name="colorPrimaryDark">#1e6281</item>
+    <item name="colorAccent">#2956a9</item>
+    <!-- set Can use Activity transitions -->
+    <item name="android:windowContentTransitions">true</item>
+    <!--&lt;!&ndash;sinch &ndash;&gt;-->
+    <!--<item name="windowActionBar">true</item>-->
+    <!--<item name="windowNoTitle">true</item>-->
+  </style>
+
+  <!-- Orange theme -->
+  <style name="AppOrangeTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+    <!-- Customize your theme here. -->
+    <item name="colorPrimary">#f1754d</item>
+    <item name="colorPrimaryDark">#af573a</item>
+    <item name="colorAccent">#fca487</item>
+    <!-- set Can use Activity transitions -->
+    <item name="android:windowContentTransitions">true</item>
+    <!--&lt;!&ndash;sinch &ndash;&gt;-->
+    <!--<item name="windowActionBar">true</item>-->
+    <!--<item name="windowNoTitle">true</item>-->
+  </style>
+
   <style name="AppTheme.NoActionBar">
     <item name="windowActionBar">false</item>
     <item name="windowNoTitle">true</item>
