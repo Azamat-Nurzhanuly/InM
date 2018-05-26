@@ -3,7 +3,8 @@ package com.android.barracuda.cypher;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
-import com.android.barracuda.cypher.exceptions.NoKeyException;
+import android.util.Log;
+import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.cypher.models.DHKeys;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
@@ -32,9 +33,9 @@ public abstract class CypherWorker {
     this.context = context;
   }
 
-  public abstract void encryptAndSend(final Message msg);
+  public abstract void encrypt(final Message msg, final MessageActivityCallback afterEncrypted) throws Exception;
 
-  public void decrypt(Message msg) throws NoKeyException {
+  public void decrypt(Message msg, MessageActivityCallback afterDecrypted) {
     if (msg.key == null) return;
     Key key = checkAndGetLastKey(msg.recKeyTs);
     BigInteger secretKey = key == null ? KeyStorageDB.getInstance(context).getSecretKey(msg.recKeyTs, msg.idReceiver) : key.key;
@@ -46,20 +47,25 @@ public abstract class CypherWorker {
 
         DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.recKeyTs);
 
-        secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 256 / 8));
+        secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 32));
 
         setLastKey(addKey(msg.recKeyTs, msg.idReceiver, msg.friendId, friendPublicKey, ownPubKeys.pubKey, secretKey, System.currentTimeMillis()));
       }
     }
 
-    if (secretKey == null) throw new NoKeyException("No key");
-
-    try {
-      msg.text = decryptText(msg.text, secretKey.toByteArray()) + "\nEncrypted: " + msg.text;
-    } catch (Exception e) {
-      if (e instanceof NoKeyException) throw (NoKeyException) e;
-      e.printStackTrace();
+    if (secretKey == null) {
+      msg.text = "Could not decrypt. Cause: no key\n" + msg.text;
+      Log.e("CypherWorker", "No key");
+    } else {
+      try {
+        msg.text = decryptText(msg.text, secretKey.toByteArray()) + "\nEncrypted: " + msg.text;
+      } catch (Exception e) {
+        msg.text = "Could not decrypt. Cause: no key\n" + e.getMessage();
+        Log.e("CypherWorker", "Error", e);
+      }
     }
+
+    afterDecrypted.processMessage(msg);
   }
 
   protected Key checkAndGetLastKey(long pksTimestamp) {
@@ -75,8 +81,8 @@ public abstract class CypherWorker {
     }
   }
 
-  protected void sendMessage(Message msg) {
-    FirebaseDatabase.getInstance().getReference().child("message/" + msg.idReceiver).push().setValue(msg);
+  protected void sendMessageTo(Message msg, String entity) {
+    FirebaseDatabase.getInstance().getReference().child(entity).push().setValue(msg);
   }
 
   protected BigInteger calcSharedSecretKey(BigInteger p, BigInteger privateKey, BigInteger friendPubKey) {
@@ -119,6 +125,7 @@ public abstract class CypherWorker {
 
   protected void doEncrypt(Message msg, Key key) throws Exception {
     msg.text = encryptText(msg.text, key.key.toByteArray());
+    msg.recKeyTs = key.timestamp;
   }
 
   protected String decryptText(String encrypted, byte[] key) throws Exception {

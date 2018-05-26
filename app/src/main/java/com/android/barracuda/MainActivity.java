@@ -114,8 +114,11 @@ public class MainActivity extends AppCompatActivity implements ServiceConnection
 
         user = firebaseAuth.getCurrentUser();
         if (user != null) {
-          // FIXME: 5/20/18 Khamit
-          if ("485212245227365".equals(user.getUid()))
+          if ("803619516500076".equals(user.getUid()))
+            StaticConfig.UID = user.getUid();
+
+
+          if (!StaticConfig.TEST_MODE)
             StaticConfig.UID = user.getUid();
 
           Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());

@@ -33,7 +33,7 @@ import com.android.barracuda.R;
 import com.android.barracuda.cypher.CypherWorker;
 import com.android.barracuda.cypher.GroupChatCypherWorker;
 import com.android.barracuda.cypher.PrivateChatCypherWorker;
-import com.android.barracuda.cypher.exceptions.NoKeyException;
+import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.fab.Fab;
@@ -348,7 +348,6 @@ public class ChatActivity extends MainActivity
     if (idFriend != null && nameFriend != null) {
       getSupportActionBar().setTitle(nameFriend);
 
-
       linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
       recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
       recyclerChat.setLayoutManager(linearLayoutManager);
@@ -357,44 +356,18 @@ public class ChatActivity extends MainActivity
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
           if (dataSnapshot.getValue() != null) {
-            HashMap mapMessage = (HashMap) dataSnapshot.getValue();
-
             Message newMessage = dataSnapshot.getValue(Message.class);
             if (newMessage == null) return;
 
-            if (newMessage.text != null) {
-              try {
-                cypherWorker.decrypt(newMessage);
-              } catch (Exception e) {
-                if (!(e instanceof NoKeyException)) {
-                  e.printStackTrace();
-                  return;
-                }
-
-                Log.d(getClass().getSimpleName(), "Could not decrypt", e);
-
-                newMessage.text = "Could not decrypt. Cause: no key\n" + newMessage.text;
+            cypherWorker.decrypt(newMessage, new MessageActivityCallback() {
+              @Override
+              public void processMessage(Message msg) {
+                consersation.getListMessageData().add(msg);
+                adapter.notifyDataSetChanged();
+                linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
               }
-            }
+            });
 
-            if (newMessage.fileModel != null) {
-              FileModel fileModel = new FileModel();
-              HashMap fileHash = (HashMap) mapMessage.get("fileModel");
-              if (fileHash.containsKey("type"))
-                fileModel.type = (String) fileHash.get("type");
-
-              if (fileHash.containsKey("name_file"))
-                fileModel.name_file = (String) fileHash.get("name_file");
-
-              if (fileHash.containsKey("url_file"))
-                fileModel.url_file = (String) fileHash.get("url_file");
-
-              newMessage.fileModel = fileModel;
-            }
-
-            consersation.getListMessageData().add(newMessage);
-            adapter.notifyDataSetChanged();
-            linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
           }
         }
 
@@ -575,7 +548,16 @@ public class ChatActivity extends MainActivity
         newMessage.friendId = idFriend.get(0).toString();
 
       newMessage.timestamp = System.currentTimeMillis();
-      cypherWorker.encryptAndSend(newMessage);
+      try {
+        cypherWorker.encrypt(newMessage, new MessageActivityCallback() {
+          @Override
+          public void processMessage(Message msg) {
+            FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(msg);
+          }
+        });
+      } catch (Exception e) {
+        Log.e("CypherWorker","Error", e);
+      }
     }
   }
 

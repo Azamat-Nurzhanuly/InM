@@ -2,6 +2,8 @@ package com.android.barracuda.data;
 
 
 public class StaticConfig {
+  public static final boolean TEST_MODE = true;
+
   public static int REQUEST_CODE_REGISTER = 2000;
   public static String STR_EXTRA_ACTION_LOGIN = "login";
   public static String STR_EXTRA_ACTION_RESET = "resetpass";
@@ -9,7 +11,9 @@ public class StaticConfig {
   public static String STR_EXTRA_USERNAME = "username";
   public static String STR_EXTRA_PASSWORD = "password";
   public static String STR_DEFAULT_BASE64 = "default";
-  public static String UID = "803619516500076";
+  public static String UID = "1512615488866778"; //Zhandos
+  //  public static String UID = "803619516500076"; //Khamit
+//  //  public static String UID = "485212245227365"; //Zheba
   //TODO only use this UID for debug mode
 //    public static String UID = "6kU0SbJPF5QJKZTfvW1BqKolrx22";
   public static String INTENT_KEY_CHAT_FRIEND = "friendname";

@@ -1,6 +1,8 @@
 package com.android.barracuda.cypher;
 
 import android.content.Context;
+import android.util.Log;
+import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.cypher.models.DHKeys;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
@@ -15,22 +17,23 @@ import com.google.firebase.database.ValueEventListener;
 
 public class PrivateChatCypherWorker extends CypherWorker {
   private String friendId;
-  private Key lastKey = null;
+  private String messageEntity;
 
   public PrivateChatCypherWorker(String roomId, String friendId, Context context) {
     super(roomId, context);
     this.friendId = friendId;
+    this.messageEntity = "message/" + roomId;
   }
 
   @Override
-  public void encryptAndSend(final Message msg) {
+  public void encrypt(final Message msg, final MessageActivityCallback afterEncrypted) {
     FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + "/" + msg.friendId + "/1").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
         PublicKeysFb pks = dataSnapshot.getValue(PublicKeysFb.class);
 
         if (pks == null || pks.key == null) {
-          sendMessage(msg);
+          afterEncrypted.processMessage(msg);
           return;
         }
 
@@ -44,7 +47,7 @@ public class PrivateChatCypherWorker extends CypherWorker {
         if (key == null) {
           DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getLast();
           if (ownPubKeys == null) {
-            sendMessage(msg);
+            afterEncrypted.processMessage(msg);
             return;
           }
 
@@ -65,9 +68,9 @@ public class PrivateChatCypherWorker extends CypherWorker {
             msg.key = key.ownPubKey.toString();
           }
           doEncrypt(msg, key);
-          sendMessage(msg);
+          afterEncrypted.processMessage(msg);
         } catch (Exception e) {
-          e.printStackTrace();
+          Log.e("CypherWorker", "Error", e);
         }
 
         setLastKey(key);

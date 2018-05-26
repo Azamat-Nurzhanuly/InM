@@ -37,8 +37,8 @@ public final class KeyStorageDB {
     values.put(PUB_KEY_TS, key.friendKeyTs);
     values.put(ROOM_ID, key.roomId);
     values.put(FRIEND_ID, key.friendId);
-    values.put(PUB_KEY, key.pubKey.toString());
-    values.put(OWN_PUB_KEY, key.ownPubKey.toString());
+    if (key.pubKey != null) values.put(PUB_KEY, key.pubKey.toString());
+    if (key.ownPubKey != null) values.put(OWN_PUB_KEY, key.ownPubKey.toString());
     values.put(KEY, key.key.toString());
     values.put(TIMESTAMP, key.timestamp);
 
@@ -102,8 +102,15 @@ public final class KeyStorageDB {
     key.friendKeyTs = cursor.getLong(i++);
     key.roomId = cursor.getString(i++);
     key.friendId = cursor.getString(i++);
-    key.pubKey = new BigInteger(cursor.getString(i++));
-    key.ownPubKey = new BigInteger(cursor.getString(i++));
+
+    String pubKey = cursor.getString(i++);
+    if (pubKey != null)
+      key.pubKey = new BigInteger(pubKey);
+
+    String ownPubKey = cursor.getString(i++);
+    if (ownPubKey != null)
+      key.ownPubKey = new BigInteger(ownPubKey);
+
     key.key = new BigInteger(cursor.getString(i++));
     key.timestamp = cursor.getLong(i);
     return key;

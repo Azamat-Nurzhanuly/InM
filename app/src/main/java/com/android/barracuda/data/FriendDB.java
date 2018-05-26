@@ -66,8 +66,9 @@ public final class FriendDB {
       while (cursor.moveToNext()) {
         Friend friend = new Friend();
         friend.id = cursor.getString(0);
-        // FIXME: 5/20/18 KHAMIT
-        if (!("803619516500076".equals(friend.id) || "485212245227365".equals(friend.id))) continue;
+
+        if (StaticConfig.TEST_MODE)
+          if (!("803619516500076".equals(friend.id) || "485212245227365".equals(friend.id))) continue;
 
         friend.name = cursor.getString(1);
         friend.phoneNumber = cursor.getString(2);
