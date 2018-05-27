@@ -9,7 +9,6 @@ import android.provider.BaseColumns;
 import com.android.barracuda.cypher.models.Key;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 
 import static com.android.barracuda.data.KeyStorageDB.TableStruct.*;
 
@@ -42,7 +41,7 @@ public final class KeyStorageDB {
     values.put(KEY, key.key.toString());
     values.put(TIMESTAMP, key.timestamp);
 
-    db.insert(TABLE_NAME, null, values);
+    db.insertWithOnConflict(TABLE_NAME, null, values, SQLiteDatabase.CONFLICT_IGNORE);
   }
 
   public BigInteger getSecretKey(long friendPubKeyTs, String roomId) {

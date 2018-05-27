@@ -30,13 +30,6 @@ public class GroupChatCypherWorker extends CypherWorker {
     runKeyListener();
   }
 
-  public GroupChatCypherWorker(String roomId, List<String> friends, Context context, boolean refreshLastKey) {
-    super(roomId, context);
-    this.friends = friends;
-    if (refreshLastKey) refreshLastKey();
-    runKeyListener();
-  }
-
   @Override
   public void encrypt(Message msg, MessageActivityCallback afterEncrypted) throws Exception {
     initLastKey();
@@ -51,62 +44,58 @@ public class GroupChatCypherWorker extends CypherWorker {
     if (key != null) setLastKey(key);
 
     if (secretKey == null) {
-      msg.text = "Could not decrypt. Cause: no key";
-      afterDecrypted.processMessage(msg);
 
-      if (false)
+      FirebaseDatabase.getInstance().getReference()
+        .child(FBaseEntities.GR_KEY + "/" + roomId + "/" + StaticConfig.UID).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+          long count = dataSnapshot.getChildrenCount();
+          boolean decrypted = false;
 
-        FirebaseDatabase.getInstance().getReference()
-          .child(FBaseEntities.GR_KEY + "/" + roomId + "/" + StaticConfig.UID).addListenerForSingleValueEvent(new ValueEventListener() {
-          @Override
-          public void onDataChange(DataSnapshot dataSnapshot) {
-            long count = dataSnapshot.getChildrenCount();
-            boolean decrypted = false;
+          if (count != 0) {
+            HashMap<String, HashMap<String, Object>> value = (HashMap<String, HashMap<String, Object>>) dataSnapshot.getValue();
 
-            if (count != 0) {
-              HashMap<String, HashMap<String, Object>> value = (HashMap<String, HashMap<String, Object>>) dataSnapshot.getValue();
+            for (Map.Entry<String, HashMap<String, Object>> entry : value.entrySet()) {
+              Message keyMsg = new Message();
+              keyMsg.idSender = (String) entry.getValue().get("idSender");
+              keyMsg.idReceiver = (String) entry.getValue().get("idReceiver");
+              keyMsg.friendId = (String) entry.getValue().get("friendId");
+              keyMsg.key = (String) entry.getValue().get("key");
+              keyMsg.text = (String) entry.getValue().get("text");
+              keyMsg.keyTs = (long) entry.getValue().get("keyTs");
+              keyMsg.timestamp = (long) entry.getValue().get("timestamp");
 
-              for (Map.Entry<String, HashMap<String, Object>> entry : value.entrySet()) {
-                Message keyMsg = new Message();
-                keyMsg.idSender = (String) entry.getValue().get("idSender");
-                keyMsg.idReceiver = (String) entry.getValue().get("idReceiver");
-                keyMsg.friendId = (String) entry.getValue().get("friendId");
-                keyMsg.key = (String) entry.getValue().get("key");
-                keyMsg.text = (String) entry.getValue().get("text");
-                keyMsg.keyTs = (long) entry.getValue().get("keyTs");
-                keyMsg.timestamp = (long) entry.getValue().get("timestamp");
+              removeKey(entry.getKey());
 
-                removeKey(entry.getKey());
-
-                try {
-                  BigInteger newKey = encryptKeyFromMessage(keyMsg);
-                  if (newKey == null) continue;
-                  setLastKey(addKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp));
-                  if (keyMsg.timestamp == msg.keyTs) {
-                    try {
-                      msg.text = decryptText(msg.text, newKey.toByteArray());
-                    } catch (Exception e) {
-                      msg.text = "Could not decrypt. Cause " + e.getMessage();
-                      Log.e("CypherWorker", "Error", e);
-                    }
-                    afterDecrypted.processMessage(msg);
-                    decrypted = true;
+              try {
+                BigInteger newKey = encryptKeyFromMessage(keyMsg);
+                if (newKey == null) continue;
+                setLastKey(addKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp));
+                if (keyMsg.timestamp == msg.keyTs) {
+                  try {
+                    msg.text = decryptText(msg.text, newKey.toByteArray());
+                  } catch (Exception e) {
+                    msg.text = "Could not decrypt. Cause " + e.getMessage();
+                    Log.e("CypherWorker", "Error", e);
                   }
-                } catch (Exception e) {
-                  Log.e("CypherWorker", "Error", e);
+                  afterDecrypted.processMessage(msg);
+                  decrypted = true;
                 }
+              } catch (Exception e) {
+                Log.e("CypherWorker", "Error", e);
               }
             }
-            if (count == 0 || !decrypted) {
-              msg.text = "Could not decrypt. Cause: no key";
-              afterDecrypted.processMessage(msg);
-            }
           }
+          if (count == 0 || !decrypted) {
+            msg.text = "Could not decrypt. Cause: no key";
+            afterDecrypted.processMessage(msg);
+          }
+        }
 
-          @Override
-          public void onCancelled(DatabaseError databaseError) {
-          }
-        });
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+        }
+      });
     } else {
       try {
         msg.text = decryptText(msg.text, secretKey.toByteArray());
@@ -124,28 +113,24 @@ public class GroupChatCypherWorker extends CypherWorker {
   public void refreshLastKey() {
     initLastKey();
     long astanaTime = astanaTime();
-    if (lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < astanaTime) {
+//    if (lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < astanaTime) {
 
-      if (StaticConfig.UID.equals(friends.get(rnd.nextInt(friends.size())))) {
+    BigInteger newKey = randomKey();
 
-        BigInteger newKey = randomKey();
+    for (String friend : friends) {
+      if (StaticConfig.UID.equals(friend)) continue;
+      Message msg = new Message();
+      msg.idSender = StaticConfig.UID;
+      msg.idReceiver = roomId;
+      msg.friendId = friend;
+      msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
+      msg.timestamp = astanaTime;
 
-        for (String friend : friends) {
-          if (StaticConfig.UID.equals(friend)) continue;
-          Message msg = new Message();
-          msg.idSender = StaticConfig.UID;
-          msg.idReceiver = roomId;
-          msg.friendId = friend;
-          msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
-          msg.timestamp = astanaTime;
-
-          sendEncryptedNewKey(friend, msg);
-        }
-
-        setLastKey(addKey(astanaTime, roomId, null, null, null, newKey, astanaTime));
-
-      }
+      sendEncryptedNewKey(friend, msg);
     }
+
+    setLastKey(addKey(astanaTime, roomId, null, null, null, newKey, astanaTime));
+//    }
   }
 
   private void sendEncryptedNewKey(final String friendId, final Message msg) {
