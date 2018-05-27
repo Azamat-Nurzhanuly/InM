@@ -173,12 +173,18 @@ public class AddGroupActivity extends AppCompatActivity {
         }
       });
 
-    for (String memberId : groupEdit.member) {
-      if (!listIDChoose.contains(memberId)) {
-        refreshKeyOfGroup(groupEdit.id);
-        break;
+    if (listIDChoose.size() != groupEdit.member.size()) {
+      refreshKeyOfGroup(groupEdit.id);
+    } else {
+      for (String memberId : groupEdit.member) {
+        if (!listIDChoose.contains(memberId)) {
+          refreshKeyOfGroup(groupEdit.id);
+          break;
+        }
       }
     }
+
+
   }
 
   private void createGroup() {
