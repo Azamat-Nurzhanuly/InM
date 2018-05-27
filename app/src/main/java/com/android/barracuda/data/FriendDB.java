@@ -48,14 +48,6 @@ public final class FriendDB {
     }
   }
 
-  public void removeAllFirend() {
-    ListFriend listFriend = new ListFriend();
-    SQLiteDatabase db = mDbHelper.getReadableDatabase();
-    // Define a projection that specifies which columns from the database
-// you will actually use after this query.
-    db.delete(FeedEntry.TABLE_NAME, null, null);
-  }
-
   public ListFriend getListFriend() {
     ListFriend listFriend = new ListFriend();
     SQLiteDatabase db = mDbHelper.getReadableDatabase();

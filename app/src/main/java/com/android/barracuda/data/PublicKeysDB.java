@@ -10,8 +10,6 @@ import com.android.barracuda.cypher.models.DHKeys;
 import com.android.barracuda.cypher.models.PublicKeysFb;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
-import java.util.List;
 
 public final class PublicKeysDB {
   private static PublicKeysDBHelper mDbHelper = null;
@@ -27,23 +25,6 @@ public final class PublicKeysDB {
       mDbHelper = new PublicKeysDBHelper(context);
     }
     return instance;
-  }
-
-  public void removeAll() {
-    mDbHelper.getWritableDatabase().execSQL("delete from " + KeyStorageDB.TableStruct.TABLE_NAME);
-  }
-
-  public List<DHKeys> getAllKeys() {
-    List<DHKeys> keys = new ArrayList<>();
-    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      String sql = "select * from " + TableStruct.TABLE_NAME;
-      try (Cursor cursor = db.rawQuery(sql, null)) {
-        while (cursor.moveToNext()) {
-          keys.add(fromCursor(cursor));
-        }
-      }
-    }
-    return keys;
   }
 
   public void setKey(PublicKeysFb keys, String privateKey) {

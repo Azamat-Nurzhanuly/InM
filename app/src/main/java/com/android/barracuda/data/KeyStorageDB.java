@@ -30,10 +30,6 @@ public final class KeyStorageDB {
     return instance;
   }
 
-  public void removeAll() {
-    mDbHelper.getWritableDatabase().execSQL("delete from " + TableStruct.TABLE_NAME);
-  }
-
   public void addKey(Key key) {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
 
@@ -47,20 +43,6 @@ public final class KeyStorageDB {
     values.put(TIMESTAMP, key.timestamp);
 
     db.insert(TABLE_NAME, null, values);
-  }
-
-  public ArrayList<Key> getKeyList() {
-    ArrayList<Key> list = new ArrayList<>();
-
-    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
-      try (Cursor cursor = db.rawQuery("select * from " + TABLE_NAME, null)) {
-        while (cursor.moveToNext()) {
-          list.add(extractKeyFromCursor(cursor));
-        }
-      }
-    }
-
-    return list;
   }
 
   public BigInteger getSecretKey(long friendPubKeyTs, String roomId) {

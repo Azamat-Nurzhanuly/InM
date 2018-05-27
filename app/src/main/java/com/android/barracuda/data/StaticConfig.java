@@ -11,7 +11,7 @@ public class StaticConfig {
   public static String STR_EXTRA_USERNAME = "username";
   public static String STR_EXTRA_PASSWORD = "password";
   public static String STR_DEFAULT_BASE64 = "default";
-  public static String UID = "1512615488866778"; //Zhandos
+  public static String UID = TEST_MODE ? "1512615488866778" : null; //Zhandos
   //    public static String UID = "803619516500076"; //Khamit
 //  //  public static String UID = "199658337315413"; //Aza
   //TODO only use this UID for debug mode
@@ -28,7 +28,7 @@ public class StaticConfig {
   public static String SINCH_SECRET = "PkUMsoJsDk+8uGzCEerM5A==";
   public static String SINCH_HOST = "clientapi.sinch.com";
 
-  public static final long KEY_LIFETIME = 2 * 60 * 1000;
+  public static final long KEY_LIFETIME = TEST_MODE ? (2 * 60 * 1000) : (24 * 60 * 60 * 1000);
 
   //type of call
 
