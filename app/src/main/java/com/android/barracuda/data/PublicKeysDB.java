@@ -29,6 +29,10 @@ public final class PublicKeysDB {
     return instance;
   }
 
+  public void removeAll() {
+    mDbHelper.getWritableDatabase().execSQL("delete from " + KeyStorageDB.TableStruct.TABLE_NAME);
+  }
+
   public List<DHKeys> getAllKeys() {
     List<DHKeys> keys = new ArrayList<>();
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
@@ -65,9 +69,8 @@ public final class PublicKeysDB {
     try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
       String sql = "select * from " + TableStruct.TABLE_NAME + " order by id desc limit 1";
       try (Cursor cursor = db.rawQuery(sql, null)) {
-        if (cursor.moveToNext()) {
+        if (cursor.moveToNext())
           return fromCursor(cursor);
-        }
       }
     }
     return null;

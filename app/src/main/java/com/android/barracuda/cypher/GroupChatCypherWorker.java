@@ -28,27 +28,24 @@ import java.util.Random;
 
 public class GroupChatCypherWorker extends CypherWorker {
   private List<CharSequence> friends;
-  private String messageEntity;
 
   public GroupChatCypherWorker(String roomId, List<CharSequence> friends, Context context) {
     super(roomId, context);
     this.friends = friends;
-    this.messageEntity = "message/" + roomId;
   }
 
   @Override
   public void encrypt(Message msg, MessageActivityCallback afterEncrypted) throws Exception {
     initLastKey();
-    Key key = lastKey;
-    refreshLastKey(key);
+    refreshLastKey();
     encryptInner(msg);
     afterEncrypted.processMessage(msg);
   }
 
   @Override
   public void decrypt(final Message msg, final MessageActivityCallback afterDecrypted) {
-    Key key = checkAndGetLastKey(msg.recKeyTs);
-    final BigInteger secretKey = key == null ? KeyStorageDB.getInstance(context).getSecretKey(msg.recKeyTs, msg.idReceiver) : key.key;
+    Key key = checkAndGetLastKey(msg.keyTs);
+    final BigInteger secretKey = key == null ? KeyStorageDB.getInstance(context).getSecretKey(msg.keyTs, msg.idReceiver) : key.key;
     if (key != null) setLastKey(key);
 
     if (secretKey == null) {
@@ -69,15 +66,16 @@ public class GroupChatCypherWorker extends CypherWorker {
               keyMsg.friendId = (String) entry.getValue().get("friendId");
               keyMsg.key = (String) entry.getValue().get("key");
               keyMsg.text = (String) entry.getValue().get("text");
-              keyMsg.recKeyTs = (long) entry.getValue().get("recKeyTs");
+              keyMsg.keyTs = (long) entry.getValue().get("keyTs");
               keyMsg.timestamp = (long) entry.getValue().get("timestamp");
+
+              removeKey(entry.getKey());
 
               try {
                 BigInteger newKey = encryptKeyFromMessage(keyMsg);
                 if (newKey == null) continue;
                 setLastKey(addKey(keyMsg.timestamp, roomId, null, null, null, newKey, keyMsg.timestamp));
-                removeKey(entry.getKey());
-                if (keyMsg.timestamp == msg.recKeyTs) {
+                if (keyMsg.timestamp == msg.keyTs) {
                   try {
                     msg.text = decryptText(msg.text, newKey.toByteArray());
                   } catch (Exception e) {
@@ -89,12 +87,11 @@ public class GroupChatCypherWorker extends CypherWorker {
                 }
               } catch (Exception e) {
                 Log.e("CypherWorker", "Error", e);
-
               }
             }
           }
           if (count == 0 || !decrypted) {
-            msg.text = "Could not decrypt. Cause: no key for " + msg.text;
+            msg.text = "Could not decrypt. Cause: no key";
             afterDecrypted.processMessage(msg);
           }
         }
@@ -104,7 +101,6 @@ public class GroupChatCypherWorker extends CypherWorker {
         }
       });
     } else {
-
       try {
         msg.text = decryptText(msg.text, secretKey.toByteArray());
       } catch (Exception e) {
@@ -118,11 +114,11 @@ public class GroupChatCypherWorker extends CypherWorker {
 
   //*******************************************************************************************************
 
-  private void refreshLastKey(Key key) {
+  private void refreshLastKey() {
     initLastKey();
 
     long now = System.currentTimeMillis();
-    if (key == null || key.timestamp + StaticConfig.KEY_LIFETIME < now) {
+    if (lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < now) {
       BigInteger newKey = randomKey();
 
       for (CharSequence friend : friends) {
@@ -153,7 +149,7 @@ public class GroupChatCypherWorker extends CypherWorker {
           Key key = handlePublicKey(roomId, null, pks);
           msg.text = encryptText(msg.text, key.key.toByteArray());
           msg.key = key.ownPubKey.toString();
-          msg.recKeyTs = pks.timestamp;
+          msg.keyTs = pks.timestamp;
           sendMessageTo(msg, FBaseEntities.GR_KEY + "/" + roomId + "/" + friendId);
         } catch (Exception e) {
           Log.e("CypherWorker", "Error", e);
@@ -165,10 +161,9 @@ public class GroupChatCypherWorker extends CypherWorker {
     });
   }
 
-  protected void sendMessageTo(Message msg, String entity) {
+  private void sendMessageTo(Message msg, String entity) {
     FirebaseDatabase.getInstance().getReference().child(entity).push().setValue(msg);
   }
-
 
   private BigInteger randomKey() {
     byte arr[] = new byte[32];
@@ -180,7 +175,7 @@ public class GroupChatCypherWorker extends CypherWorker {
   private void encryptInner(Message msg) throws Exception {
     if (lastKey != null) {
       msg.text = encryptText(msg.text, lastKey.key.toByteArray());
-      msg.recKeyTs = lastKey.timestamp;
+      msg.keyTs = lastKey.timestamp;
     }
   }
 
@@ -192,13 +187,13 @@ public class GroupChatCypherWorker extends CypherWorker {
   private BigInteger encryptKeyFromMessage(Message msg) throws Exception {
     if (msg.key == null) return null;
     BigInteger friendPublicKey = new BigInteger(msg.key);
-    DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.recKeyTs);
+    DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.keyTs);
     BigInteger secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 32));
 
     return new BigInteger(decryptKey(msg.text, secretKey.toByteArray()));
   }
 
-  protected byte[] decryptKey(String encrypted, byte[] key) throws Exception {
+  private byte[] decryptKey(String encrypted, byte[] key) throws Exception {
     SecretKeySpec skeySpec = new SecretKeySpec(key, "AES");
     @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES");
     cipher.init(Cipher.DECRYPT_MODE, skeySpec);

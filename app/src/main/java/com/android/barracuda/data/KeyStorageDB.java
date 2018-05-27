@@ -30,6 +30,10 @@ public final class KeyStorageDB {
     return instance;
   }
 
+  public void removeAll() {
+    mDbHelper.getWritableDatabase().execSQL("delete from " + TableStruct.TABLE_NAME);
+  }
+
   public void addKey(Key key) {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
 

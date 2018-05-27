@@ -3,6 +3,7 @@ package com.android.barracuda.cypher;
 import android.content.Context;
 import android.util.Log;
 import com.android.barracuda.cypher.callback.MessageActivityCallback;
+import com.android.barracuda.cypher.exceptions.NoKeyException;
 import com.android.barracuda.cypher.models.DHKeys;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
@@ -31,52 +32,45 @@ public class PrivateChatCypherWorker extends CypherWorker {
     FirebaseDatabase.getInstance().getReference().child(FBaseEntities.PUBLIC_KEYS + "/" + msg.friendId + "/1").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
-        PublicKeysFb pks = dataSnapshot.getValue(PublicKeysFb.class);
+        PublicKeysFb friendPublicKeys = dataSnapshot.getValue(PublicKeysFb.class);
 
-        if (pks == null || pks.key == null) {
+        if (friendPublicKeys == null || friendPublicKeys.key == null) {
           afterEncrypted.processMessage(msg);
           return;
         }
 
-        long recKeyTs = pks.timestamp;
-        Key key = checkAndGetLastKey(pks.timestamp);
+        long keyTs = 0;
+
+        Key key = checkAndGetLastKey(friendPublicKeys.timestamp);
+        if (key == null) key = KeyStorageDB.getInstance(context).getKey(friendPublicKeys.timestamp, msg.idReceiver);
+        if (key != null) keyTs = friendPublicKeys.timestamp;
+
+        //********************* Try with own **************************
 
         if (key == null) {
-          key = KeyStorageDB.getInstance(context).getKey(pks.timestamp, msg.idReceiver);
-        }
-
-        if (key == null) {
-          DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getLast();
-          if (ownPubKeys == null) {
-            afterEncrypted.processMessage(msg);
-            return;
-          }
-
-          key = checkAndGetLastKey(ownPubKeys.timestamp);
-
-          if (key == null) {
-            key = KeyStorageDB.getInstance(context).getKey(ownPubKeys.timestamp, msg.idReceiver);
-          }
-
-          if (key != null) recKeyTs = ownPubKeys.timestamp;
+          DHKeys ownPublicKeys = PublicKeysDB.getInstance(context).getLast();
+          key = checkAndGetLastKey(ownPublicKeys.timestamp);
+          if (key == null) key = KeyStorageDB.getInstance(context).getKey(ownPublicKeys.timestamp, msg.idReceiver);
+          if (key != null) keyTs = ownPublicKeys.timestamp;
         }
 
         try {
+
           if (key == null) {
-            key = handleAndAddKey(roomId, friendId, pks);
-            msg.recKeyTs = pks.timestamp;
-          } else {
-            msg.recKeyTs = recKeyTs;
+            key = handleAndAddKey(roomId, friendId, friendPublicKeys);
+            keyTs = friendPublicKeys.timestamp;
           }
+
+          msg.keyTs = keyTs;
           msg.key = key.ownPubKey.toString();
           msg.text = encryptText(msg.text, key.key.toByteArray());
-          setLastKey(key);
+
           afterEncrypted.processMessage(msg);
+          setLastKey(key);
+
         } catch (Exception e) {
           Log.e("CypherWorker", "Error", e);
         }
-
-        setLastKey(key);
       }
 
       @Override
@@ -86,32 +80,36 @@ public class PrivateChatCypherWorker extends CypherWorker {
 
   @Override
   public void decrypt(Message msg, MessageActivityCallback afterDecrypted) {
-    if (msg.key == null) return;
-    Key key = checkAndGetLastKey(msg.recKeyTs);
-    BigInteger secretKey = key == null ? KeyStorageDB.getInstance(context).getSecretKey(msg.recKeyTs, msg.idReceiver) : key.key;
+    if (msg.key != null) {
 
-    if (!msg.idSender.equals(StaticConfig.UID)) {
+      Key key = checkAndGetLastKey(msg.keyTs);
+      if (key == null) key = KeyStorageDB.getInstance(context).getKey(msg.keyTs, msg.idReceiver);
+
+      BigInteger secretKey = (key == null) ? null : key.key;
+
+      if (!msg.idSender.equals(StaticConfig.UID)) {
+        if (secretKey == null) {
+          BigInteger friendPublicKey = new BigInteger(msg.key);
+
+          DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.keyTs);
+          if (ownPubKeys != null) {
+            secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 32));
+            key = addKey(msg.keyTs, msg.idReceiver, msg.friendId, friendPublicKey, ownPubKeys.pubKey, secretKey, System.currentTimeMillis());
+          }
+        }
+      }
 
       if (secretKey == null) {
-        BigInteger friendPublicKey = new BigInteger(msg.key);
-
-        DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.recKeyTs);
-
-        secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 32));
-
-        setLastKey(addKey(msg.recKeyTs, msg.idReceiver, msg.friendId, friendPublicKey, ownPubKeys.pubKey, secretKey, System.currentTimeMillis()));
-      }
-    }
-
-    if (secretKey == null) {
-      msg.text = "Could not decrypt. Cause: no key\n" + msg.text;
-      Log.e("CypherWorker", "No key");
-    } else {
-      try {
-        msg.text = decryptText(msg.text, secretKey.toByteArray());
-      } catch (Exception e) {
-        msg.text = "Could not decrypt. Cause: " + e.getMessage();
-        Log.e("CypherWorker", "Error", e);
+        msg.text = "Could not decrypt. Cause: no key\n";
+        Log.e(getClass().getSimpleName(), "No key", new NoKeyException(msg.toString()));
+      } else {
+        try {
+          msg.text = decryptText(msg.text, secretKey.toByteArray());
+          setLastKey(key);
+        } catch (Exception e) {
+          msg.text = "Could not decrypt. Cause: " + e.getMessage();
+          Log.e(getClass().getSimpleName(), "Error", e);
+        }
       }
     }
 

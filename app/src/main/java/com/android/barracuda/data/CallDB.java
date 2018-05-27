@@ -7,7 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
 import android.util.Log;
-
 import com.android.barracuda.model.Call;
 import com.android.barracuda.model.ListCall;
 
@@ -85,8 +84,7 @@ public final class CallDB {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
     try {
       db.execSQL(SQL_CREATE_ENTRIES);
-    }
-    catch (Exception e){
+    } catch (Exception e) {
       Log.w("Calls table", e);
     }
   }
@@ -105,7 +103,7 @@ public final class CallDB {
   private static final String TEXT_TYPE = " TEXT";
   private static final String COMMA_SEP = ",";
   private static final String SQL_CREATE_ENTRIES =
-    "CREATE TABLE " + FeedEntry.TABLE_NAME + " (" +
+    "CREATE TABLE IF NOT EXISTS " + FeedEntry.TABLE_NAME + " (" +
       FeedEntry.COLUMN_NAME_ID + " TEXT PRIMARY KEY," +
       FeedEntry.COLUMN_NAME_FRIEND_ID + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +

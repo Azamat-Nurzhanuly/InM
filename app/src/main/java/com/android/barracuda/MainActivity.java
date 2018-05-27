@@ -29,12 +29,7 @@ import com.android.barracuda.service.cloud.CloudFunctions;
 import com.android.barracuda.ui.CallListFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
-import com.facebook.accountkit.AccessToken;
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
-import com.facebook.accountkit.AccountKitLoginResult;
+import com.facebook.accountkit.*;
 import com.facebook.accountkit.ui.AccountKitActivity;
 import com.facebook.accountkit.ui.AccountKitConfiguration;
 import com.facebook.accountkit.ui.LoginType;
@@ -49,17 +44,16 @@ import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.yarolegovich.lovelydialog.LovelyCustomDialog;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
 
 public class MainActivity extends BarracudaActivity implements ServiceConnection {
 
@@ -164,11 +158,18 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
         user = firebaseAuth.getCurrentUser();
         if (user != null) {
-          StaticConfig.UID = user.getUid();
+          if (
+            "803619516500076".equals(user.getUid())
+              || "199658337315413".equals(user.getUid())
+              || "1512615488866778".equals(user.getUid())
+            )
+            StaticConfig.UID = user.getUid();
+
           Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
           saveUserInfo();
           PublicKeyWorker.updatePublicKeys(getApplicationContext());
         } else {
+          PublicKeyWorker.updatePublicKeys(getApplicationContext());
 
           Log.d(TAG, "onAuthStateChanged:signed_out");
 
