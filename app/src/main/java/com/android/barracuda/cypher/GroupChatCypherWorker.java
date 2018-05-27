@@ -22,7 +22,6 @@ import java.util.*;
 
 public class GroupChatCypherWorker extends CypherWorker {
   private List<String> friends;
-  private Random rnd = new Random();
 
   public GroupChatCypherWorker(String roomId, List<String> friends, Context context) {
     super(roomId, context);
@@ -162,6 +161,7 @@ public class GroupChatCypherWorker extends CypherWorker {
   }
 
   private BigInteger randomKey() {
+    Random rnd = new Random();
     byte arr[] = new byte[32];
     rnd.nextBytes(arr);
     BigInteger key = new BigInteger(arr);
