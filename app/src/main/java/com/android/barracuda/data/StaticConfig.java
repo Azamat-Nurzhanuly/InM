@@ -29,7 +29,7 @@ public class StaticConfig {
   public static String SINCH_HOST = "clientapi.sinch.com";
 
   public static final long KEY_LIFETIME = TEST_MODE ? (2 * 60 * 1000) : (24 * 60 * 60 * 1000);
-
+  public static final long ASTANA_OFFSET = 6 * (60 * 60 * 1000);
   //type of call
 
   public final static String CALL_OUTGOING = "outgoing";

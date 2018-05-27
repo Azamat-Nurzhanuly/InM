@@ -179,7 +179,7 @@ public class ChatActivity extends MainActivity
       for (CharSequence memId : idFriend) {
         memberIds.add(memId.toString());
       }
-      cypherWorker = new GroupChatCypherWorker(roomId, memberIds, this);
+      cypherWorker = new GroupChatCypherWorker(roomId, memberIds, this, true);
     } else {
       cypherWorker = new PrivateChatCypherWorker(roomId, idFriend.get(0).toString(), this);
     }
