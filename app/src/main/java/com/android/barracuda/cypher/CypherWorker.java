@@ -7,7 +7,6 @@ import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
 import com.android.barracuda.data.KeyStorageDB;
-import com.android.barracuda.data.PublicKeysDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Message;
 
@@ -100,10 +99,6 @@ public abstract class CypherWorker {
     @SuppressLint("GetInstance") Cipher cipher = Cipher.getInstance("AES");
     cipher.init(Cipher.DECRYPT_MODE, skeySpec);
     String decrypted = new String(cipher.doFinal(Base64.decode(encrypted, Base64.DEFAULT)));
-    if ("remove all".equals(decrypted)) {
-      KeyStorageDB.getInstance(context).removeAll();
-      PublicKeysDB.getInstance(context).removeAll();
-    }
     return decrypted
       + ((StaticConfig.TEST_MODE) ? ("\nKey=" + new BigInteger(key).toString() + "\nEncrypted: " + encrypted) : "");
   }

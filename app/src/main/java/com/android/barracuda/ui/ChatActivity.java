@@ -175,7 +175,11 @@ public class ChatActivity extends MainActivity
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
 
     if (idFriend.size() > 1) {
-      cypherWorker = new GroupChatCypherWorker(roomId, idFriend, this);
+      ArrayList<String> memberIds = new ArrayList<>();
+      for (CharSequence memId : idFriend) {
+        memberIds.add(memId.toString());
+      }
+      cypherWorker = new GroupChatCypherWorker(roomId, memberIds, this);
     } else {
       cypherWorker = new PrivateChatCypherWorker(roomId, idFriend.get(0).toString(), this);
     }

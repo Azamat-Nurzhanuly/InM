@@ -21,17 +21,16 @@ import com.google.firebase.database.ValueEventListener;
 import javax.crypto.Cipher;
 import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Random;
+import java.util.*;
 
 public class GroupChatCypherWorker extends CypherWorker {
-  private List<CharSequence> friends;
+  private List<String> friends;
+  private List<Message> keyWaiting;
 
-  public GroupChatCypherWorker(String roomId, List<CharSequence> friends, Context context) {
+  public GroupChatCypherWorker(String roomId, List<String> friends, Context context) {
     super(roomId, context);
     this.friends = friends;
+    this.keyWaiting = new ArrayList<>();
   }
 
   @Override
@@ -114,23 +113,23 @@ public class GroupChatCypherWorker extends CypherWorker {
 
   //*******************************************************************************************************
 
-  private void refreshLastKey() {
+  public void refreshLastKey() {
     initLastKey();
 
     long now = System.currentTimeMillis();
     if (lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < now) {
       BigInteger newKey = randomKey();
 
-      for (CharSequence friend : friends) {
-        if (StaticConfig.UID.equals(friend.toString())) continue;
+      for (String friend : friends) {
+        if (StaticConfig.UID.equals(friend)) continue;
         Message msg = new Message();
         msg.idSender = StaticConfig.UID;
         msg.idReceiver = roomId;
-        msg.friendId = friend.toString();
+        msg.friendId = friend;
         msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
         msg.timestamp = now;
 
-        sendEncryptedNewKey(friend.toString(), msg);
+        sendEncryptedNewKey(friend, msg);
       }
 
       setLastKey(addKey(now, roomId, null, null, null, newKey, now));

@@ -185,7 +185,7 @@ public class FriendChatService extends Service {
   }
 
   private void decryptAndNotifyGroup(final Group group, final Message message) {
-    List<CharSequence> friendsIds = new ArrayList<>();
+    List<String> friendsIds = new ArrayList<>();
     for (Friend friend : group.listFriend.getListFriend()) {
       friendsIds.add(friend.id);
     }
