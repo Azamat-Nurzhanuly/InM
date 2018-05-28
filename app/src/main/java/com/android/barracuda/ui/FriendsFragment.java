@@ -26,6 +26,7 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 
 import com.android.barracuda.ContactsActivity;
+import com.android.barracuda.MainActivity;
 import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.FriendDB;
@@ -55,6 +56,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -197,41 +199,40 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     @Override
     public void onClick(final View view) {
 
-//      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
-//        .setTopColorRes(R.color.colorPrimary)
-//        .setTitle("Add friend")
-//        .setMessage("Enter friend's phone number")
-//        .setIcon(R.drawable.ic_add_friend)
-//        .setInputType(InputType.TYPE_CLASS_PHONE)
-//        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
-//          @Override
-//          public boolean check(String text) {
-//            Pattern VALID_EMAIL_ADDRESS_REGEX =
-//              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
-//            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
-//            return matcher.find();
-//          }
-//        })
-//        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-//          @Override
-//          public void onTextInputConfirmed(String text) {
-//            //Tim id user id
-//            findIDPhoneNumber(text);
-//            //Check xem da ton tai ban ghi friend chua
-//            //Ghi them 1 ban ghi
-//          }
-//        })
-//        .show();
+      int themeColor = MainActivity.getThemeColor(getActivity());
 
-      Intent profIntent = new Intent(getActivity(), ContactsActivity.class);
-      startActivity(profIntent);
+      new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
+        .setTopColorRes(themeColor)
+        .setTitle("Add friend")
+        .setMessage("Enter friend's phone number")
+        .setIcon(R.drawable.ic_add_friend)
+        .setInputType(InputType.TYPE_CLASS_PHONE)
+        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
+          @Override
+          public boolean check(String text) {
+            Pattern VALID_EMAIL_ADDRESS_REGEX =
+              Pattern.compile("\\d+", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = VALID_EMAIL_ADDRESS_REGEX.matcher(text);
+            return matcher.find();
+          }
+        })
+        .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+          @Override
+          public void onTextInputConfirmed(String text) {
+            findIDPhoneNumber(text);
+          }
+        })
+        .show();
     }
 
     private void findIDPhoneNumber(String phoneNumber) {
+
+      int themeColor = MainActivity.getThemeColor(getActivity());
+
       dialogWait.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
         .setTitle("Finding friend....")
-        .setTopColorRes(R.color.colorPrimary)
+        .setTopColorRes(themeColor)
         .show();
       FirebaseDatabase.getInstance().getReference().child("user").orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(new ValueEventListener() {
         @Override
@@ -278,17 +279,20 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
      * Lay danh sach friend cua một UID
      */
     private void checkBeforeAddFriend(final String idFriend, Friend userInfo) {
+
+      int themeColor = MainActivity.getThemeColor(getActivity());
+
       dialogWait.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
         .setTitle("Add friend....")
-        .setTopColorRes(R.color.colorPrimary)
+        .setTopColorRes(themeColor)
         .show();
 
       //Check xem da ton tai id trong danh sach id chua
       if (listFriendID.contains(idFriend)) {
         dialogWait.dismiss();
         new LovelyInfoDialog(context)
-          .setTopColorRes(R.color.colorPrimary)
+          .setTopColorRes(themeColor)
           .setIcon(R.drawable.ic_add_friend)
           .setTitle("Friend")
           .setMessage("User " + userInfo.phoneNumber + " has been friend")
@@ -355,8 +359,11 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         }
       } else {
         dialogWait.dismiss();
+
+        int themeColor = MainActivity.getThemeColor(getActivity());
+
         new LovelyInfoDialog(context)
-          .setTopColorRes(R.color.colorPrimary)
+          .setTopColorRes(themeColor)
           .setIcon(R.drawable.ic_add_friend)
           .setTitle("Success")
           .setMessage("Add friend success")
@@ -479,7 +486,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           intent.putCharSequenceArrayListExtra(StaticConfig.INTENT_KEY_CHAT_ID, idFriend);
           intent.putExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID, idRoom);
           ChatActivity.bitmapAvataFriend = new HashMap<>();
-          if (!avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
+          if (avata != null && !Objects.equals(avata, StaticConfig.STR_DEFAULT_BASE64)) {
             byte[] decodedString = Base64.decode(avata, Base64.DEFAULT);
             ChatActivity.bitmapAvataFriend.put(id, BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length));
           } else {
@@ -740,7 +747,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     } else {
       dialogWaitDeleting.dismiss();
       new LovelyInfoDialog(context)
-        .setTopColorRes(R.color.colorPrimary)
+        .setTopColorRes(R.color.red)
         .setTitle("Error")
         .setMessage("Error occurred during deleting friend")
         .show();

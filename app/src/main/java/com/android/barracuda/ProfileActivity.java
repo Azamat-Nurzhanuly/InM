@@ -53,6 +53,7 @@ import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 public class ProfileActivity extends BarracudaActivity {
 
@@ -309,7 +310,7 @@ public class ProfileActivity extends BarracudaActivity {
                                     @Override
                                     public void onClick(DialogInterface dialogInterface, int i) {
                                         String newName = input.getText().toString();
-                                        if(!myAccount.name.equals(newName)){
+                                        if(!Objects.equals(myAccount.name, newName)){
                                             changeUserName(newName);
                                         }
                                         dialogInterface.dismiss();

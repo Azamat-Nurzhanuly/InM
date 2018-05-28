@@ -1,5 +1,6 @@
 package com.android.barracuda;
 
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -67,6 +68,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   private TabLayout tabLayout = null;
   public static String STR_FRIEND_FRAGMENT = "FRIEND";
   public static String STR_GROUP_FRAGMENT = "GROUP";
+  public static String STR_CONTACTS_FRAGMENT = "CONTACTS";
   public static String STR_INFO_FRAGMENT = "INFO";
   public static String STR_INFO_CALL = "CALL";
   public static String STR_CONTACTS = "CONTACTS";
@@ -134,6 +136,37 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
         break;
       }
     }
+  }
+
+  public static int getThemeColor(Activity activity) {
+
+    SharedPreferences sharedPreferences = activity.getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+    final String color = sharedPreferences.getString(SharedPreferenceHelper.SHARE_COLOR, "");
+    int themePrimaryColor;
+
+    switch (color) {
+      case COLOR_DARK_BLUE: {
+        themePrimaryColor = R.color.darkBlue;
+        break;
+      }
+      case COLOR_BLUE: {
+        themePrimaryColor = R.color.blue;
+        break;
+      }
+      case COLOR_PURPLE: {
+        themePrimaryColor = R.color.purple;
+        break;
+      }
+      case COLOR_ORANGE: {
+        themePrimaryColor = R.color.orange;
+        break;
+      }
+      default: {
+        themePrimaryColor = R.color.blue;
+      }
+    }
+
+    return themePrimaryColor;
   }
 
   @Override
@@ -271,12 +304,14 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     int[] tabIcons = {
       R.drawable.ic_tab_person,
       R.drawable.ic_tab_group,
-      R.drawable.ic_call
+      R.drawable.ic_call,
+      R.drawable.ic_contact
     };
 
     tabLayout.getTabAt(0).setIcon(tabIcons[0]);
     tabLayout.getTabAt(1).setIcon(tabIcons[1]);
     tabLayout.getTabAt(2).setIcon(tabIcons[2]);
+    tabLayout.getTabAt(3).setIcon(tabIcons[3]);
   }
 
   private void setupViewPager(ViewPager viewPager) {
@@ -286,6 +321,8 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
     //TODO tabs
     adapter.addFrag(new CallListFragment(), STR_INFO_CALL);
+
+    adapter.addFrag(new ContactsActivity.PlaceholderFragment(), STR_CONTACTS_FRAGMENT);
 
     floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
 

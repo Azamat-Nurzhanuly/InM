@@ -1,10 +1,27 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <color name="colorPrimary">#03A9F4</color>
-    <color name="colorWhiteDecline">#ffffff</color>
-    <color name="colorGreenAnswer">#ffffff</color>
     <color name="colorPrimaryDark">#0288D1</color>
     <color name="colorAccent">#4fa881</color>
+
+    <color name="colorPurplePrimary">#9745ac</color>
+    <color name="colorPurplePrimaryDark">#8b3e9f</color>
+    <color name="colorPurpleAccent">#cb78e1</color>
+
+    <color name="colorDarkBluePrimary">#0f2143</color>
+    <color name="colorDarkBluePrimaryDark">#01050d</color>
+    <color name="colorDarkBlueAccent">#2956a9</color>
+
+    <color name="colorBluePrimary">#36ace3</color>
+    <color name="colorBluePrimaryDark">#1e6281</color>
+    <color name="colorBlueAccent">#2956a9</color>
+
+    <color name="colorOrangePrimary">#f1754d</color>
+    <color name="colorOrangePrimaryDark">#af573a</color>
+    <color name="colorOrangeAccent">#fca487</color>
+
+    <color name="colorWhiteDecline">#ffffff</color>
+    <color name="colorGreenAnswer">#ffffff</color>
     <color name="colorIndivateTab">#FFFFFF</color>
     <color name="transparent">#00000000</color>
     <color name="colorCardView">#f7f7f7</color>
@@ -14,6 +31,8 @@
     <color name="grey_800">#212121</color>
     <color name="fab_color">#a4a4a4</color>
     <color name="fab_sheet_color">#FFFFFF</color>
+
+    <color name="red">#ff0000</color>
 
     <color name="purple">#863f97</color>
     <color name="darkBlue">#0f2143</color>

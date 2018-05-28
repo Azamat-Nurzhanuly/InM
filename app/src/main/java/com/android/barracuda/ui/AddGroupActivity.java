@@ -37,6 +37,7 @@ import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.Set;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -323,7 +324,7 @@ class ListPeopleAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         ((ItemFriendHolder) holder).txtPhoneNumber.setText(listFriend.getListFriend().get(position).phoneNumber);
         String avata = listFriend.getListFriend().get(position).avata;
         final String id = listFriend.getListFriend().get(position).id;
-        if (!avata.equals(StaticConfig.STR_DEFAULT_BASE64)) {
+        if (avata != null && !Objects.equals(avata, StaticConfig.STR_DEFAULT_BASE64)) {
             byte[] decodedString = Base64.decode(avata, Base64.DEFAULT);
             ((ItemFriendHolder) holder).avata.setImageBitmap(BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length));
         }else{
