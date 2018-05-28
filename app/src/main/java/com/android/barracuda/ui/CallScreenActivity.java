@@ -232,6 +232,7 @@ public class CallScreenActivity extends ChatActivity {
       setVolumeControlStream(AudioManager.USE_DEFAULT_STREAM_TYPE);
       String endMsg = "Call ended: " + call.getDetails().toString();
       endCall();
+      saveCallInCallsHistory(call);
     }
 
     @Override
@@ -246,7 +247,6 @@ public class CallScreenActivity extends ChatActivity {
     public void onCallProgressing(Call call) {
       Log.d(TAG, "Call progressing");
       mAudioPlayer.playProgressTone();
-      saveCallInCallsHistory(call);
     }
 
     private void saveCallInCallsHistory(Call call) {

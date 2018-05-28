@@ -1,19 +1,19 @@
 package com.android.barracuda.ui;
 
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Base64;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -24,15 +24,11 @@ import com.android.barracuda.R;
 import com.android.barracuda.data.CallDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Call;
-import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.ListCall;
-import com.android.barracuda.service.ServiceUtils;
-import com.google.firebase.database.ChildEventListener;
+import com.android.barracuda.service.SinchService;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.Query;
 import com.google.firebase.database.ValueEventListener;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
@@ -40,11 +36,9 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Map;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
-import static android.support.v4.content.ContextCompat.getDrawable;
 import static com.android.barracuda.data.StaticConfig.CALL_INCOMING;
 import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
 
@@ -56,8 +50,8 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
   private ArrayList<String> listFriendID = null;
   private LovelyProgressDialog dialogFindAllCalls;
   private SwipeRefreshLayout mSwipeRefreshLayout;
-  private CountDownTimer detectFriendOnline;
 
+  public static int ACTION_START_CALL = 1;
 
 
   @Override
@@ -69,18 +63,7 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
   @Override
   public View onCreateView(final LayoutInflater inflater, ViewGroup container,
                            Bundle savedInstanceState) {
-    detectFriendOnline = new CountDownTimer(System.currentTimeMillis(), StaticConfig.TIME_TO_REFRESH) {
-      @Override
-      public void onTick(long l) {
-        ServiceUtils.updateCallStatus(getContext(), dataListCalls);
-        ServiceUtils.updateUserStatus(getContext());
-      }
 
-      @Override
-      public void onFinish() {
-
-      }
-    };
     if (dataListCalls == null) {
       dataListCalls = CallDB.getInstance(getContext()).getListCall();
       if (dataListCalls.getListCall().size() > 0) {
@@ -88,7 +71,6 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
         for (Call call : dataListCalls.getListCall()) {
           listFriendID.add(call.id);
         }
-        detectFriendOnline.start();
       }
     }
     View layout = inflater.inflate(R.layout.fragment_people, container, false);
@@ -112,14 +94,13 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
 //    }
 
 
-
     return layout;
   }
 
   @Override
   public void onDestroyView() {
     super.onDestroyView();
-    }
+  }
 
   @Override
   public void onActivityResult(int requestCode, int resultCode, Intent data) {
@@ -147,7 +128,6 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
       adapter.notifyDataSetChanged();
       dialogFindAllCalls.dismiss();
       mSwipeRefreshLayout.setRefreshing(false);
-      detectFriendOnline.start();
     } else {
       final String id = listFriendID.get(index);
       FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -180,20 +160,14 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
   private ListCall listCall;
   private Context context;
-  public static Map<String, Query> mapQuery;
-  public static Map<String, ChildEventListener> mapChildListener;
-  public static Map<String, ChildEventListener> mapChildListenerOnline;
-  public static Map<String, Boolean> mapMark;
   private CallListFragment fragment;
   LovelyProgressDialog dialogWaitDeleting;
 
   public ListCallAdapter(Context context, ListCall listCall, CallListFragment fragment) {
     this.listCall = listCall;
     this.context = context;
-    mapQuery = new HashMap<>();
-    mapChildListener = new HashMap<>();
-    mapMark = new HashMap<>();
-    mapChildListenerOnline = new HashMap<>();
+
+
     this.fragment = fragment;
     dialogWaitDeleting = new LovelyProgressDialog(context);
   }
@@ -216,9 +190,9 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
       ((ItemCallViewHolder) holder).txtName.setText(name);
 
       ((View) ((ItemCallViewHolder) holder).txtName.getParent().getParent().getParent())
-              .setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View view) {
+        .setOnClickListener(new View.OnClickListener() {
+          @Override
+          public void onClick(View view) {
 //                  ((ItemCallViewHolder) holder).txtName.setTypeface(Typeface.DEFAULT);
 //                  Intent intent = new Intent(context, ChatActivity.class);
 //                  intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, name);
@@ -235,18 +209,51 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 //
 //                  mapMark.put(id, null);
 //                  fragment.startActivityForResult(intent, FriendsFragment.ACTION_START_CHAT);
+          }
+        });
+
+      ((View) ((ItemCallViewHolder) holder).txtName.getParent().getParent().getParent())
+        .setOnLongClickListener(new View.OnLongClickListener() {
+
+          @Override
+          public boolean onLongClick(View v) {
+            AlertDialog.Builder builder = new AlertDialog.Builder(context);
+            builder.setTitle(name)
+              .setItems(R.array.call_list_array, new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int which) {
+                  //0 = audio
+                  //1 = video
+                  switch (which) {
+                    case 0:
+                      audioCall();
+                    case 1:
+                      break;
+                  }
                 }
-              });
+
+
+                private void audioCall() {
+
+                  //TODO AUDIO CALL
+                  Intent callScreen = new Intent(context, CallScreenActivity.class);
+                  callScreen.putExtra(SinchService.CALL_ID, "");
+                  fragment.startActivityForResult(callScreen, CallListFragment.ACTION_START_CALL);
+
+
+                }
+              }).show();
+            return true;
+          }
+        });
 
       if (listCall.getListCall().get(position) != null) {
 
-        if(CALL_OUTGOING.equalsIgnoreCase(type)){
+        if (CALL_OUTGOING.equalsIgnoreCase(type)) {
           ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.out_call_history);
-        }
-        else{
-            if(CALL_INCOMING.equalsIgnoreCase(type)) {
-                ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.inc_call_history);
-            }
+        } else {
+          if (CALL_INCOMING.equalsIgnoreCase(type)) {
+            ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.inc_call_history);
+          }
         }
 
         ((ItemCallViewHolder) holder).txtTime.setVisibility(View.VISIBLE);
@@ -264,57 +271,6 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
       } else {
         ((ItemCallViewHolder) holder).txtTime.setVisibility(View.GONE);
-        if (mapQuery.get(id) == null && mapChildListener.get(id) == null) {
-          mapChildListener.put(id, new ChildEventListener() {
-            @Override
-            public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-              HashMap mapMessage = (HashMap) dataSnapshot.getValue();
-              if (listCall.getListCall().get(position).message != null &&
-                      listCall.getListCall().get(position).message.fileModel != null &&
-                      listCall.getListCall() != null) {
-
-                listCall.getListCall().get(position).message.fileModel = (FileModel) mapMessage.get("fileModel");
-                notifyDataSetChanged();
-
-              }
-
-              //TODO for fileModel
-
-              listCall.getListCall().get(position).message.timestamp = (long) mapMessage.get("timestamp");
-            }
-
-            @Override
-            public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-            }
-
-            @Override
-            public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-            }
-
-            @Override
-            public void onCancelled(DatabaseError databaseError) {
-
-            }
-          });
-
-
-          if(mapQuery.get(id) != null)
-          mapQuery.get(id).addChildEventListener(mapChildListener.get(id));
-          mapMark.put(id, true);
-        } else {
-          if(mapQuery.get(id) != null) {
-            mapQuery.get(id).removeEventListener(mapChildListener.get(id));
-            mapQuery.get(id).addChildEventListener(mapChildListener.get(id));
-          }
-          mapMark.put(id, true);
-        }
       }
       if (StaticConfig.STR_DEFAULT_BASE64.equals(listCall.getListCall().get(position).avata)) {
         ((ItemCallViewHolder) holder).avata.setImageResource(R.drawable.default_avata);
@@ -326,14 +282,9 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           ((ItemCallViewHolder) holder).avata.setImageBitmap(src);
         }
       }
-
-      if (listCall.getListCall().get(position).status.isOnline) {
-        ((ItemCallViewHolder) holder).avata.setBorderWidth(10);
-      } else {
-        ((ItemCallViewHolder) holder).avata.setBorderWidth(0);
-      }
     }
   }
+
 
   @Override
   public int getItemCount() {

@@ -153,6 +153,7 @@ public class IncomingCallScreenActivity extends ChatActivity {
       Log.d(TAG, "Call ended, cause: " + cause.toString());
       mAudioPlayer.stopRingtone();
       finish();
+      saveCallInCallsHistory(call);
     }
 
     @Override
@@ -163,8 +164,6 @@ public class IncomingCallScreenActivity extends ChatActivity {
     @Override
     public void onCallProgressing(Call call) {
       Log.d(TAG, "Call progressing");
-
-      saveCallInCallsHistory(call);
     }
 
     private void saveCallInCallsHistory(Call call) {

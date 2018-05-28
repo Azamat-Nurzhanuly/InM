@@ -47,7 +47,6 @@ import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
-import com.android.barracuda.fab.Fab;
 import com.android.barracuda.inter.ClickListenerChatFirebase;
 import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.FileModel;
@@ -153,8 +152,6 @@ public class ChatActivity extends MainActivity
   public static HashMap<String, Bitmap> bitmapAvataFriend;
 
   public Bitmap bitmapAvataUser;
-  public MaterialSheetFab materialSheetFab;
-  public Fab fab = null;
 
   private Context context;
 
@@ -498,7 +495,7 @@ public class ChatActivity extends MainActivity
     int cy = attach_file_view.getTop();
     int radius = Math.max(attach_file_view.getWidth(), attach_file_view.getHeight());
 
-    //Below Android LOLIPOP Version
+    //Below Android LOLIPOP
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) {
       SupportAnimator animator =
         ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, 0, radius);
@@ -538,7 +535,7 @@ public class ChatActivity extends MainActivity
         animator_reverse.start();
       }
     }
-    // Android LOLIPOP And ABOVE Version
+    // Android LOLIPOP And ABOVE
     else {
       if (attach_hidden) {
         Animator anim = android.view.ViewAnimationUtils.createCircularReveal(attach_file_view, cx, cy, 0, radius);
