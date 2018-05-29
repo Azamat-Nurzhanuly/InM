@@ -190,7 +190,7 @@ public class FriendChatService extends Service {
       friendsIds.add(friend.id);
     }
 
-    new GroupChatCypherWorker(group.id, friendsIds, getApplicationContext())
+    new GroupChatCypherWorker(group.id, null, friendsIds, getApplicationContext())
       .decrypt(message, new MessageActivityCallback() {
         @Override
         public void processMessage(Message msg) {

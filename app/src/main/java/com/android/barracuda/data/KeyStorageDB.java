@@ -81,6 +81,19 @@ public final class KeyStorageDB {
     }
   }
 
+  public Key getLastKeyForGroupChatRoom(String roomId, long ts) {
+    try (SQLiteDatabase db = mDbHelper.getReadableDatabase()) {
+      String sql = "select * from " + TABLE_NAME + " where " + ROOM_ID + "=? and timestamp < ? order by " + PUB_KEY_TS + " desc limit 1";
+      try (Cursor cursor = db.rawQuery(sql, new String[]{roomId, String.valueOf(ts)})) {
+        if (cursor.moveToNext()) {
+          return extractKeyFromCursor(cursor);
+        } else {
+          return null;
+        }
+      }
+    }
+  }
+
   private Key extractKeyFromCursor(Cursor cursor) {
     Key key = new Key();
     int i = 0;

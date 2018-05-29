@@ -9,6 +9,7 @@ public class Message {
   public String key;
   public Long keyTs;
   public FileModel fileModel;
+  public Boolean keyReq;
   public long timestamp;
 
   @Override

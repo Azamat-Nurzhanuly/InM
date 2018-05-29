@@ -23,14 +23,30 @@ import java.util.*;
 
 public class GroupChatCypherWorker extends CypherWorker {
   private List<String> friends;
+  private static final long ONE_HOUR = 60 * 60 * 1000;
 
   public GroupChatCypherWorker(String roomId, String adminId, List<String> friends, Context context) {
     super(roomId, context);
     this.friends = friends;
-    if (StaticConfig.UID.equals(adminId) && isLastKeyOld())
-      runKeyRefreshThread();
-
+    if (!haveKey()) {
+      requestKey();
+    } else {
+      if (StaticConfig.UID.equals(adminId) && isLastKeyOld())
+        refreshLastKey();
+    }
     runKeyListener();
+  }
+
+  private void requestKey() {
+    Message keyRequest = new Message();
+    keyRequest.idSender = StaticConfig.UID;
+    keyRequest.keyReq = true;
+    sendMessageTo(keyRequest, "message/" + roomId);
+  }
+
+  private boolean haveKey() {
+    initLastKey();
+    return lastKey != null;
   }
 
   @Override
@@ -42,6 +58,14 @@ public class GroupChatCypherWorker extends CypherWorker {
 
   @Override
   public void decrypt(final Message msg, final MessageActivityCallback afterDecrypted) {
+
+    if (Boolean.TRUE.equals(msg.keyReq)) {
+      if (!StaticConfig.UID.equals(msg.idSender)) {
+        sendCurrentKeyTo(msg.idSender);
+      }
+      return;
+    }
+
     if (msg.keyTs == null || msg.keyTs == 0) {
       afterDecrypted.processMessage(msg);
       return;
@@ -122,7 +146,6 @@ public class GroupChatCypherWorker extends CypherWorker {
     }
   }
 
-
   //*******************************************************************************************************
 
   private boolean isLastKeyOld() {
@@ -130,14 +153,14 @@ public class GroupChatCypherWorker extends CypherWorker {
     return lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < astanaTime();
   }
 
-  private void runKeyRefreshThread() {
-    new Runnable() {
-      @Override
-      public void run() {
-        refreshLastKey();
-      }
-    }.run();
-  }
+//  private void runKeyRefreshThread() {
+//    new Runnable() {
+//      @Override
+//      public void run() {
+//        refreshLastKey();
+//      }
+//    }.run();
+//  }
 
   public void refreshLastKey() {
     initLastKey();
@@ -153,7 +176,7 @@ public class GroupChatCypherWorker extends CypherWorker {
       msg.idReceiver = AuthUtils.userIdToRoomId(friendId);
       msg.friendId = friendId;
       msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
-      msg.timestamp = astanaTime;
+      msg.timestamp = astanaTime + ONE_HOUR;
 
       Key lastKeyForRoom = KeyStorageDB.getInstance(context).getLastKeyForRoom(AuthUtils.userIdToRoomId(friendId));
       if (lastKeyForRoom != null) {
@@ -176,7 +199,7 @@ public class GroupChatCypherWorker extends CypherWorker {
   }
 
   public void sendCurrentKeyTo(String friendId) {
-    if (StaticConfig.UID.equals(friendId)) return;
+    if (friendId == null || StaticConfig.UID.equals(friendId)) return;
     long astanaTime = astanaTime();
     initLastKey();
     if (lastKey == null) return;
@@ -251,7 +274,7 @@ public class GroupChatCypherWorker extends CypherWorker {
 
   private void initLastKey() {
     if (this.lastKey == null)
-      setLastKey(KeyStorageDB.getInstance(context).getLastKeyForRoom(roomId));
+      setLastKey(KeyStorageDB.getInstance(context).getLastKeyForGroupChatRoom(roomId, astanaTime()));
   }
 
   private BigInteger encryptKeyFromMessage(Message msg) throws Exception {

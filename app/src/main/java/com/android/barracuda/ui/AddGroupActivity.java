@@ -177,7 +177,7 @@ public class AddGroupActivity extends AppCompatActivity {
     for (String memberId : listIDChoose) {
       if (!groupEdit.member.contains(memberId)) {
         if (cypherWorker == null) {
-          cypherWorker = new GroupChatCypherWorker(groupEdit.id, new ArrayList<String>(listIDChoose), getApplicationContext());
+          cypherWorker = new GroupChatCypherWorker(groupEdit.id, null, new ArrayList<String>(listIDChoose), getApplicationContext());
         }
         cypherWorker.sendCurrentKeyTo(memberId);
       }
@@ -209,7 +209,7 @@ public class AddGroupActivity extends AppCompatActivity {
   }
 
   private void refreshKeyOfGroup(String groupId) {
-    new GroupChatCypherWorker(groupId, new ArrayList<String>(listIDChoose), getApplicationContext()).refreshLastKey();
+    new GroupChatCypherWorker(groupId, null, new ArrayList<String>(listIDChoose), getApplicationContext()).refreshLastKey();
   }
 
   private void deleteRoomForUser(final String roomId, final int userIndex) {
