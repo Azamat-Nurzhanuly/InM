@@ -28,7 +28,7 @@ public class GroupChatCypherWorker extends CypherWorker {
     super(roomId, context);
     this.friends = friends;
     if (StaticConfig.UID.equals(adminId) && isLastKeyOld())
-      refreshLastKey();
+      runKeyRefreshThread();
 
     runKeyListener();
   }
@@ -130,13 +130,13 @@ public class GroupChatCypherWorker extends CypherWorker {
     return lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < astanaTime();
   }
 
-  public void runKeyRefreshThread() {
-    Runnable r = new Runnable() {
+  private void runKeyRefreshThread() {
+    new Runnable() {
       @Override
       public void run() {
         refreshLastKey();
       }
-    };
+    }.run();
   }
 
   public void refreshLastKey() {
