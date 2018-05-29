@@ -24,9 +24,12 @@ import java.util.*;
 public class GroupChatCypherWorker extends CypherWorker {
   private List<String> friends;
 
-  public GroupChatCypherWorker(String roomId, List<String> friends, Context context) {
+  public GroupChatCypherWorker(String roomId, String adminId, List<String> friends, Context context) {
     super(roomId, context);
     this.friends = friends;
+    if (StaticConfig.UID.equals(adminId) && isLastKeyOld())
+      refreshLastKey();
+
     runKeyListener();
   }
 
@@ -119,7 +122,22 @@ public class GroupChatCypherWorker extends CypherWorker {
     }
   }
 
+
   //*******************************************************************************************************
+
+  private boolean isLastKeyOld() {
+    initLastKey();
+    return lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < astanaTime();
+  }
+
+  public void runKeyRefreshThread() {
+    Runnable r = new Runnable() {
+      @Override
+      public void run() {
+        refreshLastKey();
+      }
+    };
+  }
 
   public void refreshLastKey() {
     initLastKey();
@@ -161,7 +179,7 @@ public class GroupChatCypherWorker extends CypherWorker {
     if (StaticConfig.UID.equals(friendId)) return;
     long astanaTime = astanaTime();
     initLastKey();
-    if(lastKey == null) return;
+    if (lastKey == null) return;
     Message msg = new Message();
     msg.idSender = StaticConfig.UID;
     msg.idReceiver = AuthUtils.userIdToRoomId(friendId);
