@@ -95,6 +95,8 @@ public class FriendChatService extends Service {
                   }
                 }
                 Message message = dataSnapshot.getValue(Message.class);
+                if (message == null) return;
+                message.id = dataSnapshot.getKey();
                 decryptAndNotifyPrivate(friend, message);
               } else {
                 mapMark.put(friend.idRoom, true);
@@ -133,7 +135,8 @@ public class FriendChatService extends Service {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
               final Message message = dataSnapshot.getValue(Message.class);
-
+              if (message == null) return;
+              message.id = dataSnapshot.getKey();
               if (mapMark.get(group.id) != null && mapMark.get(group.id)) {
                 if (mapBitmap.get(group.id) == null) {
                   mapBitmap.put(group.id, BitmapFactory.decodeResource(getResources(), R.drawable.ic_notify_group));

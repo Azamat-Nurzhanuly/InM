@@ -361,6 +361,7 @@ public class ChatActivity extends MainActivity
           if (dataSnapshot.getValue() != null) {
             Message newMessage = dataSnapshot.getValue(Message.class);
             if (newMessage == null) return;
+            newMessage.id = dataSnapshot.getKey();
 
             cypherWorker.decrypt(newMessage, new MessageActivityCallback() {
               @Override

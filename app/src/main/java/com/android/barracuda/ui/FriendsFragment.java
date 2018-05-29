@@ -527,6 +527,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             Message message = dataSnapshot.getValue(Message.class);
             if (message == null) return;
+            message.id = dataSnapshot.getKey();
 
             if (position < listFriend.getListFriend().size()) {
               if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&

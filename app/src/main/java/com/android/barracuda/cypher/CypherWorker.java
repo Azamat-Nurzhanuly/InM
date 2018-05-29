@@ -3,6 +3,7 @@ package com.android.barracuda.cypher;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
+import android.util.Log;
 import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
@@ -42,6 +43,7 @@ public abstract class CypherWorker {
 
   protected void setLastKey(Key key) {
     synchronized (this) {
+      Log.d("SET LAST KEY ******", key == null ? "null" : key.toString());
       lastKey = key;
     }
   }

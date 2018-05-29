@@ -2,6 +2,7 @@ package com.android.barracuda.model;
 
 
 public class Message {
+  public String id;
   public String idSender;
   public String idReceiver;
   public String friendId;
