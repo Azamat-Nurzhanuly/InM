@@ -173,18 +173,15 @@ public class AddGroupActivity extends AppCompatActivity {
         }
       });
 
-    if (listIDChoose.size() != groupEdit.member.size()) {
-      refreshKeyOfGroup(groupEdit.id);
-    } else {
-      for (String memberId : groupEdit.member) {
-        if (!listIDChoose.contains(memberId)) {
-          refreshKeyOfGroup(groupEdit.id);
-          break;
+    GroupChatCypherWorker cypherWorker = null;
+    for (String memberId : listIDChoose) {
+      if (!groupEdit.member.contains(memberId)) {
+        if (cypherWorker == null) {
+          cypherWorker = new GroupChatCypherWorker(groupEdit.id, new ArrayList<String>(listIDChoose), getApplicationContext());
         }
+        cypherWorker.sendCurrentKeyTo(memberId);
       }
     }
-
-
   }
 
   private void createGroup() {

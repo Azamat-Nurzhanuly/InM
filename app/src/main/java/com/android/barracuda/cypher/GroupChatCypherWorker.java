@@ -13,6 +13,7 @@ import com.android.barracuda.data.KeyStorageDB;
 import com.android.barracuda.data.PublicKeysDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Message;
+import com.android.barracuda.util.AuthUtils;
 import com.google.firebase.database.*;
 
 import javax.crypto.Cipher;
@@ -38,9 +39,20 @@ public class GroupChatCypherWorker extends CypherWorker {
 
   @Override
   public void decrypt(final Message msg, final MessageActivityCallback afterDecrypted) {
+    if (msg.keyTs == null || msg.keyTs == 0) {
+      afterDecrypted.processMessage(msg);
+      return;
+    }
+
     Key key = checkAndGetLastKey(msg.keyTs);
     final BigInteger secretKey = key == null ? KeyStorageDB.getInstance(context).getSecretKey(msg.keyTs, msg.idReceiver) : key.key;
     if (key != null) setLastKey(key);
+    else initLastKey();
+
+    if (lastKey == null) {
+      refreshLastKey();
+      return;
+    }
 
     if (secretKey == null) {
 
@@ -116,20 +128,61 @@ public class GroupChatCypherWorker extends CypherWorker {
 
     BigInteger newKey = randomKey();
 
-    for (String friend : friends) {
-      if (StaticConfig.UID.equals(friend)) continue;
+    for (String friendId : friends) {
+      if (StaticConfig.UID.equals(friendId)) continue;
       Message msg = new Message();
       msg.idSender = StaticConfig.UID;
-      msg.idReceiver = roomId;
-      msg.friendId = friend;
+      msg.idReceiver = AuthUtils.userIdToRoomId(friendId);
+      msg.friendId = friendId;
       msg.text = Base64.encodeToString(newKey.toByteArray(), Base64.DEFAULT);
       msg.timestamp = astanaTime;
 
-      sendEncryptedNewKey(friend, msg);
+      Key lastKeyForRoom = KeyStorageDB.getInstance(context).getLastKeyForRoom(AuthUtils.userIdToRoomId(friendId));
+      if (lastKeyForRoom != null) {
+        try {
+          msg.text = encryptText(msg.text, lastKeyForRoom.key.toByteArray());
+          msg.key = lastKeyForRoom.ownPubKey.toString();
+          msg.keyTs = lastKeyForRoom.friendKeyTs;
+          sendMessageTo(msg, FBaseEntities.GR_KEY + "/" + roomId + "/" + friendId);
+          continue;
+        } catch (Exception e) {
+          Log.e(this.getClass().getSimpleName(), "Error during encrypting key", e);
+        }
+      }
+
+      sendEncryptedNewKey(friendId, msg);
     }
 
     setLastKey(addKey(astanaTime, roomId, null, null, null, newKey, astanaTime));
 //    }
+  }
+
+  public void sendCurrentKeyTo(String friendId) {
+    if (StaticConfig.UID.equals(friendId)) return;
+    long astanaTime = astanaTime();
+    initLastKey();
+    if(lastKey == null) return;
+    Message msg = new Message();
+    msg.idSender = StaticConfig.UID;
+    msg.idReceiver = AuthUtils.userIdToRoomId(friendId);
+    msg.friendId = friendId;
+    msg.text = Base64.encodeToString(lastKey.key.toByteArray(), Base64.DEFAULT);
+    msg.timestamp = astanaTime;
+
+    Key lastKeyForRoom = KeyStorageDB.getInstance(context).getLastKeyForRoom(AuthUtils.userIdToRoomId(friendId));
+    if (lastKeyForRoom != null) {
+      try {
+        msg.text = encryptText(msg.text, lastKeyForRoom.key.toByteArray());
+        msg.key = lastKeyForRoom.ownPubKey.toString();
+        msg.keyTs = lastKeyForRoom.friendKeyTs;
+        sendMessageTo(msg, FBaseEntities.GR_KEY + "/" + roomId + "/" + friendId);
+        return;
+      } catch (Exception e) {
+        Log.e(this.getClass().getSimpleName(), "Error during encrypting key", e);
+      }
+    }
+
+    sendEncryptedNewKey(friendId, msg);
   }
 
   private void sendEncryptedNewKey(final String friendId, final Message msg) {
@@ -141,11 +194,14 @@ public class GroupChatCypherWorker extends CypherWorker {
         if (pks == null || pks.key == null) return;
 
         try {
-          Key key = handlePublicKey(roomId, null, pks);
+          Key key = handlePublicKey(msg.idReceiver, friendId, pks);
           msg.text = encryptText(msg.text, key.key.toByteArray());
           msg.key = key.ownPubKey.toString();
           msg.keyTs = pks.timestamp;
           sendMessageTo(msg, FBaseEntities.GR_KEY + "/" + roomId + "/" + friendId);
+
+          KeyStorageDB.getInstance(context).addKey(key);
+
         } catch (Exception e) {
           Log.e("CypherWorker", "Error", e);
         }
