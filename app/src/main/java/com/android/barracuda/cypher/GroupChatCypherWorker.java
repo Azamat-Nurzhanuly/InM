@@ -23,7 +23,7 @@ import java.util.*;
 
 public class GroupChatCypherWorker extends CypherWorker {
   private List<String> friends;
-  private static final long TEN_MINS = StaticConfig.TEST_MODE ? 60 * 1000 : 10 * 60 * 1000;
+  private static final long KEY_RIPE_TIME = StaticConfig.TEST_MODE ? 60 * 1000 : 10 * 60 * 1000;
 
   public GroupChatCypherWorker(String roomId, String adminId, List<String> friends, Context context) {
     super(roomId, context);
@@ -70,7 +70,7 @@ public class GroupChatCypherWorker extends CypherWorker {
       afterDecrypted.processMessage(msg);
       return;
     }
-
+    initLastKey();
     Key key = checkAndGetLastKey(msg.keyTs);
     final BigInteger secretKey = key == null ? KeyStorageDB.getInstance(context).getSecretKey(msg.keyTs, msg.idReceiver) : key.key;
     if (key != null) setLastKey(key);
@@ -179,7 +179,7 @@ public class GroupChatCypherWorker extends CypherWorker {
 
   public void refreshLastKey() {
     initLastKey();
-    long keyTs = astanaTime() + TEN_MINS;
+    long keyTs = astanaTime() + KEY_RIPE_TIME;
 //    if (lastKey == null || lastKey.timestamp + StaticConfig.KEY_LIFETIME < astanaTime) {
 
     BigInteger newKey = randomKey();
@@ -261,7 +261,7 @@ public class GroupChatCypherWorker extends CypherWorker {
   }
 
   private void initLastKey() {
-    if (this.lastKey == null)
+    if (this.lastKey == null || this.lastKey.timestamp < astanaTime() + StaticConfig.KEY_LIFETIME + KEY_RIPE_TIME)
       setLastKey(KeyStorageDB.getInstance(context).getLastKeyForGroupChatRoom(roomId, astanaTime()));
   }
 
