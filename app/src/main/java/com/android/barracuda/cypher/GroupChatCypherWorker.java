@@ -5,6 +5,7 @@ import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
 import com.android.barracuda.cypher.callback.MessageActivityCallback;
+import com.android.barracuda.cypher.exceptions.NoKeyException;
 import com.android.barracuda.cypher.models.DHKeys;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
@@ -128,7 +129,8 @@ public class GroupChatCypherWorker extends CypherWorker {
           }
           if (count == 0 || !decrypted) {
             msg.text = "Could not decrypt. Cause: no key";
-            afterDecrypted.processMessage(msg);
+//            afterDecrypted.processMessage(msg);
+            Log.e("GroupChatCypherWorker", "No key", new NoKeyException(msg.toString()));
           }
         }
 

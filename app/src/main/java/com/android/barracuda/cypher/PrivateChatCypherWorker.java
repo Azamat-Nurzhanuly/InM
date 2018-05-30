@@ -102,6 +102,7 @@ public class PrivateChatCypherWorker extends CypherWorker {
       if (secretKey == null) {
         msg.text = "Could not decrypt. Cause: no key\n";
         Log.e(getClass().getSimpleName(), "No key", new NoKeyException(msg.toString()));
+        return;
       } else {
         try {
           msg.text = decryptText(msg.text, secretKey.toByteArray());
