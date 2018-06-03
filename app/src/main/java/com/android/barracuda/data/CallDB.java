@@ -105,7 +105,7 @@ public final class CallDB {
   private static final String TEXT_TYPE = " TEXT";
   private static final String COMMA_SEP = ",";
   private static final String SQL_CREATE_ENTRIES =
-    "CREATE TABLE " + FeedEntry.TABLE_NAME + " (" +
+    "CREATE TABLE IF NOT EXISTS " + FeedEntry.TABLE_NAME + " (" +
       FeedEntry.COLUMN_NAME_ID + " TEXT PRIMARY KEY," +
       FeedEntry.COLUMN_NAME_FRIEND_ID + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +

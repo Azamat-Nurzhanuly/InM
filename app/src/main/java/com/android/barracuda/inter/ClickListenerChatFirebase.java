@@ -6,7 +6,7 @@ import android.widget.SeekBar;
 
 public interface ClickListenerChatFirebase {
 
-  void clickImageChat(View view, int position, String nameUser, String urlPhotoUser, String urlPhotoClick);
+  void clickImageChat(View view, int position);
 
   void clickImageMapChat(View view, int position, String latitude, String longitude);
 

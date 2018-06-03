@@ -3,7 +3,6 @@ package com.android.barracuda.ui;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
-import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -75,7 +74,6 @@ import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
-import com.gordonwong.materialsheetfab.MaterialSheetFab;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
@@ -90,7 +88,6 @@ import java.util.Objects;
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
-import okhttp3.ResponseBody;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
@@ -132,6 +129,7 @@ public class ChatActivity extends MainActivity
   private String roomId;
   private ArrayList<CharSequence> idFriend;
   private Consersation consersation;
+  private String nameFriend;
 
   //attach files
   private LinearLayout attach_file_view;
@@ -195,7 +193,7 @@ public class ChatActivity extends MainActivity
     Intent intentData = getIntent();
     idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
-    String nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
+    nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
 
     consersation = new Consersation();
 
@@ -720,7 +718,7 @@ public class ChatActivity extends MainActivity
         fileModel.type = MESSAGE_TYPE_IMAGE;
 
         //TODO CORRECT WAY TO GET URL
-        fileModel.url_file = taskSnapshot.getStorage().getDownloadUrl().toString();
+        fileModel.url_file = taskSnapshot.getDownloadUrl().toString();
 
         newMessage.fileModel = fileModel;
 
@@ -828,16 +826,6 @@ public class ChatActivity extends MainActivity
 
   }
 
-  @Override
-  public void clickImageChat(View view, int position, String nameUser, String urlPhotoUser, String urlPhotoClick) {
-
-  }
-
-  @Override
-  public void clickImageMapChat(View view, int position, String latitude, String longitude) {
-
-  }
-
   private final Handler handler = new Handler();
 
   public void startPlayProgressUpdater(final SeekBar seek) {
@@ -927,6 +915,28 @@ public class ChatActivity extends MainActivity
       play_audio.setVisibility(View.VISIBLE);
       pause_audio.setVisibility(View.GONE);
     }
+  }
+
+  @Override
+  public void clickImageChat(View view, int position) {
+    if (consersation.getListMessageData().get(position).fileModel != null &&
+      MESSAGE_TYPE_IMAGE.equalsIgnoreCase(
+        consersation
+          .getListMessageData()
+          .get(position).fileModel.type)) {
+      String url = consersation.getListMessageData().get(position).fileModel.url_file;
+
+      Intent intent = new Intent(context, ImageViewer.class);
+      intent.putExtra(StaticConfig.IMAGE_URL, url);
+      intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, nameFriend);
+      startActivity(intent);
+
+    }
+  }
+
+  @Override
+  public void clickImageMapChat(View view, int position, String latitude, String longitude) {
+
   }
 
   @Override
@@ -1193,6 +1203,10 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     if (user_seekbar != null) {
       user_seekbar.setOnTouchListener(this);
     }
+
+    if (imageContent != null) {
+      imageContent.setOnClickListener(this);
+    }
   }
 
   @Override
@@ -1210,6 +1224,14 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
       case R.id.pause_audio:
         try {
           clickListenerChatFirebase.clickAudioPauseChat(v, position, play_audio, pause_audio, user_seekbar);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+
+      case R.id.imageContentUser:
+        try {
+          clickListenerChatFirebase.clickImageChat(v, position);
         } catch (Exception e) {
           e.printStackTrace();
         }
@@ -1261,6 +1283,7 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
 
     totalTime = (TextView) itemView.findViewById(R.id.total_time);
     dateTime = (TextView) itemView.findViewById(R.id.date_time);
+    imageContent.setOnClickListener(this);
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
     if (play_audio != null) {
@@ -1272,6 +1295,10 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
 
     if (friend_seekbar != null) {
       friend_seekbar.setOnTouchListener(this);
+    }
+
+    if (imageContent != null) {
+      imageContent.setOnTouchListener(this);
     }
 
   }
@@ -1295,6 +1322,15 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
           e.printStackTrace();
         }
         break;
+
+      case R.id.imageContentFriend:
+        try {
+          clickListenerChatFirebase.clickImageChat(v, position);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+
 
     }
   }

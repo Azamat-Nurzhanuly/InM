@@ -16,17 +16,23 @@
     android:layout_marginEnd="5dp"
     android:src="@drawable/default_avata" />
 
-  <ImageView
-    android:id="@+id/imageContentUser"
+  <RelativeLayout
     android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:layout_alignParentEnd="true"
-    android:layout_alignParentTop="true"
-    android:layout_marginEnd="31dp"
-    android:layout_marginTop="16dp"
-    android:background="#000"
-    android:maxHeight="150dp"
-    android:maxWidth="150dp"
-    android:minHeight="100dp"
-    android:minWidth="100dp" />
+    android:layout_height="wrap_content">
+
+    <ImageView
+      android:id="@+id/imageContentUser"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentEnd="true"
+      android:layout_alignParentTop="true"
+      android:layout_marginEnd="31dp"
+      android:layout_marginTop="16dp"
+      android:background="@drawable/rounded_corner_image"
+      android:maxHeight="200dp"
+      android:maxWidth="200dp"
+      android:minHeight="200dp"
+      android:minWidth="200dp" />
+  </RelativeLayout>
+
 </RelativeLayout>
