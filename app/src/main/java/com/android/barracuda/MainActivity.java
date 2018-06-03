@@ -221,7 +221,6 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       .build();
     mCloudFunctions = retrofit.create(CloudFunctions.class);
 
-
     //Create Table Calls
     CallDB.getInstance(this).createDB();
   }
@@ -440,9 +439,26 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   }
 
   @Override
+  public boolean onPrepareOptionsMenu(Menu menu) {
+
+    SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+    final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+
+    MenuItem item = menu.findItem(R.id.incognito);
+
+    if(item != null) {
+
+      item.setChecked(incognito);
+    }
+
+    return true;
+  }
+
+  @Override
   public boolean onCreateOptionsMenu(Menu menu) {
     // Inflate the menu; this adds items to the action bar if it is present.
     getMenuInflater().inflate(R.menu.menu_main, menu);
+
     return true;
   }
 
@@ -465,6 +481,17 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
         new LovelyCustomDialog(this)
           .setView(R.layout.color_selector)
           .show();
+      }
+      case R.id.incognito: {
+
+        if(item.isChecked()){
+          item.setChecked(false);
+        }else{
+          item.setChecked(true);
+        }
+
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putBoolean(SharedPreferenceHelper.INCOGNITO, item.isChecked()).commit();
       }
       default:
     }

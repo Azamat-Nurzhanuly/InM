@@ -2,24 +2,31 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.android.barracuda.MainActivity">
+
+    <item
+        android:title="@string/incognito"
+        android:id="@+id/incognito"
+        android:checkable="true"
+        android:orderInCategory="100"
+        app:showAsAction="never" />
     <item
         android:id="@+id/setProfile"
-        android:orderInCategory="100"
+        android:orderInCategory="101"
         android:title="@string/profile"
         app:showAsAction="never"/>
-    <!--<item
+    <item
         android:id="@+id/favMes"
-        android:orderInCategory="101"
+        android:orderInCategory="102"
         android:title="@string/fav_messages"
         app:showAsAction="never" />
     <item
         android:id="@+id/account"
-        android:orderInCategory="102"
+        android:orderInCategory="103"
         android:title="@string/account"
-        app:showAsAction="never" />-->
+        app:showAsAction="never" />
     <item
         android:id="@+id/chats"
-        android:orderInCategory="103"
+        android:orderInCategory="104"
         android:title="@string/chats"
         app:showAsAction="never">
 
@@ -29,7 +36,7 @@
                 android:orderInCategory="201"
                 android:title="@string/themes"
                 app:showAsAction="never"/>
-            <!--<item
+            <item
                 android:id="@+id/chats.copies"
                 android:orderInCategory="202"
                 android:title="@string/copy"
@@ -46,18 +53,18 @@
                         android:title="@string/recover"
                         app:showAsAction="never"/>
                 </menu>
-            </item>-->
+            </item>
         </menu>
 
     </item>
-    <!--<item
+    <item
         android:id="@+id/notification"
-        android:orderInCategory="104"
+        android:orderInCategory="105"
         android:title="@string/notification"
         app:showAsAction="never" />
     <item
         android:id="@+id/help"
-        android:orderInCategory="105"
+        android:orderInCategory="106"
         android:title="@string/help"
-        app:showAsAction="never" />-->
+        app:showAsAction="never" />
 </menu>

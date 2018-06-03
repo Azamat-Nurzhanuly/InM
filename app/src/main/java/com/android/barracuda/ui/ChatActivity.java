@@ -3,8 +3,10 @@ package com.android.barracuda.ui;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -52,6 +54,7 @@ import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.service.SinchService;
+import com.android.barracuda.service.cloud.CloudFunctions;
 import com.bumptech.glide.Glide;
 import com.devlomi.record_view.OnBasketAnimationEnd;
 import com.devlomi.record_view.OnRecordClickListener;
@@ -82,10 +85,15 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.codetail.animation.SupportAnimator;
 import io.codetail.animation.ViewAnimationUtils;
+import okhttp3.ResponseBody;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
 
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
@@ -155,6 +163,7 @@ public class ChatActivity extends MainActivity
 
   private Context context;
 
+  private CloudFunctions mCloudFunctions;
 
   FirebaseStorage storage = FirebaseStorage.getInstance();
 
@@ -190,6 +199,10 @@ public class ChatActivity extends MainActivity
 
     consersation = new Consersation();
 
+    final Retrofit retrofit = new Retrofit.Builder()
+      .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
+      .build();
+    mCloudFunctions = retrofit.create(CloudFunctions.class);
 
     String base64AvataUser = SharedPreferenceHelper.getInstance(this).getUserInfo().avata;
     if (!base64AvataUser.equals(StaticConfig.STR_DEFAULT_BASE64)) {
@@ -386,6 +399,34 @@ public class ChatActivity extends MainActivity
                 fileModel.url_file = (String) fileHash.get("url_file");
 
               newMessage.fileModel = fileModel;
+            }
+
+            if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              Boolean incognito = (Boolean) mapMessage.get("incognito");
+
+              if (incognito) {
+
+                mCloudFunctions.deleteMessage(roomId, dataSnapshot.getKey()).enqueue(new Callback<Void>() {
+                  @Override
+                  public void onResponse(retrofit2.Call<Void> call, Response<Void> response) {
+                    try {
+                      if (response.isSuccessful()) {
+                        Log.d(TAG, "DELETE MESSAGE TRIGGERED");
+                      } else {
+                        Log.e(TAG, response.errorBody().string());
+                      }
+                    } catch (IOException e) {
+                      e.printStackTrace();
+                    }
+                  }
+
+                  @Override
+                  public void onFailure(retrofit2.Call<Void> call, Throwable e) {
+                    Log.e(TAG, "Request deleteMessage failed", e);
+                  }
+                });
+              }
             }
 
             consersation.getListMessageData().add(newMessage);
@@ -648,6 +689,11 @@ public class ChatActivity extends MainActivity
       newMessage.idSender = StaticConfig.UID;
       newMessage.idReceiver = roomId;
       newMessage.timestamp = System.currentTimeMillis();
+
+      SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+      final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+      newMessage.incognito = incognito;
+      newMessage.lifeTime = 30;
       FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
     }
   }
@@ -681,6 +727,10 @@ public class ChatActivity extends MainActivity
         newMessage.idSender = StaticConfig.UID;
         newMessage.idReceiver = roomId;
         newMessage.timestamp = System.currentTimeMillis();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+        newMessage.incognito = incognito;
+        newMessage.lifeTime = 30;
         FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
       }
     });
@@ -716,6 +766,10 @@ public class ChatActivity extends MainActivity
         newMessage.idSender = StaticConfig.UID;
         newMessage.idReceiver = roomId;
         newMessage.timestamp = System.currentTimeMillis();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+        newMessage.incognito = incognito;
+        newMessage.lifeTime = 30;
         FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
       }
     });

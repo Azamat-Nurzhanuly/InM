@@ -37,3 +37,28 @@ exports.getCustomToken = functions.https.onRequest((req, res) => {
         }
     });
 });
+
+exports.deleteMessage = functions.https.onRequest((req, res) => {
+
+  const roomId = req.query.roomid,
+        messageId = req.query.messageid;
+
+  var db = admin.database();
+  var messageRef = db.ref('message/' + roomId + "/" + messageId);
+
+  return messageRef.once("value").then((snapshot) => {
+    var timeout = snapshot.val().lifeTime;
+
+    setTimeout(function() {
+        messageRef.remove();
+    }, timeout * 1000);
+
+    return timeout;
+
+  }, (errorObject) => {
+    console.log("The read failed: " + errorObject.code);
+    throw new Error("The read failed: " + errorObject.code)
+  });
+
+//  messageRef.remove();
+});
