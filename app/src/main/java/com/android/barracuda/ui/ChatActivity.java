@@ -1283,7 +1283,7 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
 
     totalTime = (TextView) itemView.findViewById(R.id.total_time);
     dateTime = (TextView) itemView.findViewById(R.id.date_time);
-    imageContent.setOnClickListener(this);
+
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
     if (play_audio != null) {
@@ -1298,7 +1298,7 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
     }
 
     if (imageContent != null) {
-      imageContent.setOnTouchListener(this);
+      imageContent.setOnClickListener(this);
     }
 
   }
