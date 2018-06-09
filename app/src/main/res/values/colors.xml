@@ -23,7 +23,7 @@
     <color name="colorWhiteDecline">#ffffff</color>
     <color name="colorGreenAnswer">#ffffff</color>
     <color name="colorIndivateTab">#FFFFFF</color>
-    <color name="transparent">#00000000</color>
+    <color name="transparent">#00ffffff</color>
     <color name="colorCardView">#f7f7f7</color>
     <color name="grey_200">#EEEEEE</color>
     <color name="grey_500">#a4a4a4</color>

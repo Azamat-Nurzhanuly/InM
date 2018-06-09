@@ -10,16 +10,22 @@ app:layout_behavior="@string/appbar_scrolling_view_behavior"
 tools:context="com.android.barracuda.ProfileActivity"
 tools:showIn="@layout/activity_profile">
 
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="centerCrop"
+        android:src="@drawable/watermark" />
+
 <RelativeLayout
     android:id="@+id/profile"
-    android:background="@color/grey_100"
     app:layout_aspectRatio="150%"
     app:layout_widthPercent="100%">
     <LinearLayout
         android:layout_centerVertical="true"
         android:layout_width="match_parent"
         android:orientation="vertical"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:background="@color/transparent">
 
         <ImageView
             android:id="@+id/img_avatar"
@@ -44,6 +50,7 @@ tools:showIn="@layout/activity_profile">
     android:id="@+id/info_recycler_view"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:scrollbars="vertical" />
+    android:scrollbars="vertical"
+    android:background="@color/transparent"/>
 
 </android.support.percent.PercentRelativeLayout>

@@ -57,305 +57,310 @@ import java.util.Objects;
 
 public class ProfileActivity extends BarracudaActivity {
 
+  @Override
+  protected void onCreate(Bundle savedInstanceState) {
+    super.onCreate(savedInstanceState);
+
+    setTheme();
+
+    setContentView(R.layout.activity_profile);
+
+    getSupportActionBar().setTitle("Настройка профиля");
+
+    ActionBar ab = getSupportActionBar();
+    assert ab != null;
+    ab.setDisplayHomeAsUpEnabled(true);
+
+    userDB = FirebaseDatabase.getInstance().getReference().child("user").child(StaticConfig.UID);
+    userDB.addListenerForSingleValueEvent(userListener);
+    mAuth = FirebaseAuth.getInstance();
+
+    context = this;
+    activity = this;
+    avatar = (ImageView) findViewById(R.id.img_avatar);
+    avatar.setOnClickListener(onAvatarClick);
+    tvUserName = (TextView) findViewById(R.id.tv_username);
+
+    int themeColor = MainActivity.getThemeColor(activity);
+    View profileInfoHolder = findViewById(R.id.profile);
+    profileInfoHolder.setBackgroundColor(themeColor);
+
+    SharedPreferenceHelper prefHelper = SharedPreferenceHelper.getInstance(context);
+    myAccount = prefHelper.getUserInfo();
+    setupArrayListInfo(myAccount);
+    setImageAvatar(context, myAccount.avata);
+    tvUserName.setText(myAccount.name);
+
+    recyclerView = (RecyclerView) findViewById(R.id.info_recycler_view);
+    infoAdapter = new UserInfoAdapter(listConfig);
+    RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
+    recyclerView.setLayoutManager(layoutManager);
+    recyclerView.setItemAnimator(new DefaultItemAnimator());
+    recyclerView.setAdapter(infoAdapter);
+
+    waitingDialog = new LovelyProgressDialog(context);
+  }
+
+  TextView tvUserName;
+  ImageView avatar;
+
+  private List<Configuration> listConfig = new ArrayList<>();
+  private RecyclerView recyclerView;
+  private UserInfoAdapter infoAdapter;
+
+  private static final String USERNAME_LABEL = "Имя пользователя";
+  private static final String PHONE_NUMBER_LABEL = "Номер телефона";
+  private static final String SIGNOUT_LABEL = "Выйти";
+  private static final String RESETPASS_LABEL = "Сменить пароль";
+
+  public static final int PICK_IMAGE = 1994;
+  private LovelyProgressDialog waitingDialog;
+
+  private DatabaseReference userDB;
+  private FirebaseAuth mAuth;
+  private User myAccount;
+  private Context context;
+  private Activity activity;
+
+  private ValueEventListener userListener = new ValueEventListener() {
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+    public void onDataChange(DataSnapshot dataSnapshot) {
+      listConfig.clear();
+      myAccount = dataSnapshot.getValue(User.class);
 
-        setTheme();
+      setupArrayListInfo(myAccount);
+      if (infoAdapter != null) {
+        infoAdapter.notifyDataSetChanged();
+      }
 
-        setContentView(R.layout.activity_profile);
-
-        getSupportActionBar().setTitle("Настройка профиля");
-
-        ActionBar ab = getSupportActionBar();
-        assert ab != null;
-        ab.setDisplayHomeAsUpEnabled(true);
-
-        userDB = FirebaseDatabase.getInstance().getReference().child("user").child(StaticConfig.UID);
-        userDB.addListenerForSingleValueEvent(userListener);
-        mAuth = FirebaseAuth.getInstance();
-
-        context = this;
-        activity = this;
-        avatar = (ImageView) findViewById(R.id.img_avatar);
-        avatar.setOnClickListener(onAvatarClick);
-        tvUserName = (TextView) findViewById(R.id.tv_username);
-
-        SharedPreferenceHelper prefHelper = SharedPreferenceHelper.getInstance(context);
-        myAccount = prefHelper.getUserInfo();
-        setupArrayListInfo(myAccount);
-        setImageAvatar(context, myAccount.avata);
+      if (tvUserName != null) {
         tvUserName.setText(myAccount.name);
+      }
 
-        recyclerView = (RecyclerView) findViewById(R.id.info_recycler_view);
-        infoAdapter = new UserInfoAdapter(listConfig);
-        RecyclerView.LayoutManager layoutManager = new LinearLayoutManager(context);
-        recyclerView.setLayoutManager(layoutManager);
-        recyclerView.setItemAnimator(new DefaultItemAnimator());
-        recyclerView.setAdapter(infoAdapter);
-
-        waitingDialog = new LovelyProgressDialog(context);
+      setImageAvatar(context, myAccount.avata);
+      SharedPreferenceHelper preferenceHelper = SharedPreferenceHelper.getInstance(context);
+      preferenceHelper.saveUserInfo(myAccount);
     }
 
-    TextView tvUserName;
-    ImageView avatar;
+    @Override
+    public void onCancelled(DatabaseError databaseError) {
+      Log.e(ProfileActivity.class.getName(), "loadPost:onCancelled", databaseError.toException());
+    }
+  };
 
-    private List<Configuration> listConfig = new ArrayList<>();
-    private RecyclerView recyclerView;
-    private UserInfoAdapter infoAdapter;
+  public View.OnClickListener onAvatarClick = new View.OnClickListener() {
+    @Override
+    public void onClick(View view) {
 
-    private static final String USERNAME_LABEL = "Имя пользователя";
-    private static final String PHONE_NUMBER_LABEL = "Номер телефона";
-    private static final String SIGNOUT_LABEL = "Выйти";
-    private static final String RESETPASS_LABEL = "Сменить пароль";
+      new AlertDialog.Builder(context)
+        .setTitle("Аватар")
+        .setMessage("Вы точно хотите сменить аватар профиля?")
+        .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialogInterface, int i) {
+            Intent intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_PICK);
+            startActivityForResult(Intent.createChooser(intent, "Выберите фото"), PICK_IMAGE);
+            dialogInterface.dismiss();
+          }
+        })
+        .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+          @Override
+          public void onClick(DialogInterface dialogInterface, int i) {
+            dialogInterface.dismiss();
+          }
+        }).show();
+    }
+  };
 
-    public static final int PICK_IMAGE = 1994;
-    private LovelyProgressDialog waitingDialog;
+  @Override
+  public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    super.onActivityResult(requestCode, resultCode, data);
+    if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
+      if (data == null) {
+        Toast.makeText(context, "Произошла ошибка, повторите попытку.", Toast.LENGTH_LONG).show();
+        return;
+      }
+      try {
+        InputStream inputStream = context.getContentResolver().openInputStream(data.getData());
 
-    private DatabaseReference userDB;
-    private FirebaseAuth mAuth;
-    private User myAccount;
-    private Context context;
-    private Activity activity;
+        Bitmap imgBitmap = BitmapFactory.decodeStream(inputStream);
+        imgBitmap = ImageUtils.cropToSquare(imgBitmap);
+        InputStream is = ImageUtils.convertBitmapToInputStream(imgBitmap);
+        final Bitmap liteImage = ImageUtils.makeImageLite(is,
+          imgBitmap.getWidth(), imgBitmap.getHeight(),
+          ImageUtils.AVATAR_WIDTH, ImageUtils.AVATAR_HEIGHT);
 
-    private ValueEventListener userListener = new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-            listConfig.clear();
-            myAccount = dataSnapshot.getValue(User.class);
+        String imageBase64 = ImageUtils.encodeBase64(liteImage);
+        myAccount.avata = imageBase64;
 
-            setupArrayListInfo(myAccount);
-            if(infoAdapter != null){
-                infoAdapter.notifyDataSetChanged();
+        waitingDialog.setCancelable(false)
+          .setTitle("Обновление аватар....")
+          .setTopColorRes(R.color.colorPrimary)
+          .show();
+
+        userDB.child("avata").setValue(imageBase64)
+          .addOnCompleteListener(new OnCompleteListener<Void>() {
+            @Override
+            public void onComplete(@NonNull Task<Void> task) {
+              if (task.isSuccessful()) {
+
+                waitingDialog.dismiss();
+                SharedPreferenceHelper preferenceHelper = SharedPreferenceHelper.getInstance(context);
+                preferenceHelper.saveUserInfo(myAccount);
+                avatar.setImageDrawable(ImageUtils.roundedImage(context, liteImage));
+
+                new LovelyInfoDialog(context)
+                  .setTopColorRes(R.color.colorPrimary)
+                  .setTitle("Успешно")
+                  .setMessage("Аватар обновлён!")
+                  .show();
+              }
             }
-
-            if(tvUserName != null){
-                tvUserName.setText(myAccount.name);
+          })
+          .addOnFailureListener(new OnFailureListener() {
+            @Override
+            public void onFailure(@NonNull Exception e) {
+              waitingDialog.dismiss();
+              Log.d("Update Avatar", "failed");
+              new LovelyInfoDialog(context)
+                .setTopColorRes(R.color.colorAccent)
+                .setTitle("Ошибка")
+                .setMessage("Не удалось обновить аватар")
+                .show();
             }
+          });
+      } catch (FileNotFoundException e) {
+        e.printStackTrace();
+      }
+    }
+  }
 
-            setImageAvatar(context, myAccount.avata);
-            SharedPreferenceHelper preferenceHelper = SharedPreferenceHelper.getInstance(context);
-            preferenceHelper.saveUserInfo(myAccount);
-        }
+  public void setupArrayListInfo(User myAccount) {
+    listConfig.clear();
+    Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
+    listConfig.add(userNameConfig);
 
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-            Log.e(ProfileActivity.class.getName(), "loadPost:onCancelled", databaseError.toException());
-        }
-    };
+    Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
+    listConfig.add(phoneNumberConfig);
 
-    public View.OnClickListener onAvatarClick = new View.OnClickListener() {
+    Configuration signout = new Configuration(SIGNOUT_LABEL, "", R.mipmap.ic_power_settings);
+    listConfig.add(signout);
+  }
+
+  private void setImageAvatar(Context context, String imgBase64) {
+    try {
+      Resources res = getResources();
+      Bitmap src;
+      if (imgBase64.equals("default")) {
+        src = BitmapFactory.decodeResource(res, R.drawable.default_avata);
+      } else {
+        byte[] decodedString = Base64.decode(imgBase64, Base64.DEFAULT);
+        src = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+      }
+
+      avatar.setImageDrawable(ImageUtils.roundedImage(context, src));
+    } catch (Exception e) {
+    }
+  }
+
+  @Override
+  public void onDestroy() {
+    super.onDestroy();
+  }
+
+  public class UserInfoAdapter extends RecyclerView.Adapter<ProfileActivity.UserInfoAdapter.ViewHolder> {
+    private List<Configuration> profileConfig;
+
+    public UserInfoAdapter(List<Configuration> profileConfig) {
+      this.profileConfig = profileConfig;
+    }
+
+    @Override
+    public ProfileActivity.UserInfoAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+      View itemView = LayoutInflater.from(parent.getContext())
+        .inflate(R.layout.list_info_item_layout, parent, false);
+      return new ProfileActivity.UserInfoAdapter.ViewHolder(itemView);
+    }
+
+    @Override
+    public void onBindViewHolder(ProfileActivity.UserInfoAdapter.ViewHolder holder, int position) {
+      final Configuration config = profileConfig.get(position);
+      holder.label.setText(config.getLabel());
+      holder.value.setText(config.getValue());
+      holder.icon.setImageResource(config.getIcon());
+      ((RelativeLayout) holder.label.getParent()).setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {
+          if (config.getLabel().equals(SIGNOUT_LABEL)) {
+            AccountKit.logOut();
+            FirebaseAuth.getInstance().signOut();
+            FriendDB.getInstance(context).dropDB();
+            GroupDB.getInstance(context).dropDB();
+            ServiceUtils.stopServiceFriendChat(context.getApplicationContext(), true);
+            activity.finish();
+          }
 
+          if (config.getLabel().equals(USERNAME_LABEL)) {
+            View vewInflater = LayoutInflater.from(context)
+              .inflate(R.layout.dialog_edit_username, (ViewGroup) findViewById(R.id.profile), false);
+            final EditText input = (EditText) vewInflater.findViewById(R.id.edit_username);
+            input.setText(myAccount.name);
             new AlertDialog.Builder(context)
-                    .setTitle("Аватар")
-                    .setMessage("Вы точно хотите сменить аватар профиля?")
-                    .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            Intent intent = new Intent();
-                            intent.setType("image/*");
-                            intent.setAction(Intent.ACTION_PICK);
-                            startActivityForResult(Intent.createChooser(intent, "Выберите фото"), PICK_IMAGE);
-                            dialogInterface.dismiss();
-                        }
-                    })
-                    .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            dialogInterface.dismiss();
-                        }
-                    }).show();
-        }
-    };
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == PICK_IMAGE && resultCode == Activity.RESULT_OK) {
-            if (data == null) {
-                Toast.makeText(context, "Произошла ошибка, повторите попытку.", Toast.LENGTH_LONG).show();
-                return;
-            }
-            try {
-                InputStream inputStream = context.getContentResolver().openInputStream(data.getData());
-
-                Bitmap imgBitmap = BitmapFactory.decodeStream(inputStream);
-                imgBitmap = ImageUtils.cropToSquare(imgBitmap);
-                InputStream is = ImageUtils.convertBitmapToInputStream(imgBitmap);
-                final Bitmap liteImage = ImageUtils.makeImageLite(is,
-                        imgBitmap.getWidth(), imgBitmap.getHeight(),
-                        ImageUtils.AVATAR_WIDTH, ImageUtils.AVATAR_HEIGHT);
-
-                String imageBase64 = ImageUtils.encodeBase64(liteImage);
-                myAccount.avata = imageBase64;
-
-                waitingDialog.setCancelable(false)
-                        .setTitle("Обновление аватар....")
-                        .setTopColorRes(R.color.colorPrimary)
-                        .show();
-
-                userDB.child("avata").setValue(imageBase64)
-                        .addOnCompleteListener(new OnCompleteListener<Void>() {
-                            @Override
-                            public void onComplete(@NonNull Task<Void> task) {
-                                if(task.isSuccessful()){
-
-                                    waitingDialog.dismiss();
-                                    SharedPreferenceHelper preferenceHelper = SharedPreferenceHelper.getInstance(context);
-                                    preferenceHelper.saveUserInfo(myAccount);
-                                    avatar.setImageDrawable(ImageUtils.roundedImage(context, liteImage));
-
-                                    new LovelyInfoDialog(context)
-                                            .setTopColorRes(R.color.colorPrimary)
-                                            .setTitle("Успешно")
-                                            .setMessage("Аватар обновлён!")
-                                            .show();
-                                }
-                            }
-                        })
-                        .addOnFailureListener(new OnFailureListener() {
-                            @Override
-                            public void onFailure(@NonNull Exception e) {
-                                waitingDialog.dismiss();
-                                Log.d("Update Avatar", "failed");
-                                new LovelyInfoDialog(context)
-                                        .setTopColorRes(R.color.colorAccent)
-                                        .setTitle("Ошибка")
-                                        .setMessage("Не удалось обновить аватар")
-                                        .show();
-                            }
-                        });
-            } catch (FileNotFoundException e) {
-                e.printStackTrace();
-            }
-        }
-    }
-
-    public void setupArrayListInfo(User myAccount){
-        listConfig.clear();
-        Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
-        listConfig.add(userNameConfig);
-
-        Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
-        listConfig.add(phoneNumberConfig);
-
-        Configuration signout = new Configuration(SIGNOUT_LABEL, "", R.mipmap.ic_power_settings);
-        listConfig.add(signout);
-    }
-
-    private void setImageAvatar(Context context, String imgBase64){
-        try {
-            Resources res = getResources();
-            Bitmap src;
-            if (imgBase64.equals("default")) {
-                src = BitmapFactory.decodeResource(res, R.drawable.default_avata);
-            } else {
-                byte[] decodedString = Base64.decode(imgBase64, Base64.DEFAULT);
-                src = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
-            }
-
-            avatar.setImageDrawable(ImageUtils.roundedImage(context, src));
-        }catch (Exception e){
-        }
-    }
-
-    @Override
-    public void onDestroy (){
-        super.onDestroy();
-    }
-
-    public class UserInfoAdapter extends RecyclerView.Adapter<ProfileActivity.UserInfoAdapter.ViewHolder>{
-        private List<Configuration> profileConfig;
-
-        public UserInfoAdapter(List<Configuration> profileConfig){
-            this.profileConfig = profileConfig;
-        }
-
-        @Override
-        public ProfileActivity.UserInfoAdapter.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            View itemView = LayoutInflater.from(parent.getContext())
-                    .inflate(R.layout.list_info_item_layout, parent, false);
-            return new ProfileActivity.UserInfoAdapter.ViewHolder(itemView);
-        }
-
-        @Override
-        public void onBindViewHolder(ProfileActivity.UserInfoAdapter.ViewHolder holder, int position) {
-            final Configuration config = profileConfig.get(position);
-            holder.label.setText(config.getLabel());
-            holder.value.setText(config.getValue());
-            holder.icon.setImageResource(config.getIcon());
-            ((RelativeLayout)holder.label.getParent()).setOnClickListener(new View.OnClickListener() {
+              .setTitle("Редактирование имени")
+              .setView(vewInflater)
+              .setPositiveButton("Сохранить", new DialogInterface.OnClickListener() {
                 @Override
-                public void onClick(View view) {
-                    if(config.getLabel().equals(SIGNOUT_LABEL)){
-                        AccountKit.logOut();
-                        FirebaseAuth.getInstance().signOut();
-                        FriendDB.getInstance(context).dropDB();
-                        GroupDB.getInstance(context).dropDB();
-                        ServiceUtils.stopServiceFriendChat(context.getApplicationContext(), true);
-                        activity.finish();
-                    }
-
-                    if(config.getLabel().equals(USERNAME_LABEL)){
-                        View vewInflater = LayoutInflater.from(context)
-                                .inflate(R.layout.dialog_edit_username,  (ViewGroup) findViewById(R.id.profile), false);
-                        final EditText input = (EditText)vewInflater.findViewById(R.id.edit_username);
-                        input.setText(myAccount.name);
-                        new AlertDialog.Builder(context)
-                                .setTitle("Редактирование имени")
-                                .setView(vewInflater)
-                                .setPositiveButton("Сохранить", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        String newName = input.getText().toString();
-                                        if(!Objects.equals(myAccount.name, newName)){
-                                            changeUserName(newName);
-                                        }
-                                        dialogInterface.dismiss();
-                                    }
-                                })
-                                .setNegativeButton("Отменить", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        dialogInterface.dismiss();
-                                    }
-                                }).show();
-                    }
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  String newName = input.getText().toString();
+                  if (!Objects.equals(myAccount.name, newName)) {
+                    changeUserName(newName);
+                  }
+                  dialogInterface.dismiss();
                 }
-            });
+              })
+              .setNegativeButton("Отменить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  dialogInterface.dismiss();
+                }
+              }).show();
+          }
         }
-
-        private void changeUserName(String newName){
-            userDB.child("name").setValue(newName);
-
-
-            myAccount.name = newName;
-            SharedPreferenceHelper prefHelper = SharedPreferenceHelper.getInstance(context);
-            prefHelper.saveUserInfo(myAccount);
-
-            tvUserName.setText(newName);
-            setupArrayListInfo(myAccount);
-        }
-
-        @Override
-        public int getItemCount() {
-            return profileConfig.size();
-        }
-
-        class ViewHolder extends RecyclerView.ViewHolder {
-            // each data item is just a string in this case
-            public TextView label, value;
-            public ImageView icon;
-            public ViewHolder(View view) {
-                super(view);
-                label = (TextView)view.findViewById(R.id.tv_title);
-                value = (TextView)view.findViewById(R.id.tv_detail);
-                icon = (ImageView)view.findViewById(R.id.img_icon);
-            }
-        }
-
+      });
     }
+
+    private void changeUserName(String newName) {
+      userDB.child("name").setValue(newName);
+
+
+      myAccount.name = newName;
+      SharedPreferenceHelper prefHelper = SharedPreferenceHelper.getInstance(context);
+      prefHelper.saveUserInfo(myAccount);
+
+      tvUserName.setText(newName);
+      setupArrayListInfo(myAccount);
+    }
+
+    @Override
+    public int getItemCount() {
+      return profileConfig.size();
+    }
+
+    class ViewHolder extends RecyclerView.ViewHolder {
+      // each data item is just a string in this case
+      public TextView label, value;
+      public ImageView icon;
+
+      public ViewHolder(View view) {
+        super(view);
+        label = (TextView) view.findViewById(R.id.tv_title);
+        value = (TextView) view.findViewById(R.id.tv_detail);
+        icon = (ImageView) view.findViewById(R.id.img_icon);
+      }
+    }
+
+  }
 
 }
