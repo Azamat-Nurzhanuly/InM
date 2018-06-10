@@ -2,172 +2,200 @@
 <GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="300dp"
+    android:layout_height="match_parent"
     android:columnCount="3"
     android:gravity="center_vertical|center_horizontal"
-    android:padding="20dp"
-    android:rowCount="3">
+    android:rowCount="3"
+    android:useDefaultMargins="true"
+    android:backgroundTint="@color/transparent">
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper1"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers1"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers1" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper2"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers2"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers2" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper3"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers3"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers3" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper4"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers4"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers4" />
 
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper5"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers5"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers5" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper6"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers6"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers6" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper7"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers7"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers7" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper8"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers8"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers8" />
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
-        android:layout_width="50dp"
-        android:layout_height="50dp"
+        android:layout_width="80dp"
+        android:layout_height="100dp"
         android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center"
+        android:layout_gravity="center_vertical|center_horizontal"
         android:layout_rowWeight="1"
-        android:padding="20dp"
+        android:background="@color/transparent"
+        android:backgroundTint="@color/transparent"
+        app:cardElevation="0dp"
+        app:cardPreventCornerOverlap="false"
         app:cardBackgroundColor="@color/transparent">
 
         <ImageView
             android:id="@+id/wallpaper9"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            app:srcCompat="@drawable/wallpapers9"
             android:clickable="true"
-            android:onClick="onBackgroundClick"/>
+            android:onClick="onBackgroundClick"
+            app:srcCompat="@drawable/wallpapers9" />
     </android.support.v7.widget.CardView>
 </GridLayout>

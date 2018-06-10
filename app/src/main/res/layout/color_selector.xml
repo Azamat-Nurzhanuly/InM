@@ -25,6 +25,7 @@
                 android:layout_weight="1"
                 android:layout_x="0dp"
                 android:layout_y="2dp"
+                app:rippleColor="@color/purple"
                 android:backgroundTint="@color/purple"
                 android:clickable="true"
                 android:onClick="onColorClick" />
@@ -47,6 +48,7 @@
                 android:layout_weight="1"
                 android:layout_x="69dp"
                 android:layout_y="3dp"
+                app:rippleColor="@color/darkBlue"
                 android:backgroundTint="@color/darkBlue"
                 android:clickable="true"
                 android:onClick="onColorClick" />
@@ -69,6 +71,7 @@
                 android:layout_weight="1"
                 android:layout_x="3dp"
                 android:layout_y="59dp"
+                app:rippleColor="@color/blue"
                 android:backgroundTint="@color/blue"
                 android:clickable="true"
                 android:onClick="onColorClick" />
@@ -91,6 +94,7 @@
                 android:layout_weight="1"
                 android:layout_x="69dp"
                 android:layout_y="58dp"
+                app:rippleColor="@color/orange"
                 android:backgroundTint="@color/orange"
                 android:clickable="true"
                 android:onClick="onColorClick" />
