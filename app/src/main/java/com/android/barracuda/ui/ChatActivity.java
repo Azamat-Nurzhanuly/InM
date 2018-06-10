@@ -3,12 +3,14 @@ package com.android.barracuda.ui;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -77,6 +79,7 @@ import com.google.firebase.storage.UploadTask;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
+import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 
 import java.io.File;
 import java.io.IOException;
@@ -196,6 +199,10 @@ public class ChatActivity extends MainActivity
     nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
 
     consersation = new Consersation();
+
+    int background = getBackground(this);
+    View wallpaper = findViewById(R.id.wallpaper);
+    wallpaper.setBackgroundResource(background);
 
     final Retrofit retrofit = new Retrofit.Builder()
       .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
@@ -496,12 +503,88 @@ public class ChatActivity extends MainActivity
     }
   }
 
+  public void onBackgroundClick(View view) {
+
+    switch (view.getId()) {
+      case R.id.wallpaper1: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers1).commit();
+        break;
+      }
+      case R.id.wallpaper2: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers2).commit();
+        break;
+      }
+      case R.id.wallpaper3: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers3).commit();
+        break;
+      }
+      case R.id.wallpaper4: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers4).commit();
+        break;
+      }
+      case R.id.wallpaper5: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers5).commit();
+        break;
+      }
+      case R.id.wallpaper6: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers6).commit();
+        break;
+      }
+      case R.id.wallpaper7: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers7).commit();
+        break;
+      }
+      case R.id.wallpaper8: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers8).commit();
+        break;
+      }
+      case R.id.wallpaper9: {
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putInt(SharedPreferenceHelper.SHARE_WALLPAPER, R.drawable.wallpapers9).commit();
+        break;
+      }
+    }
+
+    int background = getBackground(this);
+    View wallpaper = findViewById(R.id.wallpaper);
+    wallpaper.setBackgroundResource(background);
+
+//    finish();
+//    Intent intent = new Intent(this, ChatActivity.class);
+//    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+//    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//    startActivity(intent);
+  }
+
+  public static int getBackground(Activity activity) {
+
+    SharedPreferences sharedPreferences = activity.getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+    int wallpaper = sharedPreferences.getInt(SharedPreferenceHelper.SHARE_WALLPAPER, -1);
+
+    if(wallpaper == -1) {
+
+      wallpaper = R.drawable.watermark;
+    }
+
+    return wallpaper;
+  }
+
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
 
     switch (item.getItemId()) {
-      case R.id.about: {
-        Toast.makeText(context, "Version 1.0", Toast.LENGTH_LONG).show();
+      case R.id.changeImg: {
+        new LovelyCustomDialog(this)
+          .setView(R.layout.background_selector)
+          .show();
         break;
       }
       case R.id.audio_call: {

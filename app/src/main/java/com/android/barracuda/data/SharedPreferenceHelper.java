@@ -18,6 +18,7 @@ public class SharedPreferenceHelper {
 
   public static final String USER_SELECTION = "user_selection";
   public static final String SHARE_COLOR = "color";
+  public static final String SHARE_WALLPAPER = "wallpaper";
   public static final String INCOGNITO = "incognito";
 
   private SharedPreferenceHelper() {

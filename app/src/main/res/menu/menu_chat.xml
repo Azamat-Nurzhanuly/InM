@@ -3,9 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.android.barracuda.ui.ChatActivity">
     <item
-        android:id="@+id/about"
+        android:id="@+id/changeImg"
         android:orderInCategory="100"
-        android:title="@string/about"/>
+        android:title="@string/backgrounds"/>
     <item
         android:id="@+id/audio_call"
         android:orderInCategory="101"

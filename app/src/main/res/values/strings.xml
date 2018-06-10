@@ -2,7 +2,7 @@
     <!--<string name="app_name">Barracuda</string>-->
     <string name="app_name">Barracuda</string>
     <string name="action_settings">Настройки</string>
-    <string name="about">О приложении</string>
+    <string name="backgrounds">Обои</string>
     <string name="download">Сохранить</string>
     <string name="login_success">Успешная авторизация</string>
     <string name="login">ЛОГИН</string>
