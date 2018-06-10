@@ -10,19 +10,16 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.drawable.Drawable;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Environment;
 import android.os.Handler;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.FileProvider;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.Editable;
@@ -43,7 +40,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
@@ -81,6 +77,7 @@ import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
 import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -145,8 +142,15 @@ public class ChatActivity extends MainActivity
   private MediaRecorder recorder = null;
   // Requesting permission to RECORD_AUDIO
   private boolean permissionToRecordAccepted = false;
-  private String[] permissions = {Manifest.permission.RECORD_AUDIO};
+  private String[] permissions = {
+    Manifest.permission.RECORD_AUDIO,
+    Manifest.permission.CAMERA,
+    Manifest.permission.WRITE_SETTINGS,
+    Manifest.permission.WRITE_EXTERNAL_STORAGE
+  };
   private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
+  private static final int REQUESST_CAMERA_PERMISSION_CODE = 100;
+
   private static String mFileName = null;
 
   //audio playing
@@ -243,6 +247,7 @@ public class ChatActivity extends MainActivity
     audio_btn.setOnClickListener(this);
     location_btn.setOnClickListener(this);
     contact_btn.setOnClickListener(this);
+
   }
 
 
@@ -255,11 +260,6 @@ public class ChatActivity extends MainActivity
         break;
     }
     if (!permissionToRecordAccepted) finish();
-
-    if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-    } else {
-
-    }
 
   }
 
@@ -497,7 +497,22 @@ public class ChatActivity extends MainActivity
         if (selectedImageUri != null) {
 
           sendImageFirebase(selectedImageUri);
+          return;
+        }
+      }
+    }
+    if (requestCode == IMAGE_CAMERA_REQUEST) {
+      if (resultCode == RESULT_OK) {
 
+        try {
+          Bitmap photo = (Bitmap) Objects.requireNonNull(data.getExtras()).get("data");
+          Uri selectedImageUri = getImageUri(getApplicationContext(), photo);
+
+          if (selectedImageUri != null) {
+            sendImageFirebase(selectedImageUri);
+          }
+        } catch (Exception e) {
+          Log.w("image uri error", e);
         }
       }
     }
@@ -569,7 +584,7 @@ public class ChatActivity extends MainActivity
     SharedPreferences sharedPreferences = activity.getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
     int wallpaper = sharedPreferences.getInt(SharedPreferenceHelper.SHARE_WALLPAPER, -1);
 
-    if(wallpaper == -1) {
+    if (wallpaper == -1) {
 
       wallpaper = R.drawable.watermark;
     }
@@ -687,6 +702,7 @@ public class ChatActivity extends MainActivity
     this.finish();
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
   public void onClick(View view) {
 
@@ -856,7 +872,10 @@ public class ChatActivity extends MainActivity
     });
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.M)
   private void chooseMedia(int content) {
+
+    openAttachItemMenu();
     if (content == AUDIO_PICKER_REQUEST) {
       Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
       intent.setType("audio/*");
@@ -875,14 +894,9 @@ public class ChatActivity extends MainActivity
     }
 
     if (content == IMAGE_CAMERA_REQUEST) {
-      String nomeFoto = DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString();
-      filePathImageCamera = new File(Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES), nomeFoto + "/camera.jpg");
-      Intent it = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-      Uri photoURI = FileProvider.getUriForFile(ChatActivity.this,
-        BuildConfig.APPLICATION_ID + ".provider",
-        filePathImageCamera);
-      it.putExtra(MediaStore.EXTRA_OUTPUT, photoURI);
-      startActivityForResult(it, IMAGE_CAMERA_REQUEST);
+
+      Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+      startActivityForResult(cameraIntent, IMAGE_CAMERA_REQUEST);
       return;
     }
 
@@ -907,6 +921,13 @@ public class ChatActivity extends MainActivity
       return;
     }
 
+  }
+
+  public Uri getImageUri(Context inContext, Bitmap inImage) {
+    ByteArrayOutputStream bytes = new ByteArrayOutputStream();
+    inImage.compress(Bitmap.CompressFormat.JPEG, 100, bytes);
+    String path = MediaStore.Images.Media.insertImage(inContext.getContentResolver(), inImage, "Title", null);
+    return Uri.parse(path);
   }
 
   private final Handler handler = new Handler();
