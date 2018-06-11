@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.util.Base64;
 import android.util.Log;
+
 import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.cypher.models.Key;
 import com.android.barracuda.cypher.models.PublicKeysFb;
@@ -11,14 +12,16 @@ import com.android.barracuda.data.KeyStorageDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Message;
 
-import javax.crypto.Cipher;
-import javax.crypto.spec.DHParameterSpec;
-import javax.crypto.spec.SecretKeySpec;
 import java.math.BigInteger;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+
+import javax.crypto.Cipher;
+import javax.crypto.spec.DHParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
 
 public abstract class CypherWorker {
   protected String roomId;
@@ -63,7 +66,7 @@ public abstract class CypherWorker {
     BigInteger publicKey = ((javax.crypto.interfaces.DHPublicKey) dkp.getPublic()).getY();
     BigInteger privateKey = ((javax.crypto.interfaces.DHPrivateKey) dkp.getPrivate()).getX();
     BigInteger friendPubKey = new BigInteger(friendKeys.key);
-    BigInteger secretKey = new BigInteger(subArray(calcSharedSecretKey(p, privateKey, friendPubKey).toByteArray(), 0, 256 / 8));
+    BigInteger secretKey = new BigInteger(bytesToSha256(calcSharedSecretKey(p, privateKey, friendPubKey).toByteArray()));
 
     return newKey(friendKeys.timestamp, roomId, friendId, friendPubKey, publicKey, secretKey, System.currentTimeMillis());
   }
@@ -114,14 +117,13 @@ public abstract class CypherWorker {
     return Base64.encodeToString(encrypted, Base64.DEFAULT);
   }
 
-  protected byte[] subArray(byte[] array, @SuppressWarnings("SameParameterValue") int start, int length) {
-    int end = start + length;
-    if (array.length < end) throw new RuntimeException("No enough elements in array");
-    byte[] ret = new byte[length];
-    int j = 0;
-    for (int i = start; i < end; i++)
-      ret[j++] = array[i];
-
-    return ret;
+  protected byte[] bytesToSha256(byte[] array) {
+    try {
+      MessageDigest sha256 = MessageDigest.getInstance("SHA-256");
+      return sha256.digest(array);
+    } catch (NoSuchAlgorithmException e) {
+      e.printStackTrace();
+    }
+    return null;
   }
 }

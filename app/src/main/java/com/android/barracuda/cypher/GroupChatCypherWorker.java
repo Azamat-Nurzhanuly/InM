@@ -271,7 +271,7 @@ public class GroupChatCypherWorker extends CypherWorker {
     if (msg.key == null) return null;
     BigInteger friendPublicKey = new BigInteger(msg.key);
     DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.keyTs);
-    BigInteger secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 32));
+    BigInteger secretKey = new BigInteger(bytesToSha256(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray()));
 
     return new BigInteger(decryptKey(msg.text, secretKey.toByteArray()));
   }

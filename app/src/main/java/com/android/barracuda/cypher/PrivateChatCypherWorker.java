@@ -2,6 +2,7 @@ package com.android.barracuda.cypher;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.android.barracuda.cypher.callback.MessageActivityCallback;
 import com.android.barracuda.cypher.exceptions.NoKeyException;
 import com.android.barracuda.cypher.models.DHKeys;
@@ -18,6 +19,8 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 
 import java.math.BigInteger;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class PrivateChatCypherWorker extends CypherWorker {
   private String friendId;
@@ -42,7 +45,8 @@ public class PrivateChatCypherWorker extends CypherWorker {
         long keyTs = 0;
 
         Key key = checkAndGetLastKey(friendPublicKeys.timestamp);
-        if (key == null) key = KeyStorageDB.getInstance(context).getKey(friendPublicKeys.timestamp, msg.idReceiver);
+        if (key == null)
+          key = KeyStorageDB.getInstance(context).getKey(friendPublicKeys.timestamp, msg.idReceiver);
         if (key != null) keyTs = friendPublicKeys.timestamp;
 
         //********************* Try with own **************************
@@ -50,7 +54,8 @@ public class PrivateChatCypherWorker extends CypherWorker {
         if (key == null) {
           DHKeys ownPublicKeys = PublicKeysDB.getInstance(context).getLast();
           key = checkAndGetLastKey(ownPublicKeys.timestamp);
-          if (key == null) key = KeyStorageDB.getInstance(context).getKey(ownPublicKeys.timestamp, msg.idReceiver);
+          if (key == null)
+            key = KeyStorageDB.getInstance(context).getKey(ownPublicKeys.timestamp, msg.idReceiver);
           if (key != null) keyTs = ownPublicKeys.timestamp;
         }
 
@@ -74,7 +79,8 @@ public class PrivateChatCypherWorker extends CypherWorker {
       }
 
       @Override
-      public void onCancelled(DatabaseError databaseError) {}
+      public void onCancelled(DatabaseError databaseError) {
+      }
     });
   }
 
@@ -93,7 +99,7 @@ public class PrivateChatCypherWorker extends CypherWorker {
 
           DHKeys ownPubKeys = PublicKeysDB.getInstance(context).getKeyByTimestamp(msg.keyTs);
           if (ownPubKeys != null) {
-            secretKey = new BigInteger(subArray(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray(), 0, 32));
+            secretKey = new BigInteger(bytesToSha256(calcSharedSecretKey(ownPubKeys.p, ownPubKeys.prvKey, friendPublicKey).toByteArray()));
             key = addKey(msg.keyTs, msg.idReceiver, msg.friendId, friendPublicKey, ownPubKeys.pubKey, secretKey, System.currentTimeMillis());
           }
         }
@@ -116,4 +122,5 @@ public class PrivateChatCypherWorker extends CypherWorker {
 
     afterDecrypted.processMessage(msg);
   }
+
 }
