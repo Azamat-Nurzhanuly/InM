@@ -36,24 +36,34 @@
                 android:orderInCategory="201"
                 android:title="@string/themes"
                 app:showAsAction="never"/>
-            <item
-                android:id="@+id/chats.copies"
-                android:orderInCategory="202"
-                android:title="@string/copy"
-                app:showAsAction="never">
-                <menu>
-                    <item
-                        android:id="@+id/chats.copies.copy"
-                        android:orderInCategory="301"
-                        android:title="@string/create_copy"
-                        app:showAsAction="never"/>
-                    <item
-                        android:id="@+id/chats.copies.recover"
-                        android:orderInCategory="302"
-                        android:title="@string/recover"
-                        app:showAsAction="never"/>
-                </menu>
-            </item>
+            <!--<item-->
+                <!--android:id="@+id/chats.copies"-->
+                <!--android:orderInCategory="202"-->
+                <!--android:title="@string/copy"-->
+                <!--app:showAsAction="never">-->
+                <!--<menu>-->
+                    <!--<item-->
+                        <!--android:id="@+id/chats.copies.copy"-->
+                        <!--android:orderInCategory="301"-->
+                        <!--android:title="@string/create_copy"-->
+                        <!--app:showAsAction="never"/>-->
+                    <!--<item-->
+                        <!--android:id="@+id/chats.copies.recover"-->
+                        <!--android:orderInCategory="302"-->
+                        <!--android:title="@string/recover"-->
+                        <!--app:showAsAction="never"/>-->
+                <!--</menu>-->
+            <!--</item>-->
+            <!--<item-->
+                <!--android:id="@+id/chats.delete"-->
+                <!--android:orderInCategory="202"-->
+                <!--android:title="@string/delete_all_chats"-->
+                <!--app:showAsAction="never"/>-->
+            <!--<item-->
+                <!--android:id="@+id/chats.clear"-->
+                <!--android:orderInCategory="203"-->
+                <!--android:title="@string/clear_all_chats"-->
+                <!--app:showAsAction="never"/>-->
         </menu>
 
     </item>

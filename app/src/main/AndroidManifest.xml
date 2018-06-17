@@ -105,6 +105,11 @@
       android:parentActivityName=".MainActivity"
       android:theme="@style/AppTheme.NoActionBar" />
     <activity
+        android:name=".FriendProfileActivity"
+        android:label="@string/title_activity_profile"
+        android:parentActivityName=".MainActivity"
+        android:theme="@style/AppTheme.NoActionBar" />
+    <activity
       android:name=".ContactsActivity"
       android:parentActivityName=".MainActivity"
       android:theme="@style/AppTheme.NoActionBar" />

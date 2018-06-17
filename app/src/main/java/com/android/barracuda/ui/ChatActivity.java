@@ -43,7 +43,9 @@ import android.widget.TextView;
 import android.widget.VideoView;
 
 import com.android.barracuda.BuildConfig;
+import com.android.barracuda.FriendProfileActivity;
 import com.android.barracuda.MainActivity;
+import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
@@ -539,6 +541,13 @@ public class ChatActivity extends MainActivity
         }
       }
     }
+  }
+
+  public void onFriendImgClick(View view) {
+
+    Intent profIntent = new Intent(this, FriendProfileActivity.class);
+    profIntent.putExtra("friend_id", idFriend.get(0));
+    startActivity(profIntent);
   }
 
   public void onBackgroundClick(View view) {
