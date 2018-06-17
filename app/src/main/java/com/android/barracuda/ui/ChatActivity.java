@@ -40,6 +40,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
+import android.widget.VideoView;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.MainActivity;
@@ -58,6 +59,7 @@ import com.devlomi.record_view.OnRecordClickListener;
 import com.devlomi.record_view.OnRecordListener;
 import com.devlomi.record_view.RecordButton;
 import com.devlomi.record_view.RecordView;
+import com.google.android.exoplayer2.ui.PlayerView;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
@@ -95,6 +97,7 @@ import retrofit2.Retrofit;
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_IMAGE;
+import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_VIDEO;
 
 
 public class ChatActivity extends MainActivity
@@ -110,18 +113,25 @@ public class ChatActivity extends MainActivity
   public static final int VIEW_TYPE_USER_MESSAGE_AUDIO = 4;
   public static final int VIEW_TYPE_FRIEND_MESSAGE_AUDIO = 5;
 
+  public static final int VIEW_TYPE_USER_MESSAGE_VIDEO = 6;
+  public static final int VIEW_TYPE_FRIEND_MESSAGE_VIDEO = 7;
+
   static final String TAG = ChatActivity.class.getSimpleName();
 
   public static final String MESSAGE_TYPE_TEXT = "text";
   public static final String MESSAGE_TYPE_IMAGE = "img";
   public static final String MESSAGE_TYPE_AUDIO = "audio";
+  public static final String MESSAGE_TYPE_VIDEO = "video";
 
   private static final int IMAGE_GALLERY_REQUEST = 1;
   private static final int IMAGE_CAMERA_REQUEST = 2;
-  private static final int PLACE_PICKER_REQUEST = 3;
+  private static final int VIDEO_PICKER_REQUEST = 3;
   private static final int CONTACT_PICKER_REQUEST = 4;
   private static final int AUDIO_PICKER_REQUEST = 5;
   private static final int DOC_PICKER_REQUEST = 6;
+  private static final int PLACE_PICKER_REQUEST = 7;
+
+
 
   private File filePathImageCamera;
 
@@ -224,6 +234,7 @@ public class ChatActivity extends MainActivity
     initAttachFileButtons();
     initAudioButtons();
     initAudioRecord();
+
 
 
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
@@ -501,6 +512,18 @@ public class ChatActivity extends MainActivity
         }
       }
     }
+
+    if (requestCode == VIDEO_PICKER_REQUEST) {
+      if (resultCode == RESULT_OK) {
+        Uri videoUri = data.getData();
+        if (videoUri != null) {
+
+          sendVideoFirebase(videoUri);
+          return;
+        }
+      }
+    }
+
     if (requestCode == IMAGE_CAMERA_REQUEST) {
       if (resultCode == RESULT_OK) {
 
@@ -716,7 +739,7 @@ public class ChatActivity extends MainActivity
         break;
 
       case R.id.video_img_btn:
-        chooseMedia(0);
+        chooseMedia(VIDEO_PICKER_REQUEST);
         break;
 
       case R.id.contact_img_btn:
@@ -834,6 +857,45 @@ public class ChatActivity extends MainActivity
 
   }
 
+  private void sendVideoFirebase(Uri fileUri) {
+
+    final Message newMessage = new Message();
+    newMessage.text = null;
+    final String nameOfImage = MESSAGE_TYPE_IMAGE + DateFormat.format("yyyy-MM-dd_hhmmss", new Date()).toString();
+
+    StorageReference imageRef = storage.getReference().child("videos/" + fileUri.getLastPathSegment());
+
+    UploadTask uploadTask = imageRef.putFile(fileUri);
+    uploadTask.addOnFailureListener(new OnFailureListener() {
+      @Override
+      public void onFailure(@NonNull Exception e) {
+        Log.e(TAG, "onFailure sendFileFirebase " + e.getMessage());
+      }
+    }).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+      @Override
+      public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+        FileModel fileModel = new FileModel();
+        fileModel.name_file = nameOfImage;
+        fileModel.type = MESSAGE_TYPE_VIDEO;
+
+        //TODO CORRECT WAY TO GET URL
+        fileModel.url_file = taskSnapshot.getDownloadUrl().toString();
+
+        newMessage.fileModel = fileModel;
+
+        newMessage.idSender = StaticConfig.UID;
+        newMessage.idReceiver = roomId;
+        newMessage.timestamp = System.currentTimeMillis();
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+        newMessage.incognito = incognito;
+        newMessage.lifeTime = 30;
+        FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
+      }
+    });
+
+  }
+
   private void sendAudioFirebase(String fileName) {
 
     final Message newMessage = new Message();
@@ -907,6 +969,15 @@ public class ChatActivity extends MainActivity
       startActivityForResult(Intent.createChooser(intent, ""), IMAGE_GALLERY_REQUEST);
       return;
     }
+
+    if (content == VIDEO_PICKER_REQUEST) {
+      Intent intent = new Intent();
+      intent.setType("video/*");
+      intent.setAction(Intent.ACTION_GET_CONTENT);
+      startActivityForResult(Intent.createChooser(intent, ""), VIDEO_PICKER_REQUEST);
+      return;
+    }
+
     if (content == DOC_PICKER_REQUEST) {
       Intent intent = new Intent(Intent.ACTION_GET_CONTENT);
       intent.setType("file/*");
@@ -1039,6 +1110,24 @@ public class ChatActivity extends MainActivity
   }
 
   @Override
+  public void clickVideoChat(View view, int position) {
+    if (consersation.getListMessageData().get(position).fileModel != null &&
+      MESSAGE_TYPE_VIDEO.equalsIgnoreCase(
+        consersation
+          .getListMessageData()
+          .get(position).fileModel.type)) {
+
+
+      String url = consersation.getListMessageData().get(position).fileModel.url_file;
+
+      Intent intent = new Intent(context, VideoViewer.class);
+      intent.putExtra(StaticConfig.VIDEO_URL, url);
+      intent.putExtra(StaticConfig.VIDEO, nameFriend);
+      startActivity(intent);
+    }
+  }
+
+  @Override
   public void clickImageMapChat(View view, int position, String latitude, String longitude) {
 
   }
@@ -1109,6 +1198,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     } else if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_img, parent, false);
       return new ItemMessageFriendHolder(view, clickListenerChatFirebase);
+    } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_VIDEO) {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user_video, parent, false);
+      return new ItemMessageUserHolder(view, clickListenerChatFirebase);
+    } else if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_VIDEO) {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_video, parent, false);
+      return new ItemMessageFriendHolder(view, clickListenerChatFirebase);
     } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_AUDIO) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user_audio, parent, false);
       return new ItemMessageUserHolder(view, clickListenerChatFirebase);
@@ -1139,6 +1234,15 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             Glide.with(((ItemMessageFriendHolder) holder).imageContent.getContext())
               .load(consersation.getListMessageData().get(position).fileModel.url_file)
               .into(((ItemMessageFriendHolder) holder).imageContent);
+          }
+        }
+
+        if (MESSAGE_TYPE_VIDEO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+          if (((ItemMessageFriendHolder) holder).videoContent != null) {
+
+
+            ((ItemMessageFriendHolder) holder).videoContent.setVisibility(View.VISIBLE);
+
           }
         }
 
@@ -1217,6 +1321,15 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           }
         }
 
+        if (MESSAGE_TYPE_VIDEO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
+          if (((ItemMessageUserHolder) holder).videoContent != null) {
+
+
+            ((ItemMessageUserHolder) holder).videoContent.setVisibility(View.VISIBLE);
+
+          }
+        }
+
         if (MESSAGE_TYPE_AUDIO.equalsIgnoreCase(consersation.getListMessageData().get(position).fileModel.type)) {
           if (((ItemMessageUserHolder) holder).audioContent != null) {
             ((ItemMessageUserHolder) holder).audioContent.setVisibility(View.VISIBLE);
@@ -1249,6 +1362,11 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           ? ChatActivity.VIEW_TYPE_USER_MESSAGE_IMAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE;
       }
 
+      if (MESSAGE_TYPE_VIDEO.equals(consersation.getListMessageData().get(position).fileModel.type)) {
+        return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
+          ? ChatActivity.VIEW_TYPE_USER_MESSAGE_VIDEO : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_VIDEO;
+      }
+
       if (MESSAGE_TYPE_AUDIO.equals(consersation.getListMessageData().get(position).fileModel.type)) {
         return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
           ? ChatActivity.VIEW_TYPE_USER_MESSAGE_AUDIO : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_AUDIO;
@@ -1270,6 +1388,7 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
   public TextView txtContent;
   public ImageView imageContent;
+  public ImageView videoContent;
   public ImageView play_audio;
   public ImageView pause_audio;
   public LinearLayout audioContent;
@@ -1286,6 +1405,7 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentUser);
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentUser);
+    videoContent = (ImageView) itemView.findViewById(R.id.videoContentUser);
     audioContent = (LinearLayout) itemView.findViewById(R.id.audioUserView);
     play_audio = (ImageView) itemView.findViewById(R.id.play_audio);
     pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
@@ -1310,6 +1430,10 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
 
     if (imageContent != null) {
       imageContent.setOnClickListener(this);
+    }
+
+    if (videoContent != null) {
+      videoContent.setOnClickListener(this);
     }
   }
 
@@ -1341,6 +1465,14 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
         }
         break;
 
+      case R.id.videoContentUser:
+        try {
+          clickListenerChatFirebase.clickVideoChat(v, position);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+
     }
   }
 
@@ -1364,6 +1496,7 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
   public TextView txtContent;
   public CircleImageView avata;
   public ImageView imageContent;
+  public ImageView videoContent;
   public LinearLayout audioContent;
   public ImageView play_audio;
   public ImageView pause_audio;
@@ -1379,6 +1512,7 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentFriend);
+    videoContent = (ImageView) itemView.findViewById(R.id.videoContentFriend);
     audioContent = (LinearLayout) itemView.findViewById(R.id.audioFriendView);
     play_audio = (ImageView) itemView.findViewById(R.id.play_audio);
     pause_audio = (ImageView) itemView.findViewById(R.id.pause_audio);
@@ -1403,6 +1537,10 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
 
     if (imageContent != null) {
       imageContent.setOnClickListener(this);
+    }
+
+    if (videoContent != null) {
+      videoContent.setOnClickListener(this);
     }
 
   }
@@ -1430,6 +1568,15 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
       case R.id.imageContentFriend:
         try {
           clickListenerChatFirebase.clickImageChat(v, position);
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+
+
+      case R.id.videoContentFriend:
+        try {
+          clickListenerChatFirebase.clickVideoChat(v, position);
         } catch (Exception e) {
           e.printStackTrace();
         }

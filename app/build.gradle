@@ -105,6 +105,12 @@ dependencies {
 
   compile 'com.commit451:PhotoView:1.2.4'
 
+  //video player
+  implementation 'com.google.android.exoplayer:exoplayer:2.8.1'
+  compile group: 'com.google.android.exoplayer', name: 'extension-ima', version: '2.7.3'
+  implementation 'com.android.support:support-annotations:27.1.1'
+
+
 
 }
 apply plugin: 'com.google.gms.google-services'

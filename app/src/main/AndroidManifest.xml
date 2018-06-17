@@ -79,6 +79,10 @@
       android:name=".ui.ImageViewer"
       android:theme="@style/MyThemeNoActionbar" />
 
+    <activity
+      android:name=".ui.VideoViewer"
+      android:theme="@style/MyThemeNoActionbar" />
+
     <service
       android:name=".service.FriendChatService"
       android:exported="false"

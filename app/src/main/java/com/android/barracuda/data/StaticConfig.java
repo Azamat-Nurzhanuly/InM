@@ -32,4 +32,8 @@ public class StaticConfig {
   //image view
   public static final String IMAGE_URL = "image_url";
 
+  //video view
+  public static final String VIDEO_URL = "video_url";
+  public static final String VIDEO = "video";
+
 }
