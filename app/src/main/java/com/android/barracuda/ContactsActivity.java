@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.os.Build;
 import android.provider.ContactsContract;
+import android.provider.ContactsContract.Contacts;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
@@ -63,7 +64,8 @@ public class ContactsActivity extends BarracudaActivity {
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
         ContactsContract.Data.DISPLAY_NAME_PRIMARY : ContactsContract.Data
         .DISPLAY_NAME,
-      ContactsContract.CommonDataKinds.Phone.NUMBER,
+      ContactsContract.CommonDataKinds.Phone.DATA,
+      ContactsContract.CommonDataKinds.Phone.TYPE,
       ContactsContract.Data.PHOTO_ID
     };
     private Bundle mBundle;
@@ -124,12 +126,16 @@ public class ContactsActivity extends BarracudaActivity {
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
       switch (id) {
         case LOADER_ID:
+
+          String[] selArgs = {"1", "1"};
+
           return new CursorLoader(
             getContext(),
             ContactsContract.Data.CONTENT_URI,
             FROM_COLUMNS,
-            null,
-            null,
+            Contacts.IN_VISIBLE_GROUP + " = ?"
+              + " AND " + Contacts.HAS_PHONE_NUMBER + " = ?",
+            selArgs,
             (Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
               ContactsContract.Data.DISPLAY_NAME_PRIMARY : ContactsContract.Data
               .DISPLAY_NAME) +
