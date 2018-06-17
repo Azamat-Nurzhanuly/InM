@@ -6,6 +6,9 @@ import android.database.DataSetObserver;
 import android.support.v7.widget.RecyclerView;
 import android.view.ViewGroup;
 
+import java.util.HashSet;
+import java.util.Set;
+
 public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHolder> extends RecyclerView.Adapter<VH> {
 
   private static final String TAG = CursorRecyclerViewAdapter.class.getSimpleName();
@@ -17,6 +20,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
   private int mRowIdColumn;
   private String mId;
   private DataSetObserver mDataSetObserver;
+  public Set falseContacts = new HashSet();
 
 
   public CursorRecyclerViewAdapter(Context context, Cursor cursor, String id) {
@@ -58,7 +62,7 @@ public abstract class CursorRecyclerViewAdapter<VH extends RecyclerView.ViewHold
   @Override
   public int getItemCount() {
     if (mDataValid && mCursor != null) {
-      return mCursor.getCount();
+      return mCursor.getCount() - falseContacts.size();
     }
     return 0;
   }

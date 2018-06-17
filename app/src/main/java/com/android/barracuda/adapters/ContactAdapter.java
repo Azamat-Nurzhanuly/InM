@@ -60,14 +60,32 @@ public class ContactAdapter extends CursorRecyclerViewAdapter<ContactAdapter.Con
   @Override
   public void onBindViewHolder(ContactsViewHolder viewHolder, Cursor cursor) {
 
+    String number = "";
+
+    while (cursor.moveToNext())
+    {
+      int phoneType = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.TYPE));
+      if (phoneType == ContactsContract.CommonDataKinds.Phone.TYPE_MOBILE)
+      {
+        number = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DATA));
+        number = number.replaceAll("\\s", "");
+
+        number = number.replaceAll("[^0-9]", "");
+
+        if(number.length() != 11) {
+
+          falseContacts.add(number);
+          continue;
+        }
+
+        break;
+      }
+    }
+
     final String username = cursor.getString(cursor.getColumnIndex(
       Build.VERSION.SDK_INT >= Build.VERSION_CODES.HONEYCOMB ?
         ContactsContract.Data.DISPLAY_NAME_PRIMARY : ContactsContract.Data
         .DISPLAY_NAME
-    ));
-
-    final String number = cursor.getString(cursor.getColumnIndex(
-      ContactsContract.CommonDataKinds.Phone.NUMBER
     ));
 
     viewHolder.setUsername(username);
@@ -86,13 +104,15 @@ public class ContactAdapter extends CursorRecyclerViewAdapter<ContactAdapter.Con
     } else
       viewHolder.imageViewContactDisplay.setImageResource(R.drawable.default_avata);
 
+    final String phoneNumber = number;
+
     viewHolder.itemView.setOnClickListener(new View.OnClickListener() {
       @Override
       public void onClick(View view) {
 
         dialogWait = new LovelyProgressDialog(mContext);
 
-        findIDPhoneNumber(number);
+        findIDPhoneNumber(phoneNumber);
       }
     });
   }
