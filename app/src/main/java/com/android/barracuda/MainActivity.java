@@ -482,6 +482,11 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
         SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
         sharedPreferences.edit().putBoolean(SharedPreferenceHelper.INCOGNITO, item.isChecked()).commit();
       }
+      case R.id.favMes: {
+        Intent intent = new Intent(this, FavoritesActivity.class);
+        startActivity(intent);
+        break;
+      }
       default:
     }
 

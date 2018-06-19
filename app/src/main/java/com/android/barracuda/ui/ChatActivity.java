@@ -3,6 +3,7 @@ package com.android.barracuda.ui;
 import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -10,6 +11,7 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -38,14 +40,13 @@ import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
 import android.widget.SeekBar;
 import android.widget.TextView;
-import android.widget.VideoView;
 
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.FriendProfileActivity;
 import com.android.barracuda.MainActivity;
-import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
@@ -86,7 +87,11 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Map;
 import java.util.Objects;
+import java.util.Set;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 import io.codetail.animation.SupportAnimator;
@@ -95,6 +100,7 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
 
+import static com.android.barracuda.R.color.colorMarked;
 import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_IMAGE;
@@ -132,7 +138,9 @@ public class ChatActivity extends MainActivity
   private static final int DOC_PICKER_REQUEST = 6;
   private static final int PLACE_PICKER_REQUEST = 7;
 
-
+  public Map<String, Integer> messageMap = new HashMap<>();
+  public Map<Integer, Message> favoriteMessages = new HashMap<>();
+  public Map<String, View> messageViews = new HashMap<>();
 
   private File filePathImageCamera;
 
@@ -141,6 +149,7 @@ public class ChatActivity extends MainActivity
   private ArrayList<CharSequence> idFriend;
   private Consersation consersation;
   private String nameFriend;
+  public Set<Message> totalFavoriteMessages = new HashSet<>();
 
   //attach files
   private LinearLayout attach_file_view;
@@ -185,6 +194,8 @@ public class ChatActivity extends MainActivity
 
   MenuItem audio_call;
   MenuItem video_call;
+  MenuItem media;
+  MenuItem favorite;
   private boolean audioVideoServiceConnected = false;
 
   @Override
@@ -193,6 +204,8 @@ public class ChatActivity extends MainActivity
 
     audio_call = menu.getItem(1);
     video_call = menu.getItem(2);
+    media = menu.getItem(3);
+    favorite = menu.getItem(4);
 
     if (audioVideoServiceConnected) {
       audio_call.setEnabled(true);
@@ -201,6 +214,8 @@ public class ChatActivity extends MainActivity
 
     return true;
   }
+
+  public RelativeLayout itemMessage;
 
   @RequiresApi(api = Build.VERSION_CODES.M)
   @Override
@@ -214,6 +229,9 @@ public class ChatActivity extends MainActivity
     nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
 
     consersation = new Consersation();
+    messageMap = new HashMap<>();
+    favoriteMessages = new HashMap<>();
+    totalFavoriteMessages = new HashSet<>();
 
     int background = getBackground(this);
     View wallpaper = findViewById(R.id.wallpaper);
@@ -236,10 +254,63 @@ public class ChatActivity extends MainActivity
     initAudioButtons();
     initAudioRecord();
 
-
-
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     initEditText(nameFriend);
+
+    itemMessage = (RelativeLayout) findViewById(R.id.layout2);
+
+    initFavoriteMes();
+  }
+
+  private void initFavoriteMes() {
+
+    FirebaseDatabase.getInstance().getReference().child("favorites/" + StaticConfig.UID).addChildEventListener(new ChildEventListener() {
+      @Override
+      public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        if (dataSnapshot.getValue() != null) {
+          HashMap mapMessage = (HashMap) dataSnapshot.getValue();
+
+          Message newMessage = new Message();
+          newMessage.idSender = (String) mapMessage.get("idSender");
+          newMessage.idReceiver = (String) mapMessage.get("idReceiver");
+          newMessage.timestamp = (long) mapMessage.get("timestamp");
+
+          if (mapMessage.get("text") != null) {
+            newMessage.text = (String) mapMessage.get("text");
+          }
+
+
+          if (mapMessage.get("fileModel") != null) {
+            FileModel fileModel = new FileModel();
+            HashMap fileHash = (HashMap) mapMessage.get("fileModel");
+            if (fileHash.containsKey("type"))
+              fileModel.type = (String) fileHash.get("type");
+
+            if (fileHash.containsKey("name_file"))
+              fileModel.name_file = (String) fileHash.get("name_file");
+
+            if (fileHash.containsKey("url_file"))
+              fileModel.url_file = (String) fileHash.get("url_file");
+
+            newMessage.fileModel = fileModel;
+          }
+
+          totalFavoriteMessages.add(newMessage);
+        }
+      }
+
+      @Override
+      public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+
+      @Override
+      public void onChildRemoved(DataSnapshot dataSnapshot) {}
+
+      @Override
+      public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+
+      @Override
+      public void onCancelled(DatabaseError databaseError) {}
+    });
   }
 
   private void initAttachFileButtons() {
@@ -386,7 +457,7 @@ public class ChatActivity extends MainActivity
       linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
       recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
       recyclerChat.setLayoutManager(linearLayoutManager);
-      adapter = new ListMessageAdapter(this, consersation, bitmapAvataFriend, bitmapAvataUser, this);
+      adapter = new ListMessageAdapter(this, consersation, bitmapAvataFriend, bitmapAvataUser, this, this);
       FirebaseDatabase.getInstance().getReference().child("message/" + roomId).addChildEventListener(new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
@@ -421,6 +492,7 @@ public class ChatActivity extends MainActivity
             if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
 
               Boolean incognito = (Boolean) mapMessage.get("incognito");
+              newMessage.incognito = incognito;
 
               if (incognito) {
 
@@ -549,6 +621,83 @@ public class ChatActivity extends MainActivity
     startActivity(profIntent);
   }
 
+  @SuppressLint("ResourceAsColor")
+  public void onMessageMark(View view) {
+
+    Integer position = messageMap.get(view.toString().substring(30, 38));
+
+    if (position == null) return;
+
+    Message message = consersation.getListMessageData().get(position);
+
+    if (message == null) return;
+
+    switch (view.getBackground().getAlpha()) {
+      case 0: {
+        view.setBackgroundColor(colorMarked);
+
+        favoriteMessages.put(position, message);
+        break;
+      }
+      default: {
+        view.setBackgroundColor(Color.argb(0, 255, 255, 255));
+
+        for (Iterator<Map.Entry<Integer, Message>> it = favoriteMessages.entrySet().iterator(); it.hasNext(); ) {
+          Map.Entry<Integer, Message> entry = it.next();
+          if (Objects.equals(entry.getKey(), position)) {
+            it.remove();
+          }
+        }
+
+        break;
+      }
+    }
+
+    if (favoriteMessages.size() > 0) {
+
+      if (favorite != null) {
+        favorite.setEnabled(true);
+        favorite.setVisible(true);
+      }
+
+      if (media != null) {
+        media.setEnabled(false);
+        media.setVisible(false);
+      }
+
+      if (audio_call != null) {
+        audio_call.setEnabled(false);
+        audio_call.setVisible(false);
+      }
+
+      if (video_call != null) {
+        video_call.setEnabled(false);
+        video_call.setVisible(false);
+      }
+    } else {
+
+      if (favorite != null) {
+        favorite.setEnabled(false);
+        favorite.setVisible(false);
+      }
+
+      if (media != null) {
+        media.setEnabled(true);
+        media.setVisible(true);
+      }
+
+      if (audio_call != null && audioVideoServiceConnected) {
+        audio_call.setEnabled(true);
+        audio_call.setVisible(true);
+      }
+
+      if (video_call != null && audioVideoServiceConnected) {
+        video_call.setEnabled(true);
+        video_call.setVisible(true);
+      }
+    }
+  }
+
   public void onBackgroundClick(View view) {
 
     switch (view.getId()) {
@@ -646,6 +795,51 @@ public class ChatActivity extends MainActivity
         result.putExtra("idFriend", idFriend.get(0));
         setResult(RESULT_OK, result);
         this.finish();
+        break;
+      }
+      case R.id.addFavorites: {
+
+        FirebaseDatabase.getInstance().getReference().child("favorites").child(StaticConfig.UID).removeValue();
+
+        for (Iterator<Map.Entry<Integer, Message>> it = favoriteMessages.entrySet().iterator(); it.hasNext(); ) {
+          Map.Entry<Integer, Message> entry = it.next();
+
+          if(entry.getValue().incognito != null || !entry.getValue().incognito) {
+            totalFavoriteMessages.add(entry.getValue());
+          }
+        }
+
+        for (Message message : totalFavoriteMessages) {
+
+          FirebaseDatabase.getInstance().getReference().child("favorites").child(StaticConfig.UID).push().setValue(message);
+        }
+
+        favoriteMessages.clear();
+        for (Iterator<Map.Entry<String, View>> it = messageViews.entrySet().iterator(); it.hasNext(); ) {
+          Map.Entry<String, View> entry = it.next();
+          entry.getValue().setBackgroundColor(Color.argb(0, 255, 255, 255));
+        }
+
+        if (favorite != null) {
+          favorite.setEnabled(false);
+          favorite.setVisible(false);
+        }
+
+        if (media != null) {
+          media.setEnabled(true);
+          media.setVisible(true);
+        }
+
+        if (audio_call != null && audioVideoServiceConnected) {
+          audio_call.setEnabled(true);
+          audio_call.setVisible(true);
+        }
+
+        if (video_call != null && audioVideoServiceConnected) {
+          video_call.setEnabled(true);
+          video_call.setVisible(true);
+        }
+
         break;
       }
 
@@ -1181,14 +1375,16 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   private HashMap<String, DatabaseReference> bitmapAvataDB;
   private Bitmap bitmapAvataUser;
   private ClickListenerChatFirebase clickListenerChatFirebase;
+  private ChatActivity activity;
 
-  public ListMessageAdapter(Context context, Consersation consersation, HashMap<String, Bitmap> bitmapAvata, Bitmap bitmapAvataUser, ClickListenerChatFirebase clickListenerChatFirebase) {
+  public ListMessageAdapter(Context context, Consersation consersation, HashMap<String, Bitmap> bitmapAvata, Bitmap bitmapAvataUser, ClickListenerChatFirebase clickListenerChatFirebase, ChatActivity activity) {
     this.context = context;
     this.consersation = consersation;
     this.bitmapAvata = bitmapAvata;
     this.bitmapAvataUser = bitmapAvataUser;
     bitmapAvataDB = new HashMap<>();
     this.clickListenerChatFirebase = clickListenerChatFirebase;
+    this.activity = activity;
   }
 
   @NonNull
@@ -1223,6 +1419,10 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
   @Override
   public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
+
+    this.activity.messageMap.put(holder.itemView.toString().substring(30, 38), position);
+    this.activity.messageViews.put(holder.itemView.toString().substring(30, 38), holder.itemView);
+
     if (holder instanceof ItemMessageFriendHolder) {
       if (consersation.getListMessageData().get(position).text != null) {
         if (((ItemMessageFriendHolder) holder).txtContent != null) {

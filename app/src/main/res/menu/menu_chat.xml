@@ -28,4 +28,12 @@
       app:showAsAction="always"
       android:title="@string/media"
       android:enabled="true"/>
+    <item
+        android:id="@+id/addFavorites"
+        android:orderInCategory="104"
+        android:title="@string/addFavorites"
+        android:enabled="false"
+        android:visible="false"
+        app:showAsAction="always"
+        android:icon="@drawable/favorite"/>
 </menu>

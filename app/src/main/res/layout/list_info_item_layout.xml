@@ -29,7 +29,7 @@
         android:layout_width="wrap_content"
         android:clickable="true"
         android:layout_height="wrap_content"
-        android:background="@color/transparent"/>
+        android:background="@color/colorTransparent"/>
     <TextView
         android:id="@+id/tv_detail"
         android:textSize="14sp"
@@ -38,5 +38,5 @@
         android:layout_marginRight="16dp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="@color/transparent"/>
+        android:background="@color/colorTransparent"/>
 </RelativeLayout>

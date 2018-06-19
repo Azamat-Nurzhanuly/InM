@@ -4,7 +4,11 @@
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
   android:layout_marginBottom="5dp"
-  android:layout_marginTop="5dp">
+  android:layout_marginTop="5dp"
+    android:onClick="onMessageMark"
+    android:longClickable="true"
+    android:clickable="true"
+    android:background="@color/colorTransparent">
 
   <de.hdodenhof.circleimageview.CircleImageView
     android:id="@+id/imageView2"

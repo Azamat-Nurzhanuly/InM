@@ -4,6 +4,8 @@
     <color name="colorPrimaryDark">#0288D1</color>
     <color name="colorAccent">#4fa881</color>
 
+    <color name="colorMarked">#8b03a9f4</color>
+
     <color name="colorPurplePrimary">#9745ac</color>
     <color name="colorPurplePrimaryDark">#8b3e9f</color>
     <color name="colorPurpleAccent">#cb78e1</color>
@@ -23,7 +25,7 @@
     <color name="colorWhiteDecline">#ffffff</color>
     <color name="colorGreenAnswer">#ffffff</color>
     <color name="colorIndivateTab">#FFFFFF</color>
-    <color name="transparent">#00ffffff</color>
+    <color name="colorTransparent">#00ffffff</color>
     <color name="colorCardView">#f7f7f7</color>
     <color name="grey_200">#EEEEEE</color>
     <color name="grey_500">#a4a4a4</color>

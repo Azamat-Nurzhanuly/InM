@@ -1,65 +1,67 @@
 <resources>
-  <!--<string name="app_name">Barracuda</string>-->
-  <string name="app_name">Barracuda</string>
-  <string name="action_settings">Настройки</string>
-  <string name="backgrounds">Обои</string>
-  <string name="download">Сохранить</string>
-  <string name="login_success">Успешная авторизация</string>
-  <string name="login">ЛОГИН</string>
-  <string name="Username">Почта</string>
-  <string name="Password">Пароль</string>
-  <string name="forgot_your_password">Забыли пароль?</string>
-  <string name="go">GO</string>
-  <string name="repeat_password">ПОВТОРИТЕ ПАРОЛЬ</string>
-  <string name="next">СЛЕДУЮЩИЙ</string>
-  <string name="register">РЕГИСТРАЦИЯ</string>
+    <!--<string name="app_name">Barracuda</string>-->
+    <string name="app_name">Barracuda</string>
+    <string name="action_settings">Настройки</string>
+    <string name="backgrounds">Обои</string>
+    <string name="addFavorites">Добавить в избранные</string>
+    <string name="removeFavorites">Убрать из избранных</string>
+    <string name="download">Сохранить</string>
+    <string name="login_success">Успешная авторизация</string>
+    <string name="login">ЛОГИН</string>
+    <string name="Username">Почта</string>
+    <string name="Password">Пароль</string>
+    <string name="forgot_your_password">Забыли пароль?</string>
+    <string name="go">GO</string>
+    <string name="repeat_password">ПОВТОРИТЕ ПАРОЛЬ</string>
+    <string name="next">СЛЕДУЮЩИЙ</string>
+    <string name="register">РЕГИСТРАЦИЯ</string>
 
-  <string name="FACEBOOK_APP_ID">169006583806838</string>
-  <string name="ACCOUNT_KIT_CLIENT_TOKEN">1153d3100ba8ab55a91b6ec4d717151d</string>
+    <string name="FACEBOOK_APP_ID">169006583806838</string>
+    <string name="ACCOUNT_KIT_CLIENT_TOKEN">1153d3100ba8ab55a91b6ec4d717151d</string>
 
-  <string name="hint_username">Введите имя</string>
-  <string name="hint_email_reset">Введите свою почту</string>
-  <string name="enter_group_name">Введите название группы</string>
-
-
-  <string name="api_key_google_places">AIzaSyCGzBYDeXk8vwAelJf-t8EtxqwWIuzNNdU</string>
-  <string name="create_group">Создать группу</string>
-  <string name="r">R</string>
-  <string name="profile">Профиль</string>
-  <string name="avatar">Аватарка</string>
-  <string name="user_name">Имя</string>
-  <string name="phone_number">Номер телефона</string>
-  <string name="status">Статус</string>
-  <string name="fav_messages">Избранные сообщения</string>
-  <string name="account">Аккаунт</string>
-  <string name="rules">Конфиденциальность (правила)</string>
-  <string name="black_list">Черный список</string>
-  <string name="delete_account">Удалить аккаунт</string>
-  <string name="chats">Чаты</string>
-  <string name="themes">Темы</string>
-  <string name="copy">Резервная копия</string>
-  <string name="create_copy">Создать копию</string>
-  <string name="recover">Восстановить</string>
-  <string name="delete_all_chats">Удалить все Чаты</string>
-  <string name="clear_all_chats">Очистить все Чаты</string>
-  <string name="notification">Оповещения</string>
-  <string name="help">Помощь</string>
-  <string name="faq">FAQ</string>
-  <string name="contact_us">Связаться с нами</string>
-  <string name="rules_conf">Правила пользования и условия конфиденциальности</string>
-  <string name="license">Лицензия</string>
-  <string name="version">Версия</string>
-  <string name="title_activity_profile">ProfileActivity</string>
-
-  <string name="audio_call">Аудио вызов</string>
-  <string name="video_call">Видео вызов</string>
-  <string name="media">Медиа</string>
-  <string name="incognito">Режим "Инкогнито"</string>
+    <string name="hint_username">Введите имя</string>
+    <string name="hint_email_reset">Введите свою почту</string>
+    <string name="enter_group_name">Введите название группы</string>
 
 
-  <string name="content_url"><![CDATA[http://rmcdn.2mdn.net/MotifFiles/html/1248596/android_1330378998288.mp4]]></string>
+    <string name="api_key_google_places">AIzaSyCGzBYDeXk8vwAelJf-t8EtxqwWIuzNNdU</string>
+    <string name="create_group">Создать группу</string>
+    <string name="r">R</string>
+    <string name="profile">Профиль</string>
+    <string name="avatar">Аватарка</string>
+    <string name="user_name">Имя</string>
+    <string name="phone_number">Номер телефона</string>
+    <string name="status">Статус</string>
+    <string name="fav_messages">Избранные сообщения</string>
+    <string name="account">Аккаунт</string>
+    <string name="rules">Конфиденциальность (правила)</string>
+    <string name="black_list">Черный список</string>
+    <string name="delete_account">Удалить аккаунт</string>
+    <string name="chats">Чаты</string>
+    <string name="themes">Темы</string>
+    <string name="copy">Резервная копия</string>
+    <string name="create_copy">Создать копию</string>
+    <string name="recover">Восстановить</string>
+    <string name="delete_all_chats">Удалить все Чаты</string>
+    <string name="clear_all_chats">Очистить все Чаты</string>
+    <string name="notification">Оповещения</string>
+    <string name="help">Помощь</string>
+    <string name="faq">FAQ</string>
+    <string name="contact_us">Связаться с нами</string>
+    <string name="rules_conf">Правила пользования и условия конфиденциальности</string>
+    <string name="license">Лицензия</string>
+    <string name="version">Версия</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 
-  <string name="ad_tag_url"><![CDATA[https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=]]></string>
+    <string name="audio_call">Аудио вызов</string>
+    <string name="video_call">Видео вызов</string>
+    <string name="media">Медиа</string>
+    <string name="incognito">Режим "Инкогнито"</string>
+
+
+    <string name="content_url"><![CDATA[http://rmcdn.2mdn.net/MotifFiles/html/1248596/android_1330378998288.mp4]]></string>
+
+    <string name="ad_tag_url"><![CDATA[https://pubads.g.doubleclick.net/gampad/ads?sz=640x480&iu=/124319096/external/single_ad_samples&ciu_szs=300x250&impl=s&gdfp_req=1&env=vp&output=vast&unviewed_position_start=1&cust_params=deployment%3Ddevsite%26sample_ct%3Dlinear&correlator=]]></string>
 
 
 </resources>

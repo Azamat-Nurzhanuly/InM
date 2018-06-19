@@ -9,7 +9,7 @@
     android:rowCount="2">
 
         <android.support.v7.widget.CardView
-            app:cardBackgroundColor="@color/transparent"
+            app:cardBackgroundColor="@color/colorTransparent"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_columnWeight="1"
@@ -32,7 +32,7 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            app:cardBackgroundColor="@color/transparent"
+            app:cardBackgroundColor="@color/colorTransparent"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_columnWeight="1"
@@ -55,7 +55,7 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            app:cardBackgroundColor="@color/transparent"
+            app:cardBackgroundColor="@color/colorTransparent"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_columnWeight="1"
@@ -78,7 +78,7 @@
         </android.support.v7.widget.CardView>
 
         <android.support.v7.widget.CardView
-            app:cardBackgroundColor="@color/transparent"
+            app:cardBackgroundColor="@color/colorTransparent"
             android:layout_width="50dp"
             android:layout_height="50dp"
             android:layout_columnWeight="1"
