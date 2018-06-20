@@ -84,6 +84,7 @@ import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -123,6 +124,8 @@ public class ChatActivity extends MainActivity
   public static final int VIEW_TYPE_USER_MESSAGE_VIDEO = 6;
   public static final int VIEW_TYPE_FRIEND_MESSAGE_VIDEO = 7;
 
+  public static final int VIEW_TYPE_MESSAGE_DATE = 8;
+
   static final String TAG = ChatActivity.class.getSimpleName();
 
   public static final String MESSAGE_TYPE_TEXT = "text";
@@ -155,6 +158,9 @@ public class ChatActivity extends MainActivity
   private LinearLayout attach_file_view;
   private ImageButton gallery_btn, photo_btn, video_btn, audio_btn, location_btn, contact_btn;
   private boolean attach_hidden = true;
+
+  private static final SimpleDateFormat d_m_y_formatter = new SimpleDateFormat(
+    "yyyy-MMMM-dd, EEEE");
 
 
   //audio recording
@@ -300,16 +306,20 @@ public class ChatActivity extends MainActivity
       }
 
       @Override
-      public void onChildChanged(DataSnapshot dataSnapshot, String s) {}
+      public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+      }
 
       @Override
-      public void onChildRemoved(DataSnapshot dataSnapshot) {}
+      public void onChildRemoved(DataSnapshot dataSnapshot) {
+      }
 
       @Override
-      public void onChildMoved(DataSnapshot dataSnapshot, String s) {}
+      public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+      }
 
       @Override
-      public void onCancelled(DatabaseError databaseError) {}
+      public void onCancelled(DatabaseError databaseError) {
+      }
     });
   }
 
@@ -451,8 +461,7 @@ public class ChatActivity extends MainActivity
 
   private void initEditText(String nameFriend) {
     if (idFriend != null && nameFriend != null) {
-      getSupportActionBar().setTitle(nameFriend);
-
+      Objects.requireNonNull(getSupportActionBar()).setTitle(nameFriend);
 
       linearLayoutManager = new LinearLayoutManager(this, LinearLayoutManager.VERTICAL, false);
       recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
@@ -518,7 +527,27 @@ public class ChatActivity extends MainActivity
               }
             }
 
+
             consersation.getListMessageData().add(newMessage);
+
+            {
+              String date = d_m_y_formatter.format(newMessage.timestamp);
+
+              Message dateMessage = new Message();
+              dateMessage.date = date;
+
+              boolean exist = false;
+              for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+                if (consersation.getListMessageData().get(i).date != null
+                  && consersation.getListMessageData().get(i).date.equals(date)) {
+                  exist = true;
+                }
+              }
+              if (!exist) {
+                consersation.getListMessageData().add(dateMessage);
+              }
+            }
+
             adapter.notifyDataSetChanged();
             linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
           }
@@ -804,7 +833,7 @@ public class ChatActivity extends MainActivity
         for (Iterator<Map.Entry<Integer, Message>> it = favoriteMessages.entrySet().iterator(); it.hasNext(); ) {
           Map.Entry<Integer, Message> entry = it.next();
 
-          if(entry.getValue().incognito != null || !entry.getValue().incognito) {
+          if (entry.getValue().incognito != null || !entry.getValue().incognito) {
             totalFavoriteMessages.add(entry.getValue());
           }
         }
@@ -1390,6 +1419,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   @NonNull
   @Override
   public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+
+    if (viewType == ChatActivity.VIEW_TYPE_MESSAGE_DATE) {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_date, parent, false);
+      return new ItemMessageDate(view);
+    }
+
     if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_TEXT) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend, parent, false);
       return new ItemMessageFriendHolder(view, clickListenerChatFirebase);
@@ -1411,10 +1446,11 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_AUDIO) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user_audio, parent, false);
       return new ItemMessageUserHolder(view, clickListenerChatFirebase);
-    } else {
+    } else if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_AUDIO) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_audio, parent, false);
       return new ItemMessageFriendHolder(view, clickListenerChatFirebase);
     }
+    throw new UnsupportedOperationException();
   }
 
   @Override
@@ -1558,13 +1594,23 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (((ItemMessageUserHolder) holder).imageContent != null)
           ((ItemMessageUserHolder) holder).imageContent.setVisibility(View.INVISIBLE);
       }
+    } else if (holder instanceof ItemMessageDate) {
+      ((ItemMessageDate) holder).dateContent.setText(consersation.getListMessageData().get(position).date);
+
     }
   }
 
   @Override
   public int getItemViewType(int position) {
-    if (consersation.getListMessageData().get(position).text == null && consersation.getListMessageData().get(position).fileModel != null) {
 
+    if (consersation.getListMessageData() != null
+      && !consersation.getListMessageData().isEmpty()
+      && position < consersation.getListMessageData().size()
+      && consersation.getListMessageData().get(position).date != null) {
+      return ChatActivity.VIEW_TYPE_MESSAGE_DATE;
+    }
+
+    if (consersation.getListMessageData().get(position).text == null && consersation.getListMessageData().get(position).fileModel != null) {
       if (MESSAGE_TYPE_IMAGE.equals(consersation.getListMessageData().get(position).fileModel.type)) {
         return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
           ? ChatActivity.VIEW_TYPE_USER_MESSAGE_IMAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE;
@@ -1806,5 +1852,17 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
       }
     }
     return false;
+  }
+}
+
+
+class ItemMessageDate extends RecyclerView.ViewHolder {
+  public TextView dateContent;
+  private RecyclerView itemRecyclerView;
+
+  public ItemMessageDate(View itemView) {
+    super(itemView);
+    dateContent = (TextView) itemView.findViewById(R.id.dateContent);
+
   }
 }

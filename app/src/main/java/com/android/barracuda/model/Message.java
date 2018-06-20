@@ -11,6 +11,8 @@ public class Message {
   public long timestamp;
   public int lifeTime;
 
+  public String date;
+
   @Override
   public boolean equals(Object o) {
     if (this == o) return true;
