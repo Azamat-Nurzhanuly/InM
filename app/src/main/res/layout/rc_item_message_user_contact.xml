@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  android:layout_width="match_parent"
+  android:layout_height="wrap_content"
+  android:orientation="horizontal"
+  android:paddingBottom="5dp"
+  android:paddingLeft="16dp"
+  android:paddingRight="16dp"
+    android:onClick="onMessageMark"
+    android:longClickable="true"
+    android:clickable="true"
+    android:background="@color/colorTransparent">
+
+  <de.hdodenhof.circleimageview.CircleImageView
+    android:id="@+id/imageView2"
+    android:layout_width="30dp"
+    android:layout_height="30dp"
+    android:layout_alignParentEnd="true"
+    android:layout_alignParentTop="true"
+    android:layout_marginEnd="5dp"
+    android:src="@drawable/default_avata" />
+
+  <RelativeLayout
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentTop="true"
+    android:layout_centerHorizontal="true">
+
+    <FrameLayout
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentEnd="true"
+      android:layout_alignParentTop="true"
+      android:layout_marginEnd="31dp"
+      android:layout_marginTop="16dp"
+      android:background="@drawable/rounded_corner_image"
+      android:minHeight="115dp">
+
+      <TextView
+        android:id="@+id/userContactName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="10dp"
+        android:background="@drawable/rounded_corner1"
+        android:padding="10dp"
+        android:text="a"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffff" />
+
+      <TextView
+        android:id="@+id/userContactPhone"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginEnd="5dp"
+        android:layout_marginStart="20dp"
+        android:layout_marginTop="60dp"
+        android:background="@drawable/rounded_corner1"
+        android:padding="10dp"
+        android:text="s"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:textColor="#ffffff" />
+    </FrameLayout>
+  </RelativeLayout>
+
+</RelativeLayout>

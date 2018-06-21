@@ -7,6 +7,7 @@ public class Message {
   public String idReceiver;
   public String text;
   public FileModel fileModel;
+  public ContactModel contact;
   public Boolean incognito = false;
   public long timestamp;
   public int lifeTime;

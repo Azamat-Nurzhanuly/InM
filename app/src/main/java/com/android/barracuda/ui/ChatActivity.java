@@ -9,6 +9,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
@@ -18,6 +19,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.provider.ContactsContract;
 import android.provider.MediaStore;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
@@ -52,6 +54,7 @@ import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.inter.ClickListenerChatFirebase;
 import com.android.barracuda.model.Consersation;
+import com.android.barracuda.model.ContactModel;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.service.SinchService;
@@ -84,6 +87,7 @@ import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.sql.Timestamp;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -126,12 +130,17 @@ public class ChatActivity extends MainActivity
 
   public static final int VIEW_TYPE_MESSAGE_DATE = 8;
 
+
+  public static final int VIEW_TYPE_USER_MESSAGE_CONTACT = 9;
+  public static final int VIEW_TYPE_FRIEND_MESSAGE_CONTACT = 10;
+
   static final String TAG = ChatActivity.class.getSimpleName();
 
   public static final String MESSAGE_TYPE_TEXT = "text";
   public static final String MESSAGE_TYPE_IMAGE = "img";
   public static final String MESSAGE_TYPE_AUDIO = "audio";
   public static final String MESSAGE_TYPE_VIDEO = "video";
+  public static final String MESSAGE_TYPE_CONTACT = "contact";
 
   private static final int IMAGE_GALLERY_REQUEST = 1;
   private static final int IMAGE_CAMERA_REQUEST = 2;
@@ -172,10 +181,13 @@ public class ChatActivity extends MainActivity
     Manifest.permission.RECORD_AUDIO,
     Manifest.permission.CAMERA,
     Manifest.permission.WRITE_SETTINGS,
-    Manifest.permission.WRITE_EXTERNAL_STORAGE
+    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+    Manifest.permission.WRITE_CONTACTS,
+    Manifest.permission.READ_CONTACTS
   };
   private static final int REQUEST_RECORD_AUDIO_PERMISSION = 200;
   private static final int REQUESST_CAMERA_PERMISSION_CODE = 100;
+  private static final int REQUESST_CONTACT_PERMISSION_CODE = 100;
 
   private static String mFileName = null;
 
@@ -498,6 +510,18 @@ public class ChatActivity extends MainActivity
               newMessage.fileModel = fileModel;
             }
 
+            if (mapMessage.get("contact") != null) {
+              ContactModel contact = new ContactModel();
+              HashMap fileHash = (HashMap) mapMessage.get("contact");
+              if (fileHash.containsKey("number"))
+                contact.number = (String) fileHash.get("number");
+
+              if (fileHash.containsKey("name"))
+                contact.name = (String) fileHash.get("name");
+
+              newMessage.contact = contact;
+            }
+
             if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
 
               Boolean incognito = (Boolean) mapMessage.get("incognito");
@@ -532,14 +556,19 @@ public class ChatActivity extends MainActivity
 
             {
               String date = d_m_y_formatter.format(newMessage.timestamp);
+              String currentDate = d_m_y_formatter.format(new Timestamp(System.currentTimeMillis()));
 
               Message dateMessage = new Message();
               dateMessage.date = date;
 
+              if (Objects.equals(date, currentDate)) {
+                dateMessage.date = "Сегодня";
+              }
+
               boolean exist = false;
               for (int i = 0; i < consersation.getListMessageData().size(); i++) {
                 if (consersation.getListMessageData().get(i).date != null
-                  && consersation.getListMessageData().get(i).date.equals(date)) {
+                  && consersation.getListMessageData().get(i).date.equals(date) || "Сегодня".equals(consersation.getListMessageData().get(i).date)) {
                   exist = true;
                 }
               }
@@ -601,6 +630,7 @@ public class ChatActivity extends MainActivity
   }
 
 
+  @SuppressLint("Recycle")
   @Override
   protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 
@@ -614,6 +644,47 @@ public class ChatActivity extends MainActivity
         }
       }
     }
+
+    if (requestCode == CONTACT_PICKER_REQUEST) {
+      if (resultCode == RESULT_OK) {
+        Uri selectedImageUri = data.getData();
+        if (selectedImageUri != null) {
+
+          Uri uri = data.getData();
+
+          String phoneNo = null;
+          String name = null;
+          // Get the URI and query the content provider for the phone number
+          Uri contactUri = data.getData();
+          String[] projection = new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER,
+            ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME};
+          Cursor cursor = getApplicationContext().getContentResolver().query(contactUri, projection,
+            null, null, null);
+
+          // If the cursor returned is valid, get the phone number
+          if (cursor != null && cursor.moveToFirst()) {
+
+            int numberIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+            int nameIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME);
+
+            phoneNo = cursor.getString(numberIndex);
+            name = cursor.getString(nameIndex);
+            cursor.close();
+          }
+
+
+          Message message = new Message();
+          ContactModel contact = new ContactModel();
+          contact.name = name;
+          contact.number = phoneNo;
+          message.contact = contact;
+
+          sendContactFirebase(message);
+          return;
+        }
+      }
+    }
+
 
     if (requestCode == VIDEO_PICKER_REQUEST) {
       if (resultCode == RESULT_OK) {
@@ -641,6 +712,20 @@ public class ChatActivity extends MainActivity
         }
       }
     }
+  }
+
+  private void sendContactFirebase(Message message) {
+
+    message.text = null;
+    message.fileModel = null;
+    message.idSender = StaticConfig.UID;
+    message.idReceiver = roomId;
+    message.timestamp = System.currentTimeMillis();
+
+    SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+    message.incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+    message.lifeTime = 30;
+    FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(message);
   }
 
   public void onFriendImgClick(View view) {
@@ -1217,8 +1302,12 @@ public class ChatActivity extends MainActivity
       return;
     }
     if (content == CONTACT_PICKER_REQUEST) {
+
+      ActivityCompat.requestPermissions(this, permissions, REQUESST_CONTACT_PERMISSION_CODE);
+
+
       Intent pickIntent = new Intent(Intent.ACTION_PICK,
-        android.provider.ContactsContract.Contacts.CONTENT_URI);
+        ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
       startActivityForResult(pickIntent, CONTACT_PICKER_REQUEST);
       return;
     }
@@ -1449,6 +1538,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     } else if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_AUDIO) {
       View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_audio, parent, false);
       return new ItemMessageFriendHolder(view, clickListenerChatFirebase);
+    } else if (viewType == ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_CONTACT) {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_friend_contact, parent, false);
+      return new ItemMessageFriendHolder(view, clickListenerChatFirebase);
+    } else if (viewType == ChatActivity.VIEW_TYPE_USER_MESSAGE_CONTACT) {
+      View view = LayoutInflater.from(context).inflate(R.layout.rc_item_message_user_contact, parent, false);
+      return new ItemMessageUserHolder(view, clickListenerChatFirebase);
     }
     throw new UnsupportedOperationException();
   }
@@ -1506,6 +1601,15 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (((ItemMessageFriendHolder) holder).audioContent != null) {
           ((ItemMessageFriendHolder) holder).audioContent.setVisibility(View.INVISIBLE);
         }
+
+        if (consersation.getListMessageData().get(position).contact != null) {
+          if (consersation.getListMessageData().get(position).contact.name != null)
+            ((ItemMessageFriendHolder) holder).contactName.setText(String.valueOf(consersation.getListMessageData().get(position).contact.name));
+
+          if (consersation.getListMessageData().get(position).contact.number != null)
+            ((ItemMessageFriendHolder) holder).contactPhone.setText(String.valueOf(consersation.getListMessageData().get(position).contact.number));
+        }
+
       }
       Bitmap currentAvata = bitmapAvata.get(consersation.getListMessageData().get(position).idSender);
       if (currentAvata != null) {
@@ -1536,6 +1640,8 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           });
         }
       }
+
+
     } else if (holder instanceof ItemMessageUserHolder) {
       if (bitmapAvataUser != null) {
         ((ItemMessageUserHolder) holder).avata.setImageBitmap(bitmapAvataUser);
@@ -1587,13 +1693,21 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             //TODO AUDIO PLAYER
           }
         }
-
-
 //        ((ItemMessageUserHolder) holder).imageContent.setImageURI(Uri.parse(consersation.getListMessageData().get(position).fileModel.url_file));
       } else {
         if (((ItemMessageUserHolder) holder).imageContent != null)
           ((ItemMessageUserHolder) holder).imageContent.setVisibility(View.INVISIBLE);
+
+        if (consersation.getListMessageData().get(position).contact != null) {
+          if (((ItemMessageUserHolder) holder).contactName != null)
+            ((ItemMessageUserHolder) holder).contactName.setText(String.valueOf(consersation.getListMessageData().get(position).contact.name));
+
+          if (((ItemMessageUserHolder) holder).contactPhone != null)
+            ((ItemMessageUserHolder) holder).contactPhone.setText(String.valueOf(consersation.getListMessageData().get(position).contact.number));
+        }
       }
+
+
     } else if (holder instanceof ItemMessageDate) {
       ((ItemMessageDate) holder).dateContent.setText(consersation.getListMessageData().get(position).date);
 
@@ -1627,6 +1741,16 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
       }
     }
 
+    if (consersation.getListMessageData().get(position).contact != null) {
+      return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
+        ? ChatActivity.VIEW_TYPE_USER_MESSAGE_CONTACT : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_CONTACT;
+    }
+
+//    if (consersation.getListMessageData().get(position).contact != null) {
+//      return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
+//        ? ChatActivity.VIEW_TYPE_USER_MESSAGE_CONTACT : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_CONTACT;
+//    }
+
     return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
       ? ChatActivity.VIEW_TYPE_USER_MESSAGE_TEXT : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_TEXT;
 
@@ -1641,6 +1765,8 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
 class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
   public TextView txtContent;
+  public TextView contactName;
+  public TextView contactPhone;
   public ImageView imageContent;
   public ImageView videoContent;
   public ImageView play_audio;
@@ -1658,6 +1784,9 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
   public ItemMessageUserHolder(View itemView, ClickListenerChatFirebase clickListenerChatFirebase) {
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentUser);
+    contactName = (TextView) itemView.findViewById(R.id.userContactName);
+    contactPhone = (TextView) itemView.findViewById(R.id.userContactPhone);
+
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentUser);
     videoContent = (ImageView) itemView.findViewById(R.id.videoContentUser);
     audioContent = (LinearLayout) itemView.findViewById(R.id.audioUserView);
@@ -1748,6 +1877,8 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
 
 class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.OnClickListener, View.OnTouchListener {
   public TextView txtContent;
+  public TextView contactName;
+  public TextView contactPhone;
   public CircleImageView avata;
   public ImageView imageContent;
   public ImageView videoContent;
@@ -1764,6 +1895,9 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
 
   public ItemMessageFriendHolder(View itemView, ClickListenerChatFirebase clickListenerChatFirebase) {
     super(itemView);
+    txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
+    contactName = (TextView) itemView.findViewById(R.id.friendContactName);
+    contactPhone = (TextView) itemView.findViewById(R.id.friendContactPhone);
     txtContent = (TextView) itemView.findViewById(R.id.textContentFriend);
     imageContent = (ImageView) itemView.findViewById(R.id.imageContentFriend);
     videoContent = (ImageView) itemView.findViewById(R.id.videoContentFriend);
