@@ -68,8 +68,10 @@ import com.devlomi.record_view.RecordView;
 import com.google.android.gms.common.GooglePlayServicesNotAvailableException;
 import com.google.android.gms.common.GooglePlayServicesRepairableException;
 import com.google.android.gms.location.places.ui.PlacePicker;
+import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -83,6 +85,8 @@ import com.sinch.android.rtc.MissingPermissionException;
 import com.sinch.android.rtc.SinchError;
 import com.sinch.android.rtc.calling.Call;
 import com.yarolegovich.lovelydialog.LovelyCustomDialog;
+import com.yarolegovich.lovelydialog.LovelyInfoDialog;
+import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -150,6 +154,8 @@ public class ChatActivity extends MainActivity
   private static final int DOC_PICKER_REQUEST = 6;
   private static final int PLACE_PICKER_REQUEST = 7;
 
+  public boolean isInBlackList = false;
+
   public Map<String, Integer> messageMap = new HashMap<>();
   public Map<Integer, Message> favoriteMessages = new HashMap<>();
   public Map<String, View> messageViews = new HashMap<>();
@@ -214,7 +220,13 @@ public class ChatActivity extends MainActivity
   MenuItem video_call;
   MenuItem media;
   MenuItem favorite;
+  MenuItem removeFromBlackList;
+  MenuItem forbidden;
   private boolean audioVideoServiceConnected = false;
+  private ImageButton btnSend;
+  private RelativeLayout parentLayout;
+  private View line;
+  private LovelyProgressDialog dialogWaitDeleting;
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -224,8 +236,16 @@ public class ChatActivity extends MainActivity
     video_call = menu.getItem(2);
     media = menu.getItem(3);
     favorite = menu.getItem(4);
+    removeFromBlackList = menu.getItem(5);
+    forbidden = menu.getItem(6);
 
-    if (audioVideoServiceConnected) {
+    removeFromBlackList.setEnabled(false);
+    removeFromBlackList.setVisible(false);
+
+    forbidden.setEnabled(false);
+    forbidden.setVisible(false);
+
+    if (audioVideoServiceConnected && !isInBlackList) {
       audio_call.setEnabled(true);
       video_call.setEnabled(true);
     }
@@ -245,6 +265,104 @@ public class ChatActivity extends MainActivity
     idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
     nameFriend = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND);
+
+    dialogWaitDeleting = new LovelyProgressDialog(this);
+
+    editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
+    btnSend = (ImageButton) findViewById(R.id.btnSend);
+    parentLayout = (RelativeLayout) findViewById(R.id.parent_layout);
+    line = (View) findViewById(R.id.line);
+
+    FirebaseDatabase.getInstance().getReference()
+      .child("blacklist")
+      .child(StaticConfig.UID)
+      .orderByValue().equalTo(idFriend.get(0).toString())
+      .addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+          System.out.println("MJNASKDOIASDOASKDKASD");
+
+          if(dataSnapshot.getValue() != null) {
+
+            System.out.println("KOASIJDKASDUIWDQD");
+
+            isInBlackList = true;
+
+            audio_call.setVisible(false);
+            audio_call.setEnabled(false);
+
+            video_call.setVisible(false);
+            video_call.setEnabled(false);
+
+            media.setVisible(false);
+            media.setEnabled(false);
+
+            editWriteMessage.setEnabled(false);
+            editWriteMessage.setVisibility(View.INVISIBLE);
+
+            btnSend.setEnabled(false);
+            btnSend.setVisibility(View.INVISIBLE);
+
+            parentLayout.setVisibility(View.INVISIBLE);
+            parentLayout.setEnabled(false);
+
+            line.setEnabled(false);
+            line.setVisibility(View.INVISIBLE);
+
+            removeFromBlackList.setEnabled(true);
+            removeFromBlackList.setVisible(true);
+          }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+      });
+
+    FirebaseDatabase.getInstance().getReference()
+      .child("blacklist")
+      .child(idFriend.get(0).toString())
+      .orderByValue().equalTo(StaticConfig.UID)
+      .addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+          if(dataSnapshot.getValue() != null) {
+
+            isInBlackList = true;
+
+            audio_call.setVisible(false);
+            audio_call.setEnabled(false);
+
+            video_call.setVisible(false);
+            video_call.setEnabled(false);
+
+            media.setVisible(false);
+            media.setEnabled(false);
+
+            editWriteMessage.setEnabled(false);
+            editWriteMessage.setVisibility(View.INVISIBLE);
+
+            btnSend.setEnabled(false);
+            btnSend.setVisibility(View.INVISIBLE);
+
+            parentLayout.setVisibility(View.INVISIBLE);
+            parentLayout.setEnabled(false);
+
+            line.setEnabled(false);
+            line.setVisibility(View.INVISIBLE);
+
+            forbidden.setEnabled(true);
+            forbidden.setVisible(true);
+          }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+      });
 
     consersation = new Consersation();
     messageMap = new HashMap<>();
@@ -272,7 +390,6 @@ public class ChatActivity extends MainActivity
     initAudioButtons();
     initAudioRecord();
 
-    editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     initEditText(nameFriend);
 
     itemMessage = (RelativeLayout) findViewById(R.id.layout2);
@@ -795,17 +912,17 @@ public class ChatActivity extends MainActivity
         favorite.setVisible(false);
       }
 
-      if (media != null) {
+      if (media != null && !isInBlackList) {
         media.setEnabled(true);
         media.setVisible(true);
       }
 
-      if (audio_call != null && audioVideoServiceConnected) {
+      if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
         audio_call.setEnabled(true);
         audio_call.setVisible(true);
       }
 
-      if (video_call != null && audioVideoServiceConnected) {
+      if (video_call != null && audioVideoServiceConnected && !isInBlackList) {
         video_call.setEnabled(true);
         video_call.setVisible(true);
       }
@@ -939,17 +1056,17 @@ public class ChatActivity extends MainActivity
           favorite.setVisible(false);
         }
 
-        if (media != null) {
+        if (media != null && !isInBlackList) {
           media.setEnabled(true);
           media.setVisible(true);
         }
 
-        if (audio_call != null && audioVideoServiceConnected) {
+        if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
           audio_call.setEnabled(true);
           audio_call.setVisible(true);
         }
 
-        if (video_call != null && audioVideoServiceConnected) {
+        if (video_call != null && audioVideoServiceConnected && !isInBlackList) {
           video_call.setEnabled(true);
           video_call.setVisible(true);
         }
@@ -960,6 +1077,54 @@ public class ChatActivity extends MainActivity
       case R.id.attach_btn:
         openAttachItemMenu();
         break;
+
+      case R.id.removeFromBlackList: {
+
+        dialogWaitDeleting.setTitle("Удаление...")
+          .setCancelable(false)
+          .setTopColorRes(R.color.colorAccent)
+          .show();
+
+        FirebaseDatabase.getInstance().getReference().child("blacklist").child(StaticConfig.UID).orderByValue().equalTo(idFriend.get(0).toString()).addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+            if(dataSnapshot.getValue() != null) {
+
+              String idRemoval = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
+              FirebaseDatabase.getInstance().getReference().child("blacklist")
+                .child(StaticConfig.UID).child(idRemoval).removeValue()
+                .addOnCompleteListener(new OnCompleteListener<Void>() {
+                  @Override
+                  public void onComplete(@NonNull Task<Void> task) {
+                    dialogWaitDeleting.dismiss();
+
+                    new LovelyInfoDialog(context)
+                      .setTopColorRes(R.color.colorAccent)
+                      .setTitle("Успешно")
+                      .setMessage("Удален из черного списка")
+                      .show();
+                  }
+                })
+                .addOnFailureListener(new OnFailureListener() {
+                  @Override
+                  public void onFailure(@NonNull Exception e) {
+                    dialogWaitDeleting.dismiss();
+                    new LovelyInfoDialog(context)
+                      .setTopColorRes(R.color.colorAccent)
+                      .setTitle("Ошибка")
+                      .setMessage("Не удалось удалить друга из черного списка")
+                      .show();
+                  }
+                });
+            }
+          }
+
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
+
+          }
+        });
+      }
     }
 
     return true;
@@ -1475,11 +1640,11 @@ public class ChatActivity extends MainActivity
 
     audioVideoServiceConnected = true;
 
-    if (audio_call != null) {
+    if (audio_call != null && !isInBlackList) {
       audio_call.setEnabled(true);
     }
 
-    if (video_call != null) {
+    if (video_call != null && !isInBlackList) {
       video_call.setEnabled(true);
     }
   }

@@ -9,6 +9,7 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -20,10 +21,14 @@ import android.support.v7.widget.RecyclerView;
 import android.text.InputType;
 import android.util.Base64;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.LayoutInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.barracuda.ContactsActivity;
 import com.android.barracuda.MainActivity;
@@ -38,6 +43,7 @@ import com.android.barracuda.model.ListFriend;
 import com.android.barracuda.service.ServiceUtils;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.ChildEventListener;
 import com.google.firebase.database.DataSnapshot;
@@ -67,6 +73,7 @@ import static com.android.barracuda.BarracudaActivity.COLOR_BLUE;
 import static com.android.barracuda.BarracudaActivity.COLOR_DARK_BLUE;
 import static com.android.barracuda.BarracudaActivity.COLOR_ORANGE;
 import static com.android.barracuda.BarracudaActivity.COLOR_PURPLE;
+import static com.android.barracuda.ui.ListGroupsAdapter.listFriend;
 
 public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -78,11 +85,14 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
   private LovelyProgressDialog dialogFindAllFriend;
   private SwipeRefreshLayout mSwipeRefreshLayout;
   private CountDownTimer detectFriendOnline;
+  public Map<String, Integer> listViewPosFriend = new HashMap<>();
+  public Map<Integer, String> listViewNameFriend = new HashMap<>();
   public static int ACTION_START_CHAT = 1;
 
   public static final String ACTION_DELETE_FRIEND = "DELETE_FRIEND";
 
   private BroadcastReceiver deleteFriendReceiver;
+  private LovelyProgressDialog dialogWaitDeleting;
 
   public FriendsFragment() {
     onClickFloatButton = new FragFriendClickFloatButton();
@@ -91,6 +101,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    dialogWaitDeleting = new LovelyProgressDialog(getContext());
   }
 
   @Override
@@ -118,6 +130,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         detectFriendOnline.start();
       }
     }
+
     View layout = inflater.inflate(R.layout.fragment_people, container, false);
     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
     recyclerListFrends = (RecyclerView) layout.findViewById(R.id.recycleListFriend);
@@ -131,7 +144,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
       listFriendID = new ArrayList<>();
       dialogFindAllFriend.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
-        .setTitle("Get all friend....")
+        .setTitle("Получение списка друзей....")
         .setTopColorRes(R.color.colorPrimary)
         .show();
       getListFriendUId();
@@ -203,11 +216,11 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
       new LovelyTextInputDialog(view.getContext(), R.style.EditTextTintTheme)
         .setTopColorRes(themeColor)
-        .setTitle("Add friend")
-        .setMessage("Enter friend's phone number")
+        .setTitle("Добавление друга")
+        .setMessage("Введите номер телефона друга")
         .setIcon(R.drawable.ic_add_friend)
         .setInputType(InputType.TYPE_CLASS_PHONE)
-        .setInputFilter("Phone number not found", new LovelyTextInputDialog.TextFilter() {
+        .setInputFilter("Телефонный номер не найден", new LovelyTextInputDialog.TextFilter() {
           @Override
           public boolean check(String text) {
             Pattern VALID_EMAIL_ADDRESS_REGEX =
@@ -231,7 +244,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
       dialogWait.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
-        .setTitle("Finding friend....")
+        .setTitle("Поиск друга....")
         .setTopColorRes(themeColor)
         .show();
       FirebaseDatabase.getInstance().getReference().child("user").orderByChild("phoneNumber").equalTo(phoneNumber).addListenerForSingleValueEvent(new ValueEventListener() {
@@ -243,8 +256,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
             new LovelyInfoDialog(context)
               .setTopColorRes(R.color.colorAccent)
               .setIcon(R.drawable.ic_add_friend)
-              .setTitle("Fail")
-              .setMessage("phoneNumber not found")
+              .setTitle("Ошибка")
+              .setMessage("Телефонный номер не найден")
               .show();
           } else {
             String id = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
@@ -252,8 +265,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
               new LovelyInfoDialog(context)
                 .setTopColorRes(R.color.colorAccent)
                 .setIcon(R.drawable.ic_add_friend)
-                .setTitle("Fail")
-                .setMessage("Phone number not valid")
+                .setTitle("Ошибка")
+                .setMessage("Телефонный номер неверен")
                 .show();
             } else {
               HashMap userMap = (HashMap) ((HashMap) dataSnapshot.getValue()).get(id);
@@ -284,7 +297,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
       dialogWait.setCancelable(false)
         .setIcon(R.drawable.ic_add_friend)
-        .setTitle("Add friend....")
+        .setTitle("Добавление друга....")
         .setTopColorRes(themeColor)
         .show();
 
@@ -294,8 +307,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         new LovelyInfoDialog(context)
           .setTopColorRes(themeColor)
           .setIcon(R.drawable.ic_add_friend)
-          .setTitle("Friend")
-          .setMessage("User " + userInfo.phoneNumber + " has been friend")
+          .setTitle("Друг")
+          .setMessage("Пользователь " + userInfo.phoneNumber + " добавлен в друзья")
           .show();
       } else {
         addFriend(idFriend, true);
@@ -330,8 +343,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 new LovelyInfoDialog(context)
                   .setTopColorRes(R.color.colorAccent)
                   .setIcon(R.drawable.ic_add_friend)
-                  .setTitle("False")
-                  .setMessage("False to add friend success")
+                  .setTitle("Ошибка")
+                  .setMessage("Не удалось добавить друга")
                   .show();
               }
             });
@@ -351,8 +364,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
                 new LovelyInfoDialog(context)
                   .setTopColorRes(R.color.colorAccent)
                   .setIcon(R.drawable.ic_add_friend)
-                  .setTitle("False")
-                  .setMessage("False to add friend success")
+                  .setTitle("Ошибка")
+                  .setMessage("Не удалось добавить друга")
                   .show();
               }
             });
@@ -365,8 +378,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         new LovelyInfoDialog(context)
           .setTopColorRes(themeColor)
           .setIcon(R.drawable.ic_add_friend)
-          .setTitle("Success")
-          .setMessage("Add friend success")
+          .setTitle("Успешно")
+          .setMessage("Друг успешно добавлен")
           .show();
       }
     }
@@ -433,6 +446,189 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
       });
     }
   }
+
+  public Integer selectedPosition = -1;
+
+  @Override
+  public void onCreateContextMenu(ContextMenu menu, View v, ContextMenu.ContextMenuInfo menuInfo) {
+    super.onCreateContextMenu(menu, v, menuInfo);
+
+    selectedPosition = listViewPosFriend.get(v.toString().substring(28, 36));
+
+    getActivity().getMenuInflater().inflate(R.menu.context_menu_friend, menu);
+  }
+
+  @Override
+  public boolean onContextItemSelected(MenuItem item) {
+
+    String friendName = listViewNameFriend.get(selectedPosition);
+
+    switch (item.getItemId()) {
+      case R.id.deleteFriend: {
+
+        new AlertDialog.Builder(getContext())
+          .setTitle("Удаление друга")
+          .setMessage("Вы уверены что хотите удалить " + friendName + " из списка друзей?")
+          .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+              dialogInterface.dismiss();
+              final String idFriendRemoval = dataListFriend.getListFriend().get(selectedPosition).id;
+              dialogWaitDeleting.setTitle("Удаление...")
+                .setCancelable(false)
+                .setTopColorRes(R.color.colorAccent)
+                .show();
+              deleteFriend(idFriendRemoval);
+            }
+          })
+          .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+              dialogInterface.dismiss();
+            }
+          }).show();
+
+        return true;
+      }
+      case R.id.addBlackList: {
+        new AlertDialog.Builder(getContext())
+          .setTitle("Добавить в черный список")
+          .setMessage("Вы уверены что хотите добавить в черный список " + friendName + "?")
+          .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+              dialogInterface.dismiss();
+              final String idFriendRemoval = dataListFriend.getListFriend().get(selectedPosition).id;
+              dialogWaitDeleting.setTitle("Добавление в черный список...")
+                .setCancelable(false)
+                .setTopColorRes(R.color.colorAccent)
+                .show();
+              addToBlackList(idFriendRemoval);
+            }
+          })
+          .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialogInterface, int i) {
+              dialogInterface.dismiss();
+            }
+          }).show();
+        return true;
+      }
+      default: {
+
+        return super.onContextItemSelected(item);
+      }
+    }
+  }
+
+  /**
+   * Delete friend
+   *
+   * @param idFriend
+   */
+  private void deleteFriend(final String idFriend) {
+    if (idFriend != null) {
+      FirebaseDatabase.getInstance().getReference().child("friend").child(StaticConfig.UID)
+        .orderByValue().equalTo(idFriend).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+          if (dataSnapshot.getValue() == null) {
+            //phoneNumber not found
+            dialogWaitDeleting.dismiss();
+            new LovelyInfoDialog(getContext())
+              .setTopColorRes(R.color.colorAccent)
+              .setTitle("Ошибка")
+              .setMessage("Не удалось удалить друга из списка друзей")
+              .show();
+          } else {
+            String idRemoval = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
+            FirebaseDatabase.getInstance().getReference().child("friend")
+              .child(StaticConfig.UID).child(idRemoval).removeValue()
+              .addOnCompleteListener(new OnCompleteListener<Void>() {
+                @Override
+                public void onComplete(@NonNull Task<Void> task) {
+                  dialogWaitDeleting.dismiss();
+
+                  new LovelyInfoDialog(getContext())
+                    .setTopColorRes(R.color.colorAccent)
+                    .setTitle("Успешно")
+                    .setMessage("Друг удалён")
+                    .show();
+
+                  Intent intentDeleted = new Intent(FriendsFragment.ACTION_DELETE_FRIEND);
+                  intentDeleted.putExtra("idFriend", idFriend);
+                  getContext().sendBroadcast(intentDeleted);
+                }
+              })
+              .addOnFailureListener(new OnFailureListener() {
+                @Override
+                public void onFailure(@NonNull Exception e) {
+                  dialogWaitDeleting.dismiss();
+                  new LovelyInfoDialog(getContext())
+                    .setTopColorRes(R.color.colorAccent)
+                    .setTitle("Ошибка")
+                    .setMessage("Не удалось удалить друга из списка друзей")
+                    .show();
+                }
+              });
+          }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+      });
+    } else {
+      dialogWaitDeleting.dismiss();
+      new LovelyInfoDialog(getContext())
+        .setTopColorRes(R.color.red)
+        .setTitle("Ошибка")
+        .setMessage("Не удалось удалить друга из списка друзей")
+        .show();
+    }
+  }
+
+  private void addToBlackList(final String idFriend) {
+    if (idFriend != null) {
+
+      FirebaseDatabase.getInstance().getReference()
+        .child("blacklist")
+        .child(StaticConfig.UID)
+        .push().setValue(idFriend)
+        .addOnFailureListener(new OnFailureListener() {
+          @Override
+          public void onFailure(@NonNull Exception e) {
+            dialogWaitDeleting.dismiss();
+            new LovelyInfoDialog(getContext())
+              .setTopColorRes(R.color.colorAccent)
+              .setTitle("Ошибка")
+              .setMessage("Не удалось добавить друга в черный список")
+              .show();
+          }
+        })
+        .addOnSuccessListener(new OnSuccessListener<Void>() {
+          @Override
+          public void onSuccess(Void aVoid) {
+            dialogWaitDeleting.dismiss();
+
+            new LovelyInfoDialog(getContext())
+              .setTopColorRes(R.color.colorAccent)
+              .setTitle("Успешно")
+              .setMessage("Друг добавлен в черный список")
+              .show();
+          }
+        });
+    } else {
+      dialogWaitDeleting.dismiss();
+      new LovelyInfoDialog(getContext())
+        .setTopColorRes(R.color.red)
+        .setTitle("Ошибка")
+        .setMessage("Не удалось добавить друга в черный список")
+        .show();
+    }
+  }
 }
 
 class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
@@ -473,6 +669,10 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     final String avata = listFriend.getListFriend().get(position).avata;
     ((ItemFriendViewHolder) holder).txtName.setText(name);
 
+    fragment.registerForContextMenu((View) ((ItemFriendViewHolder) holder).txtName.getParent().getParent().getParent());
+    fragment.listViewPosFriend.put(((ItemFriendViewHolder) holder).txtName.getParent().getParent().getParent().toString().substring(28, 36), position);
+    fragment.listViewNameFriend.put(position, (String) ((ItemFriendViewHolder) holder).txtName.getText());
+
     ((View) ((ItemFriendViewHolder) holder).txtName.getParent().getParent().getParent())
       .setOnClickListener(new View.OnClickListener() {
         @Override
@@ -497,40 +697,6 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           fragment.startActivityForResult(intent, FriendsFragment.ACTION_START_CHAT);
         }
       });
-
-    //nhấn giữ để xóa bạn
-    ((View) ((ItemFriendViewHolder) holder).txtName.getParent().getParent().getParent())
-      .setOnLongClickListener(new View.OnLongClickListener() {
-        @Override
-        public boolean onLongClick(View view) {
-          String friendName = (String) ((ItemFriendViewHolder) holder).txtName.getText();
-
-          new AlertDialog.Builder(context)
-            .setTitle("Delete Friend")
-            .setMessage("Are you sure want to delete " + friendName + "?")
-            .setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-              @Override
-              public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-                final String idFriendRemoval = listFriend.getListFriend().get(position).id;
-                dialogWaitDeleting.setTitle("Deleting...")
-                  .setCancelable(false)
-                  .setTopColorRes(R.color.colorAccent)
-                  .show();
-                deleteFriend(idFriendRemoval);
-              }
-            })
-            .setNegativeButton(android.R.string.cancel, new DialogInterface.OnClickListener() {
-              @Override
-              public void onClick(DialogInterface dialogInterface, int i) {
-                dialogInterface.dismiss();
-              }
-            }).show();
-
-          return true;
-        }
-      });
-
 
     if (listFriend.getListFriend().get(position).message.text != null && listFriend.getListFriend().get(position).message.text.length() > 0) {
       ((ItemFriendViewHolder) holder).txtMessage.setVisibility(View.VISIBLE);
@@ -561,7 +727,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           public void onChildAdded(DataSnapshot dataSnapshot, String s) {
             HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
-            if(position < listFriend.getListFriend().size()) {
+            if (position < listFriend.getListFriend().size()) {
               if (listFriend.getListFriend() != null && listFriend.getListFriend().get(position).message != null &&
                 listFriend.getListFriend().get(position).message.text != null &&
                 listFriend.getListFriend() != null) {
@@ -683,75 +849,6 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   @Override
   public int getItemCount() {
     return listFriend.getListFriend() != null ? listFriend.getListFriend().size() : 0;
-  }
-
-  /**
-   * Delete friend
-   *
-   * @param idFriend
-   */
-  private void deleteFriend(final String idFriend) {
-    if (idFriend != null) {
-      FirebaseDatabase.getInstance().getReference().child("friend").child(StaticConfig.UID)
-        .orderByValue().equalTo(idFriend).addListenerForSingleValueEvent(new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-
-          if (dataSnapshot.getValue() == null) {
-            //phoneNumber not found
-            dialogWaitDeleting.dismiss();
-            new LovelyInfoDialog(context)
-              .setTopColorRes(R.color.colorAccent)
-              .setTitle("Error")
-              .setMessage("Error occurred during deleting friend")
-              .show();
-          } else {
-            String idRemoval = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
-            FirebaseDatabase.getInstance().getReference().child("friend")
-              .child(StaticConfig.UID).child(idRemoval).removeValue()
-              .addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                  dialogWaitDeleting.dismiss();
-
-                  new LovelyInfoDialog(context)
-                    .setTopColorRes(R.color.colorAccent)
-                    .setTitle("Success")
-                    .setMessage("Friend deleting successfully")
-                    .show();
-
-                  Intent intentDeleted = new Intent(FriendsFragment.ACTION_DELETE_FRIEND);
-                  intentDeleted.putExtra("idFriend", idFriend);
-                  context.sendBroadcast(intentDeleted);
-                }
-              })
-              .addOnFailureListener(new OnFailureListener() {
-                @Override
-                public void onFailure(@NonNull Exception e) {
-                  dialogWaitDeleting.dismiss();
-                  new LovelyInfoDialog(context)
-                    .setTopColorRes(R.color.colorAccent)
-                    .setTitle("Error")
-                    .setMessage("Error occurred during deleting friend")
-                    .show();
-                }
-              });
-          }
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-      });
-    } else {
-      dialogWaitDeleting.dismiss();
-      new LovelyInfoDialog(context)
-        .setTopColorRes(R.color.red)
-        .setTitle("Error")
-        .setMessage("Error occurred during deleting friend")
-        .show();
-    }
   }
 }
 

@@ -7,6 +7,16 @@
         android:orderInCategory="100"
         android:title="@string/backgrounds"/>
     <item
+        android:id="@+id/removeFromBlackList"
+        android:orderInCategory="105"
+        android:title="@string/removeFromBlackList"/>
+    <item
+        android:id="@+id/forbidden"
+        android:orderInCategory="106"
+        android:title=""
+        app:showAsAction="always"
+        android:icon="@drawable/ic_forbidden"/>
+    <item
         android:id="@+id/audio_call"
         android:orderInCategory="101"
         android:icon="@drawable/audio_call"
