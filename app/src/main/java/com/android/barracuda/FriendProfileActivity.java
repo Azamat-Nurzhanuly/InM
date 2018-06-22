@@ -101,6 +101,7 @@ public class FriendProfileActivity extends BarracudaActivity {
   private UserInfoAdapter infoAdapter;
 
   private static final String USERNAME_LABEL = "Имя пользователя";
+  private static final String STATUS_LABEL = "Статус";
   private static final String PHONE_NUMBER_LABEL = "Номер телефона";
 
   private LovelyProgressDialog waitingDialog;
@@ -144,6 +145,9 @@ public class FriendProfileActivity extends BarracudaActivity {
     listConfig.clear();
     Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
     listConfig.add(userNameConfig);
+
+    Configuration statusConfig = new Configuration(STATUS_LABEL, myAccount.status.text, R.drawable.status);
+    listConfig.add(statusConfig);
 
     Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
     listConfig.add(phoneNumberConfig);

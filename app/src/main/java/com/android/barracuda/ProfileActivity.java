@@ -110,6 +110,7 @@ public class ProfileActivity extends BarracudaActivity {
 
   private static final String USERNAME_LABEL = "Имя пользователя";
   private static final String PHONE_NUMBER_LABEL = "Номер телефона";
+  private static final String STATUS_LABEL = "Статус";
   private static final String SIGNOUT_LABEL = "Выйти";
   private static final String RESETPASS_LABEL = "Сменить пароль";
 
@@ -245,6 +246,9 @@ public class ProfileActivity extends BarracudaActivity {
     Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
     listConfig.add(phoneNumberConfig);
 
+    Configuration statusConfig = new Configuration(STATUS_LABEL, myAccount.status.text, R.drawable.status);
+    listConfig.add(statusConfig);
+
     Configuration signout = new Configuration(SIGNOUT_LABEL, "", R.mipmap.ic_power_settings);
     listConfig.add(signout);
   }
@@ -285,7 +289,7 @@ public class ProfileActivity extends BarracudaActivity {
     }
 
     @Override
-    public void onBindViewHolder(ProfileActivity.UserInfoAdapter.ViewHolder holder, int position) {
+    public void onBindViewHolder(ProfileActivity.UserInfoAdapter.ViewHolder holder, final int position) {
       final Configuration config = profileConfig.get(position);
       holder.label.setText(config.getLabel());
       holder.value.setText(config.getValue());
@@ -316,6 +320,38 @@ public class ProfileActivity extends BarracudaActivity {
                   String newName = input.getText().toString();
                   if (!Objects.equals(myAccount.name, newName)) {
                     changeUserName(newName);
+
+//                    infoAdapter.notifyDataSetChanged();
+                    infoAdapter.notifyItemChanged(position);
+                  }
+                  dialogInterface.dismiss();
+                }
+              })
+              .setNegativeButton("Отменить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  dialogInterface.dismiss();
+                }
+              }).show();
+          }
+
+          if (config.getLabel().equals(STATUS_LABEL)) {
+            View vewInflater = LayoutInflater.from(context)
+              .inflate(R.layout.dialog_edit_status, (ViewGroup) findViewById(R.id.profile), false);
+            final EditText input = (EditText) vewInflater.findViewById(R.id.edit_status);
+            input.setText(myAccount.status.text);
+            new AlertDialog.Builder(context)
+              .setTitle("Редактирование статуса")
+              .setView(vewInflater)
+              .setPositiveButton("Сохранить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  String newStatus = input.getText().toString();
+                  if (!Objects.equals(myAccount.status.text, newStatus)) {
+                    changeUserStatus(newStatus);
+
+//                    infoAdapter.notifyDataSetChanged();
+                    infoAdapter.notifyItemChanged(position);
                   }
                   dialogInterface.dismiss();
                 }
@@ -340,6 +376,16 @@ public class ProfileActivity extends BarracudaActivity {
       prefHelper.saveUserInfo(myAccount);
 
       tvUserName.setText(newName);
+      setupArrayListInfo(myAccount);
+    }
+
+    private void changeUserStatus(String newStatus) {
+      userDB.child("status").child("text").setValue(newStatus);
+
+      myAccount.status.text = newStatus;
+      SharedPreferenceHelper prefHelper = SharedPreferenceHelper.getInstance(context);
+      prefHelper.saveUserInfo(myAccount);
+
       setupArrayListInfo(myAccount);
     }
 

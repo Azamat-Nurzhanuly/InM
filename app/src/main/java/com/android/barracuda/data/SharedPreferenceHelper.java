@@ -12,6 +12,7 @@ public class SharedPreferenceHelper {
   private static SharedPreferences.Editor editor;
   private static String SHARE_USER_INFO = "userinfo";
   private static String SHARE_KEY_NAME = "name";
+  private static String SHARE_KEY_STATUS = "status";
   private static String SHARE_KEY_PHONE_NUMBER = "phoneNumber";
   private static String SHARE_KEY_AVATA = "avata";
   private static String SHARE_KEY_UID = "uid";
@@ -35,6 +36,7 @@ public class SharedPreferenceHelper {
 
   public void saveUserInfo(User user) {
     editor.putString(SHARE_KEY_NAME, user.name);
+    editor.putString(SHARE_KEY_STATUS, user.status.text);
     editor.putString(SHARE_KEY_PHONE_NUMBER, user.phoneNumber);
     editor.putString(SHARE_KEY_AVATA, user.avata);
     editor.putString(SHARE_KEY_UID, StaticConfig.UID);
@@ -43,6 +45,7 @@ public class SharedPreferenceHelper {
 
   public User getUserInfo() {
     String userName = preferences.getString(SHARE_KEY_NAME, "");
+    String userStatus = preferences.getString(SHARE_KEY_STATUS, "");
     String phoneNumber = preferences.getString(SHARE_KEY_PHONE_NUMBER, "");
     String avatar = preferences.getString(SHARE_KEY_AVATA, "default");
 
@@ -50,6 +53,7 @@ public class SharedPreferenceHelper {
     user.name = userName;
     user.phoneNumber = phoneNumber;
     user.avata = avatar;
+    user.status.text = userStatus;
 
     return user;
   }

@@ -14,6 +14,7 @@ public class User {
     public User(){
         status = new Status();
         message = new Message();
+        status.text = "";
         status.isOnline = false;
         status.timestamp = 0;
         message.idReceiver = "0";

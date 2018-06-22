@@ -24,6 +24,7 @@
     <string name="ACCOUNT_KIT_CLIENT_TOKEN">1153d3100ba8ab55a91b6ec4d717151d</string>
 
     <string name="hint_username">Введите имя</string>
+    <string name="hint_status">Введите статус</string>
     <string name="hint_email_reset">Введите свою почту</string>
     <string name="enter_group_name">Введите название группы</string>
 
