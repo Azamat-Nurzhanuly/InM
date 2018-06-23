@@ -23,7 +23,15 @@
         android:id="@+id/account"
         android:orderInCategory="103"
         android:title="@string/account"
-        app:showAsAction="never" />
+        app:showAsAction="never">
+        <menu>
+        <item
+            android:id="@+id/account.blacklist"
+            android:orderInCategory="201"
+            android:title="@string/blacklist"
+            app:showAsAction="never"/>
+        </menu>
+    </item>
     <item
         android:id="@+id/chats"
         android:orderInCategory="104"

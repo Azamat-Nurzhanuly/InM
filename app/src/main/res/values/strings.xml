@@ -44,6 +44,7 @@
     <string name="delete_account">Удалить аккаунт</string>
     <string name="chats">Чаты</string>
     <string name="themes">Темы</string>
+    <string name="blacklist">Черный список</string>
     <string name="copy">Резервная копия</string>
     <string name="create_copy">Создать копию</string>
     <string name="recover">Восстановить</string>

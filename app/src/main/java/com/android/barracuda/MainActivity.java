@@ -487,6 +487,11 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
         startActivity(intent);
         break;
       }
+      case R.id.account_blacklist: {
+        Intent intent = new Intent(this, BlacklistActivity.class);
+        startActivity(intent);
+        break;
+      }
       default:
     }
 
