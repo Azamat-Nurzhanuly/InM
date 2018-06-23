@@ -39,7 +39,8 @@
     <string name="status">Статус</string>
     <string name="fav_messages">Избранные сообщения</string>
     <string name="account">Аккаунт</string>
-    <string name="rules">Конфиденциальность (правила)</string>
+    <string name="rules">Правила конфиденциальности</string>
+    <string name="contract">Лицензионный договор</string>
     <string name="black_list">Черный список</string>
     <string name="delete_account">Удалить аккаунт</string>
     <string name="chats">Чаты</string>

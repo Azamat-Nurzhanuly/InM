@@ -2,14 +2,14 @@ package com.android.barracuda;
 
 import android.app.Activity;
 import android.content.ComponentName;
-import android.content.ContentResolver;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.database.Cursor;
+import android.content.res.AssetManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.TabLayout;
@@ -54,7 +54,10 @@ import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
 import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -435,7 +438,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
     MenuItem item = menu.findItem(R.id.incognito);
 
-    if(item != null) {
+    if (item != null) {
 
       item.setChecked(incognito);
     }
@@ -473,9 +476,9 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       }
       case R.id.incognito: {
 
-        if(item.isChecked()){
+        if (item.isChecked()) {
           item.setChecked(false);
-        }else{
+        } else {
           item.setChecked(true);
         }
 
@@ -487,6 +490,14 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
         startActivity(intent);
         break;
       }
+      case R.id.account_rules: {
+        copyReadAssets("Правила конфиденциальности.pdf");
+        break;
+      }
+      case R.id.account_contract: {
+        copyReadAssets("Лицензионный договор.pdf");
+        break;
+      }
       case R.id.account_blacklist: {
         Intent intent = new Intent(this, BlacklistActivity.class);
         startActivity(intent);
@@ -496,6 +507,42 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     }
 
     return super.onOptionsItemSelected(item);
+  }
+
+  private void copyReadAssets(String name) {
+    AssetManager assetManager = getAssets();
+
+    InputStream in = null;
+    OutputStream out = null;
+    File file = new File(getFilesDir(), name);
+    try {
+      in = assetManager.open(name);
+      out = openFileOutput(file.getName(), Context.MODE_WORLD_READABLE);
+
+      copyFile(in, out);
+      in.close();
+      in = null;
+      out.flush();
+      out.close();
+      out = null;
+    } catch (Exception e) {
+      Log.e("tag", e.getMessage());
+    }
+
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setDataAndType(
+      Uri.parse("file://" + getFilesDir() + "/" + name),
+      "application/pdf");
+
+    startActivity(intent);
+  }
+
+  private void copyFile(InputStream in, OutputStream out) throws IOException {
+    byte[] buffer = new byte[1024];
+    int read;
+    while ((read = in.read(buffer)) != -1) {
+      out.write(buffer, 0, read);
+    }
   }
 
   class ViewPagerAdapter extends FragmentPagerAdapter {

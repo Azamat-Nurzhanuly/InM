@@ -127,9 +127,10 @@
             android:name=".FavoritesActivity"
             android:parentActivityName=".MainActivity"
             android:screenOrientation="portrait" />
-        <activity android:name=".BlacklistActivity"
+        <activity
+            android:name=".BlacklistActivity"
             android:parentActivityName=".MainActivity"
-            android:screenOrientation="portrait"/>
+            android:screenOrientation="portrait" />
     </application>
 
 </manifest>
