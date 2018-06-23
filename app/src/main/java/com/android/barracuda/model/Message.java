@@ -1,6 +1,8 @@
 package com.android.barracuda.model;
 
 
+import java.util.Objects;
+
 public class Message {
 
   public String idSender;
@@ -10,7 +12,7 @@ public class Message {
   public ContactModel contact;
   public Boolean incognito = false;
   public long timestamp;
-  public int lifeTime;
+  public Long lifeTime = 30L;
 
   public String date;
 
@@ -22,7 +24,7 @@ public class Message {
     Message message = (Message) o;
 
     if (timestamp != message.timestamp) return false;
-    if (lifeTime != message.lifeTime) return false;
+    if (!Objects.equals(lifeTime, message.lifeTime)) return false;
     if (idSender != null ? !idSender.equals(message.idSender) : message.idSender != null)
       return false;
     if (idReceiver != null ? !idReceiver.equals(message.idReceiver) : message.idReceiver != null)
@@ -35,13 +37,13 @@ public class Message {
 
   @Override
   public int hashCode() {
-    int result = idSender != null ? idSender.hashCode() : 0;
+    long result = idSender != null ? idSender.hashCode() : 0;
     result = 31 * result + (idReceiver != null ? idReceiver.hashCode() : 0);
     result = 31 * result + (text != null ? text.hashCode() : 0);
     result = 31 * result + (fileModel != null ? fileModel.hashCode() : 0);
     result = 31 * result + (incognito != null ? incognito.hashCode() : 0);
     result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
     result = 31 * result + lifeTime;
-    return result;
+    return (int) result;
   }
 }

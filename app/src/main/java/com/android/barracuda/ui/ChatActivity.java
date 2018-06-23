@@ -162,6 +162,7 @@ public class ChatActivity extends MainActivity
 
   private File filePathImageCamera;
 
+  public Long timeout = 30L;
   private ListMessageAdapter adapter;
   private String roomId;
   private ArrayList<CharSequence> idFriend;
@@ -274,6 +275,23 @@ public class ChatActivity extends MainActivity
     line = (View) findViewById(R.id.line);
 
     FirebaseDatabase.getInstance().getReference()
+      .child("user")
+      .child(StaticConfig.UID)
+      .child("lifeTimeForMessage").addListenerForSingleValueEvent(new ValueEventListener() {
+      @Override
+      public void onDataChange(DataSnapshot dataSnapshot) {
+        if(dataSnapshot.getValue() != null) {
+          timeout = (Long) dataSnapshot.getValue();
+        }
+      }
+
+      @Override
+      public void onCancelled(DatabaseError databaseError) {
+
+      }
+    });
+
+    FirebaseDatabase.getInstance().getReference()
       .child("blacklist")
       .child(StaticConfig.UID)
       .orderByValue().equalTo(idFriend.get(0).toString())
@@ -281,11 +299,7 @@ public class ChatActivity extends MainActivity
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
 
-          System.out.println("MJNASKDOIASDOASKDKASD");
-
           if(dataSnapshot.getValue() != null) {
-
-            System.out.println("KOASIJDKASDUIWDQD");
 
             isInBlackList = true;
 
@@ -841,7 +855,7 @@ public class ChatActivity extends MainActivity
 
     SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
     message.incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
-    message.lifeTime = 30;
+    message.lifeTime = timeout;
     FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(message);
   }
 
@@ -1294,7 +1308,7 @@ public class ChatActivity extends MainActivity
       SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
       final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
       newMessage.incognito = incognito;
-      newMessage.lifeTime = 30;
+      newMessage.lifeTime = timeout;
       FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
     }
   }
@@ -1331,7 +1345,7 @@ public class ChatActivity extends MainActivity
         SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
         final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
         newMessage.incognito = incognito;
-        newMessage.lifeTime = 30;
+        newMessage.lifeTime = timeout;
         FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
       }
     });
@@ -1370,7 +1384,7 @@ public class ChatActivity extends MainActivity
         SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
         final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
         newMessage.incognito = incognito;
-        newMessage.lifeTime = 30;
+        newMessage.lifeTime = timeout;
         FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
       }
     });
@@ -1409,7 +1423,7 @@ public class ChatActivity extends MainActivity
         SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
         final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
         newMessage.incognito = incognito;
-        newMessage.lifeTime = 30;
+        newMessage.lifeTime = timeout;
         FirebaseDatabase.getInstance().getReference().child("message/" + roomId).push().setValue(newMessage);
       }
     });
