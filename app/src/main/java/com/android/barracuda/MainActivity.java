@@ -32,6 +32,7 @@ import com.android.barracuda.service.ServiceUtils;
 import com.android.barracuda.service.SinchService;
 import com.android.barracuda.service.cloud.CloudFunctions;
 import com.android.barracuda.ui.CallListFragment;
+import com.android.barracuda.ui.ContactListFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
 import com.facebook.accountkit.AccessToken;
@@ -315,7 +316,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     //TODO tabs
     adapter.addFrag(new CallListFragment(), STR_INFO_CALL);
 
-    adapter.addFrag(new ContactsActivity.PlaceholderFragment(), STR_CONTACTS_FRAGMENT);
+    adapter.addFrag(new ContactListFragment(), STR_CONTACTS_FRAGMENT);
 
     floatButton.setOnClickListener(((FriendsFragment) adapter.getItem(0)).onClickFloatButton.getInstance(this));
 
@@ -502,41 +503,41 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
                   .child("user")
                   .child(StaticConfig.UID)
                   .addListenerForSingleValueEvent(new ValueEventListener() {
-                  @Override
-                  public void onDataChange(DataSnapshot dataSnapshot) {
-                    if(dataSnapshot.getValue() != null) {
-                      HashMap userMap = (HashMap) dataSnapshot.getValue();
+                    @Override
+                    public void onDataChange(DataSnapshot dataSnapshot) {
+                      if (dataSnapshot.getValue() != null) {
+                        HashMap userMap = (HashMap) dataSnapshot.getValue();
 
-                      User user = new User();
-                      user.name = (String) userMap.get("name");
-                      user.avata = (String) userMap.get("avata");
-                      user.id = (String) userMap.get("id");
-                      user.phoneNumber = (String) userMap.get("phoneNumber");
+                        User user = new User();
+                        user.name = (String) userMap.get("name");
+                        user.avata = (String) userMap.get("avata");
+                        user.id = (String) userMap.get("id");
+                        user.phoneNumber = (String) userMap.get("phoneNumber");
 
-                      user.lifeTimeForMessage = Integer.parseInt(text);
+                        user.lifeTimeForMessage = Integer.parseInt(text);
 
-                      HashMap statusMap = (HashMap) userMap.get("status");
+                        HashMap statusMap = (HashMap) userMap.get("status");
 
-                      user.status = new Status();
-                      user.status.isOnline = (Boolean) statusMap.get("isOnline");
-                      user.status.text = (String) statusMap.get("text");
-                      user.status.timestamp = (Long) statusMap.get("timestamp");
+                        user.status = new Status();
+                        user.status.isOnline = (Boolean) statusMap.get("isOnline");
+                        user.status.text = (String) statusMap.get("text");
+                        user.status.timestamp = (Long) statusMap.get("timestamp");
 
-                      HashMap<String, Object> children = new HashMap<>();
+                        HashMap<String, Object> children = new HashMap<>();
 
-                      children.put(StaticConfig.UID, user);
+                        children.put(StaticConfig.UID, user);
 
-                      FirebaseDatabase.getInstance().getReference()
-                        .child("user")
-                        .updateChildren(children);
+                        FirebaseDatabase.getInstance().getReference()
+                          .child("user")
+                          .updateChildren(children);
+                      }
                     }
-                  }
 
-                  @Override
-                  public void onCancelled(DatabaseError databaseError) {
+                    @Override
+                    public void onCancelled(DatabaseError databaseError) {
 
-                  }
-                });
+                    }
+                  });
               }
             })
             .show();
