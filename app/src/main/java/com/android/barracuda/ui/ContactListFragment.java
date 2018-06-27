@@ -152,7 +152,10 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
         public void onDataChange(DataSnapshot dataSnapshot) {
           if (dataSnapshot.getValue() != null) {
             dataContactList.getListContact().add(contact);
-            adapter.notifyDataSetChanged();
+
+            if (adapter != null) {
+              adapter.notifyDataSetChanged();
+            }
           }
         }
 
@@ -225,7 +228,7 @@ class ListContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
     phoneNumber = phoneNumber.replaceAll("[\\+ \\(\\)]", "");
 
-    if(phoneNumber.length() > 10) {
+    if (phoneNumber.length() > 10) {
       phoneNumber = phoneNumber.substring(phoneNumber.length() - 10);
     }
 

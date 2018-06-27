@@ -49,6 +49,7 @@ import android.widget.TextView;
 import com.android.barracuda.BuildConfig;
 import com.android.barracuda.FriendProfileActivity;
 import com.android.barracuda.MainActivity;
+import com.android.barracuda.MediaChatActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
@@ -1021,6 +1022,18 @@ public class ChatActivity extends MainActivity
   public boolean onOptionsItemSelected(MenuItem item) {
 
     switch (item.getItemId()) {
+      case R.id.mediaHistory: {
+
+        Intent intent = new Intent(context, MediaChatActivity.class);
+        intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, nameFriend);
+        ArrayList<CharSequence> idFriend = new ArrayList<CharSequence>();
+        idFriend.add(this.idFriend.get(0));
+        intent.putCharSequenceArrayListExtra(StaticConfig.INTENT_KEY_CHAT_ID, idFriend);
+        intent.putExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID, roomId);
+        startActivity(intent);
+
+        break;
+      }
       case R.id.changeImg: {
         new LovelyCustomDialog(this)
           .setView(R.layout.background_selector)

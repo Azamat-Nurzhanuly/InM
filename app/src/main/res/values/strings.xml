@@ -4,6 +4,7 @@
     <string name="action_settings">Настройки</string>
     <string name="backgrounds">Обои</string>
     <string name="removeFromBlackList">Убрать из черного списка</string>
+    <string name="mediaHistory">Медиа</string>
     <string name="addFavorites">Добавить в избранные</string>
     <string name="removeFavorites">Убрать из избранных</string>
     <string name="download">Сохранить</string>

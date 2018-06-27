@@ -64,6 +64,10 @@
       android:parentActivityName=".MainActivity"
       android:screenOrientation="portrait" />
     <activity
+        android:name=".MediaChatActivity"
+        android:parentActivityName=".ui.ChatActivity"
+        android:screenOrientation="portrait" />
+    <activity
       android:name=".ui.AddGroupActivity"
       android:theme="@style/MyThemeNoActionbar" />
     <activity

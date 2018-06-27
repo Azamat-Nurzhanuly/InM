@@ -10,6 +10,12 @@
         android:id="@+id/removeFromBlackList"
         android:orderInCategory="105"
         android:title="@string/removeFromBlackList"/>
+
+    <item
+        android:id="@+id/mediaHistory"
+        android:orderInCategory="107"
+        android:title="@string/mediaHistory"
+        app:showAsAction="never"/>
     <item
         android:id="@+id/forbidden"
         android:orderInCategory="106"
