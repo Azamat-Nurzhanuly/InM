@@ -1,25 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
-<GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:columnCount="3"
-    android:gravity="center_vertical|center_horizontal"
-    android:rowCount="3"
-    android:useDefaultMargins="false"
-    android:backgroundTint="@color/colorTransparent">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="300dp"
+    android:layout_height="370dp"
+    android:background="@color/colorIndivateTab"
+    android:orientation="vertical">
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_above="@+id/cardView9"
+        android:layout_alignStart="@+id/cardView9"
+        android:layout_marginBottom="16dp"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper1"
@@ -31,16 +30,16 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView8"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignStart="@+id/cardView5"
+        android:layout_alignTop="@+id/cardView"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper2"
@@ -52,16 +51,16 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView6"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignStart="@+id/cardView4"
+        android:layout_alignTop="@+id/cardView8"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper3"
@@ -73,16 +72,17 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView9"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignTop="@+id/cardView5"
+        android:layout_toStartOf="@+id/cardView5"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper4"
@@ -95,16 +95,17 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView5"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignStart="@+id/cardView3"
+        android:layout_alignTop="@+id/cardView4"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper5"
@@ -116,16 +117,18 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView4"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_above="@+id/cardView3"
+        android:layout_alignStart="@+id/cardView2"
+        android:layout_marginBottom="20dp"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper6"
@@ -139,14 +142,13 @@
     <android.support.v7.widget.CardView
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignTop="@+id/cardView3"
+        android:layout_toStartOf="@+id/cardView3"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper7"
@@ -158,16 +160,17 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView3"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignTop="@+id/cardView2"
+        android:layout_toStartOf="@+id/cardView2"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper8"
@@ -179,23 +182,27 @@
     </android.support.v7.widget.CardView>
 
     <android.support.v7.widget.CardView
+        android:id="@+id/cardView2"
         android:layout_width="80dp"
         android:layout_height="100dp"
-        android:layout_columnWeight="1"
-        android:layout_gravity="center_vertical|center_horizontal"
-        android:layout_rowWeight="1"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginBottom="17dp"
+        android:layout_marginEnd="18dp"
         android:background="@color/colorTransparent"
         android:backgroundTint="@color/colorTransparent"
+        app:cardBackgroundColor="@color/colorTransparent"
         app:cardElevation="0dp"
-        app:cardPreventCornerOverlap="false"
-        app:cardBackgroundColor="@color/colorTransparent">
+        app:cardPreventCornerOverlap="false">
 
         <ImageView
             android:id="@+id/wallpaper9"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_alignParentTop="true"
+            android:layout_centerHorizontal="true"
             android:clickable="true"
             android:onClick="onBackgroundClick"
             app:srcCompat="@drawable/wallpapers9" />
     </android.support.v7.widget.CardView>
-</GridLayout>
+</RelativeLayout>
