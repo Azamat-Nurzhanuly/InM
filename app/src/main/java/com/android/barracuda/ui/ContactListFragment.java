@@ -126,8 +126,8 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
       contactNumber = contactNumber != null ? contactNumber.replaceAll("\\s", "").replaceAll("[^0-9]", "") : "";
 
       phoneContactInfo.number = contactNumber;
-      if (phoneContactInfo.number != null) {
-        dataContactList.getUniqueListContact().add(phoneContactInfo);
+      if (phoneContactInfo.number != null && !dataContactList.getUniqueListContact().contains(contactNumber)) {
+        dataContactList.getUniqueListContact().add(contactNumber);
         findIDPhoneNumber(phoneContactInfo);
       }
       cursor.moveToNext();

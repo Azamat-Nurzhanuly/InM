@@ -6,11 +6,11 @@ import java.util.Set;
 
 
 public class ListContact {
-  private Set<ContactModel> uniqueListContact;
+  private Set<String> uniqueListContact;
   private ArrayList<ContactModel> listContact;
 
 
-  public Set<ContactModel> getUniqueListContact() {
+  public Set<String> getUniqueListContact() {
     return uniqueListContact;
   }
 
