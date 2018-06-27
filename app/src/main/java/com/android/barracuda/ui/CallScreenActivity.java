@@ -157,6 +157,11 @@ public class CallScreenActivity extends ChatActivity {
         if (call.getState() == CallState.ESTABLISHED) {
           addRemoteView();
         }
+
+        AudioManager audioManager = (AudioManager) getContext().getSystemService(Context.AUDIO_SERVICE);
+        assert audioManager != null;
+        audioManager.setMode(AudioManager.STREAM_VOICE_CALL);
+        audioManager.setSpeakerphoneOn(true);
       } else {
         mCallState.setText("Аудио звонок");
       }
@@ -287,6 +292,7 @@ public class CallScreenActivity extends ChatActivity {
     //VIDEO CALL LISTENERS
     @Override
     public void onVideoTrackAdded(Call call) {
+
       Log.d(TAG, "Video track added");
       addRemoteView();
     }
@@ -332,6 +338,7 @@ public class CallScreenActivity extends ChatActivity {
     }
     final VideoController vc = getSinchServiceInterface().getVideoController();
     if (vc != null) {
+
       LinearLayout view = (LinearLayout) findViewById(R.id.remoteVideo);
       view.addView(vc.getRemoteView());
       mRemoteVideoViewAdded = true;

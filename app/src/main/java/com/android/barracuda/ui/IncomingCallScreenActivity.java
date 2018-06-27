@@ -73,7 +73,7 @@ public class IncomingCallScreenActivity extends ChatActivity {
   }
 
   @Override
-  protected void onServiceConnected() {
+  public void onServiceConnected() {
     Call call = getSinchServiceInterface().getCall(mCallId);
     if (call != null) {
       call.addCallListener(new SinchCallListener());

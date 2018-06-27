@@ -2,14 +2,14 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
+  android:background="@color/colorTransparent"
+  android:clickable="true"
+  android:longClickable="true"
+  android:onClick="onMessageMark"
   android:orientation="horizontal"
   android:paddingBottom="5dp"
   android:paddingLeft="16dp"
-  android:paddingRight="16dp"
-    android:onClick="onMessageMark"
-    android:longClickable="true"
-    android:clickable="true"
-    android:background="@color/colorTransparent">
+  android:paddingRight="16dp">
 
   <de.hdodenhof.circleimageview.CircleImageView
     android:id="@+id/imageView2"
@@ -37,7 +37,17 @@
       android:maxHeight="200dp"
       android:maxWidth="200dp"
       android:minHeight="200dp"
-      android:minWidth="200dp" />
+      android:minWidth="200dp"/>
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignEnd="@id/videoContentUser"
+      android:layout_marginTop="70dp"
+      android:layout_marginRight="10dp"
+      android:text="Воспроизвести видео"
+      android:textAlignment="center"
+      android:textSize="17dp" />
   </RelativeLayout>
 
 </RelativeLayout>

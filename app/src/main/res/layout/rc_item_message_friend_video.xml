@@ -34,6 +34,16 @@
       android:maxHeight="200dp"
       android:maxWidth="200dp"
       android:minHeight="200dp"
-      android:minWidth="200dp" />
+      android:minWidth="200dp"/>
+
+    <TextView
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignStart="@id/videoContentFriend"
+      android:layout_marginTop="70dp"
+      android:layout_marginLeft="10dp"
+      android:text="Воспроизвести видео"
+      android:textAlignment="center"
+      android:textSize="17dp" />
   </RelativeLayout>
 </RelativeLayout>

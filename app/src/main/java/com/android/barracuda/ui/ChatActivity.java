@@ -53,6 +53,7 @@ import com.android.barracuda.MediaChatActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.inter.CallListener;
 import com.android.barracuda.inter.ClickListenerChatFirebase;
 import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.ContactModel;
@@ -120,7 +121,7 @@ import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_VIDEO;
 public class ChatActivity extends MainActivity
   implements View.OnClickListener,
   ClickListenerChatFirebase,
-  SinchService.StartFailedListener {
+  SinchService.StartFailedListener, CallListener {
 
   private RecyclerView recyclerChat;
   public static final int VIEW_TYPE_USER_MESSAGE_TEXT = 0;
@@ -176,8 +177,7 @@ public class ChatActivity extends MainActivity
   private ImageButton gallery_btn, photo_btn, video_btn, audio_btn, location_btn, contact_btn;
   private boolean attach_hidden = true;
 
-  private static final SimpleDateFormat d_m_y_formatter = new SimpleDateFormat(
-    "yyyy-MMMM-dd, EEEE");
+  private static final SimpleDateFormat d_m_y_formatter = new SimpleDateFormat("yyyy-MMMM-dd, EEEE");
 
 
   //audio recording
@@ -1042,11 +1042,11 @@ public class ChatActivity extends MainActivity
         break;
       }
       case R.id.audio_call: {
-        audioCall();
+        audioCall((String) idFriend.get(0));
         break;
       }
       case R.id.video_call: {
-        videoCall();
+        videoCall((String) idFriend.get(0));
         break;
       }
       case android.R.id.home: {
@@ -1264,49 +1264,6 @@ public class ChatActivity extends MainActivity
         break;
     }
   }
-
-  private void audioCall() {
-
-    String userId = (String) idFriend.get(0);
-    if (userId.isEmpty()) {
-      return;
-    }
-
-    try {
-      Call call = getSinchServiceInterface().callUser(userId);
-      if (call == null) {
-        return;
-      }
-      String callId = call.getCallId();
-      Intent callScreen = new Intent(this, CallScreenActivity.class);
-      callScreen.putExtra(SinchService.CALL_ID, callId);
-      startActivity(callScreen);
-    } catch (MissingPermissionException e) {
-      ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, 0);
-    }
-  }
-
-  private void videoCall() {
-
-    String userId = (String) idFriend.get(0);
-    if (userId.isEmpty()) {
-      return;
-    }
-
-    try {
-      Call call = getSinchServiceInterface().callUserVideo(userId);
-      if (call == null) {
-        return;
-      }
-      String callId = call.getCallId();
-      Intent callScreen = new Intent(this, CallScreenActivity.class);
-      callScreen.putExtra(SinchService.CALL_ID, callId);
-      startActivity(callScreen);
-    } catch (MissingPermissionException e) {
-      ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, 0);
-    }
-  }
-
 
   private void sendTextMessage() {
     String content = editWriteMessage.getText().toString().trim();
@@ -1663,7 +1620,7 @@ public class ChatActivity extends MainActivity
   }
 
   @Override
-  protected void onServiceConnected() {
+  public void onServiceConnected() {
     getSinchServiceInterface().setStartListener(this);
 
     audioVideoServiceConnected = true;
@@ -1674,6 +1631,48 @@ public class ChatActivity extends MainActivity
 
     if (video_call != null && !isInBlackList) {
       video_call.setEnabled(true);
+    }
+  }
+
+  @Override
+  public void audioCall(String id) {
+
+    if (id.isEmpty()) {
+      return;
+    }
+
+    try {
+      Call call = getSinchServiceInterface().callUser(id);
+      if (call == null) {
+        return;
+      }
+      String callId = call.getCallId();
+      Intent callScreen = new Intent(this, CallScreenActivity.class);
+      callScreen.putExtra(SinchService.CALL_ID, callId);
+      startActivity(callScreen);
+    } catch (MissingPermissionException e) {
+      ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, 0);
+    }
+
+  }
+
+  @Override
+  public void videoCall(String id) {
+    if (id.isEmpty()) {
+      return;
+    }
+
+    try {
+      Call call = getSinchServiceInterface().callUserVideo(id);
+      if (call == null) {
+        return;
+      }
+      String callId = call.getCallId();
+      Intent callScreen = new Intent(this, CallScreenActivity.class);
+      callScreen.putExtra(SinchService.CALL_ID, callId);
+      startActivity(callScreen);
+    } catch (MissingPermissionException e) {
+      ActivityCompat.requestPermissions(this, new String[]{e.getRequiredPermission()}, 0);
     }
   }
 }
@@ -1786,6 +1785,9 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           if (((ItemMessageFriendHolder) holder).audioContent != null) {
             ((ItemMessageFriendHolder) holder).audioContent.setVisibility(View.VISIBLE);
             //TODO AUDIO PLAYER
+            if (((ItemMessageFriendHolder) holder).dateTime != null) {
+              ((ItemMessageFriendHolder) holder).dateTime.setText(new SimpleDateFormat("yyyy-MMMM-dd, EEEE").format((consersation.getListMessageData().get(position).timestamp)));
+            }
           }
         }
 
@@ -1881,10 +1883,10 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           if (((ItemMessageUserHolder) holder).audioContent != null) {
             ((ItemMessageUserHolder) holder).audioContent.setVisibility(View.VISIBLE);
             if (((ItemMessageUserHolder) holder).totalTime != null) {
-              ((ItemMessageUserHolder) holder).totalTime.setText("test");
+//              ((ItemMessageUserHolder) holder).totalTime.setText("test");
             }
             if (((ItemMessageUserHolder) holder).dateTime != null) {
-              ((ItemMessageUserHolder) holder).dateTime.setText(String.valueOf(consersation.getListMessageData().get(position).timestamp));
+              ((ItemMessageUserHolder) holder).dateTime.setText(new SimpleDateFormat("yyyy-MMMM-dd, EEEE").format((consersation.getListMessageData().get(position).timestamp)));
             }
 
             //TODO AUDIO PLAYER

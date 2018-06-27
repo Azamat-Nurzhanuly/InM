@@ -1,5 +1,6 @@
 package com.android.barracuda.ui;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -9,6 +10,7 @@ import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.LinearLayoutManager;
@@ -20,6 +22,7 @@ import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.CallDB;
 import com.android.barracuda.data.StaticConfig;
@@ -30,6 +33,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
+import com.sinch.android.rtc.MissingPermissionException;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import java.text.SimpleDateFormat;
@@ -50,6 +54,7 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
   private ArrayList<String> listFriendID = null;
   private LovelyProgressDialog dialogFindAllCalls;
   private SwipeRefreshLayout mSwipeRefreshLayout;
+
 
   public static int ACTION_START_CALL = 1;
 
@@ -227,19 +232,50 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                     case 0:
                       audioCall();
                     case 1:
-                      break;
+                      videoCall();
                   }
                 }
 
-
                 private void audioCall() {
 
-                  //TODO AUDIO CALL
-                  Intent callScreen = new Intent(context, CallScreenActivity.class);
-                  callScreen.putExtra(SinchService.CALL_ID, "");
-                  fragment.startActivityForResult(callScreen, CallListFragment.ACTION_START_CALL);
+                  if (id.isEmpty()) {
+                    return;
+                  }
 
+                  try {
+                    if (context instanceof MainActivity) {
+                      com.sinch.android.rtc.calling.Call call = ((MainActivity) context).getSinchServiceInterface().callUser(id);
+                      if (call == null) {
+                        return;
+                      }
+                      String callId = call.getCallId();
+                      Intent callScreen = new Intent(context, CallScreenActivity.class);
+                      callScreen.putExtra(SinchService.CALL_ID, callId);
+                      fragment.startActivity(callScreen);
+                    }
+                  } catch (MissingPermissionException e) {
+                    ActivityCompat.requestPermissions((Activity) context, new String[]{e.getRequiredPermission()}, 0);
+                  }
 
+                }
+
+                private void videoCall() {
+                  if (id.isEmpty()) {
+                    return;
+                  }
+
+                  try {
+                    com.sinch.android.rtc.calling.Call call = ((MainActivity) context).getSinchServiceInterface().callUserVideo(id);
+                    if (call == null) {
+                      return;
+                    }
+                    String callId = call.getCallId();
+                    Intent callScreen = new Intent(context, CallScreenActivity.class);
+                    callScreen.putExtra(SinchService.CALL_ID, callId);
+                    fragment.startActivity(callScreen);
+                  } catch (MissingPermissionException e) {
+                    ActivityCompat.requestPermissions((Activity) context, new String[]{e.getRequiredPermission()}, 0);
+                  }
                 }
               }).show();
             return true;

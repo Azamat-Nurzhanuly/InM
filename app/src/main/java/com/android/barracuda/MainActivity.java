@@ -655,7 +655,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     }
   }
 
-  protected void onServiceConnected() {
+  public void onServiceConnected() {
 
     if (user != null) {
       if (!user.getUid().equals(getSinchServiceInterface().getUserName())) {
@@ -667,11 +667,11 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     }
   }
 
-  protected void onServiceDisconnected() {
+  public void onServiceDisconnected() {
     // for subclasses
   }
 
-  protected SinchService.SinchServiceInterface getSinchServiceInterface() {
+  public SinchService.SinchServiceInterface getSinchServiceInterface() {
     return mSinchServiceInterface;
   }
 }
