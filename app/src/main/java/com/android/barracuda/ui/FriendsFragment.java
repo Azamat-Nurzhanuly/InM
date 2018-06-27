@@ -5,11 +5,9 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.support.annotation.NonNull;
@@ -26,16 +24,10 @@ import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.TextView;
-import android.widget.Toast;
 
-import com.android.barracuda.ContactsActivity;
 import com.android.barracuda.MainActivity;
-import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.R;
-import com.android.barracuda.data.FriendDB;
-import com.android.barracuda.data.SharedPreferenceHelper;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
@@ -67,13 +59,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import de.hdodenhof.circleimageview.CircleImageView;
-
-import static android.content.Context.MODE_PRIVATE;
-import static com.android.barracuda.BarracudaActivity.COLOR_BLUE;
-import static com.android.barracuda.BarracudaActivity.COLOR_DARK_BLUE;
-import static com.android.barracuda.BarracudaActivity.COLOR_ORANGE;
-import static com.android.barracuda.BarracudaActivity.COLOR_PURPLE;
-import static com.android.barracuda.ui.ListGroupsAdapter.listFriend;
 
 public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -120,16 +105,18 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
       }
     };
-    if (dataListFriend == null) {
-      dataListFriend = FriendDB.getInstance(getContext()).getListFriend();
-      if (dataListFriend.getListFriend().size() > 0) {
-        listFriendID = new ArrayList<>();
-        for (Friend friend : dataListFriend.getListFriend()) {
-          listFriendID.add(friend.id);
-        }
-        detectFriendOnline.start();
-      }
-    }
+
+    dataListFriend = new ListFriend();
+//    if (dataListFriend == null) {
+//      dataListFriend = FriendDB.getInstance(getContext()).getListFriend();
+//      if (dataListFriend.getListFriend().size() > 0) {
+//        listFriendID = new ArrayList<>();
+//        for (Friend friend : dataListFriend.getListFriend()) {
+//          listFriendID.add(friend.id);
+//        }
+//        detectFriendOnline.start();
+//      }
+//    }
 
     View layout = inflater.inflate(R.layout.fragment_people, container, false);
     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -191,7 +178,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     listFriendID.clear();
     dataListFriend.getListFriend().clear();
     adapter.notifyDataSetChanged();
-    FriendDB.getInstance(getContext()).dropDB();
+//    FriendDB.getInstance(getContext()).dropDB();
     detectFriendOnline.cancel();
     getListFriendUId();
   }
@@ -314,7 +301,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         addFriend(idFriend, true);
         listFriendID.add(idFriend);
         dataListFriend.getListFriend().add(userInfo);
-        FriendDB.getInstance(getContext()).addFriend(userInfo);
+//        FriendDB.getInstance(getContext()).addFriend(userInfo);
         adapter.notifyDataSetChanged();
       }
     }
@@ -399,7 +386,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
           Iterator listKey = mapRecord.keySet().iterator();
           while (listKey.hasNext()) {
             String key = listKey.next().toString();
-            listFriendID.add(mapRecord.get(key).toString());
+            if (!listFriendID.contains(mapRecord.get(key).toString()))
+              listFriendID.add(mapRecord.get(key).toString());
           }
           getAllFriendInfo(0);
         } else {
@@ -434,7 +422,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
             user.id = id;
             user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
             dataListFriend.getListFriend().add(user);
-            FriendDB.getInstance(getContext()).addFriend(user);
+//            FriendDB.getInstance(getContext()).addFriend(user);
           }
           getAllFriendInfo(index + 1);
         }
@@ -848,7 +836,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
   @Override
   public int getItemCount() {
-    return listFriend.getListFriend() != null ? listFriend.getListFriend().size() : 0;
+    return listFriend != null ? (listFriend.getListFriend() != null ? listFriend.getListFriend().size() : 0) : 0;
   }
 }
 

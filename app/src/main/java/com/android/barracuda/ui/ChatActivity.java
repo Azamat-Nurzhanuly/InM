@@ -281,7 +281,7 @@ public class ChatActivity extends MainActivity
       .child("lifeTimeForMessage").addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
-        if(dataSnapshot.getValue() != null) {
+        if (dataSnapshot.getValue() != null) {
           timeout = (Long) dataSnapshot.getValue();
         }
       }
@@ -300,7 +300,7 @@ public class ChatActivity extends MainActivity
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
 
-          if(dataSnapshot.getValue() != null) {
+          if (dataSnapshot.getValue() != null) {
 
             isInBlackList = true;
 
@@ -343,7 +343,7 @@ public class ChatActivity extends MainActivity
       .addListenerForSingleValueEvent(new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
-          if(dataSnapshot.getValue() != null) {
+          if (dataSnapshot.getValue() != null) {
 
             isInBlackList = true;
 
@@ -683,9 +683,6 @@ public class ChatActivity extends MainActivity
               }
             }
 
-
-            consersation.getListMessageData().add(newMessage);
-
             {
               String date = d_m_y_formatter.format(newMessage.timestamp);
               String currentDate = d_m_y_formatter.format(new Timestamp(System.currentTimeMillis()));
@@ -709,6 +706,7 @@ public class ChatActivity extends MainActivity
               }
             }
 
+            consersation.getListMessageData().add(newMessage);
             adapter.notifyDataSetChanged();
             linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
           }
@@ -1115,7 +1113,7 @@ public class ChatActivity extends MainActivity
         FirebaseDatabase.getInstance().getReference().child("blacklist").child(StaticConfig.UID).orderByValue().equalTo(idFriend.get(0).toString()).addListenerForSingleValueEvent(new ValueEventListener() {
           @Override
           public void onDataChange(DataSnapshot dataSnapshot) {
-            if(dataSnapshot.getValue() != null) {
+            if (dataSnapshot.getValue() != null) {
 
               String idRemoval = ((HashMap) dataSnapshot.getValue()).keySet().iterator().next().toString();
               FirebaseDatabase.getInstance().getReference().child("blacklist")
@@ -1746,6 +1744,10 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     this.activity.messageMap.put(holder.itemView.toString().substring(30, 38), position);
     this.activity.messageViews.put(holder.itemView.toString().substring(30, 38), holder.itemView);
 
+    if (holder instanceof ItemMessageDate) {
+      ((ItemMessageDate) holder).dateContent.setText(consersation.getListMessageData().get(position).date);
+    }
+
     if (holder instanceof ItemMessageFriendHolder) {
       if (consersation.getListMessageData().get(position).text != null) {
         if (((ItemMessageFriendHolder) holder).txtContent != null) {
@@ -1899,9 +1901,6 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
       }
 
-
-    } else if (holder instanceof ItemMessageDate) {
-      ((ItemMessageDate) holder).dateContent.setText(consersation.getListMessageData().get(position).date);
 
     }
   }
