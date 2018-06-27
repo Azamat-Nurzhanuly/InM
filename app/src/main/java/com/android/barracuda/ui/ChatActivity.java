@@ -292,92 +292,95 @@ public class ChatActivity extends MainActivity
       }
     });
 
-    FirebaseDatabase.getInstance().getReference()
-      .child("blacklist")
-      .child(StaticConfig.UID)
-      .orderByValue().equalTo(idFriend.get(0).toString())
-      .addListenerForSingleValueEvent(new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
+    if(idFriend != null) {
+      FirebaseDatabase.getInstance().getReference()
+        .child("blacklist")
+        .child(StaticConfig.UID)
+        .orderByValue()
+        .equalTo(idFriend.get(0).toString())
+        .addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
 
-          if (dataSnapshot.getValue() != null) {
+            if (dataSnapshot.getValue() != null) {
 
-            isInBlackList = true;
+              isInBlackList = true;
 
-            audio_call.setVisible(false);
-            audio_call.setEnabled(false);
+              audio_call.setVisible(false);
+              audio_call.setEnabled(false);
 
-            video_call.setVisible(false);
-            video_call.setEnabled(false);
+              video_call.setVisible(false);
+              video_call.setEnabled(false);
 
-            media.setVisible(false);
-            media.setEnabled(false);
+              media.setVisible(false);
+              media.setEnabled(false);
 
-            editWriteMessage.setEnabled(false);
-            editWriteMessage.setVisibility(View.INVISIBLE);
+              editWriteMessage.setEnabled(false);
+              editWriteMessage.setVisibility(View.INVISIBLE);
 
-            btnSend.setEnabled(false);
-            btnSend.setVisibility(View.INVISIBLE);
+              btnSend.setEnabled(false);
+              btnSend.setVisibility(View.INVISIBLE);
 
-            parentLayout.setVisibility(View.INVISIBLE);
-            parentLayout.setEnabled(false);
+              parentLayout.setVisibility(View.INVISIBLE);
+              parentLayout.setEnabled(false);
 
-            line.setEnabled(false);
-            line.setVisibility(View.INVISIBLE);
+              line.setEnabled(false);
+              line.setVisibility(View.INVISIBLE);
 
-            removeFromBlackList.setEnabled(true);
-            removeFromBlackList.setVisible(true);
+              removeFromBlackList.setEnabled(true);
+              removeFromBlackList.setVisible(true);
+            }
           }
-        }
 
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
 
-        }
-      });
-
-    FirebaseDatabase.getInstance().getReference()
-      .child("blacklist")
-      .child(idFriend.get(0).toString())
-      .orderByValue().equalTo(StaticConfig.UID)
-      .addListenerForSingleValueEvent(new ValueEventListener() {
-        @Override
-        public void onDataChange(DataSnapshot dataSnapshot) {
-          if (dataSnapshot.getValue() != null) {
-
-            isInBlackList = true;
-
-            audio_call.setVisible(false);
-            audio_call.setEnabled(false);
-
-            video_call.setVisible(false);
-            video_call.setEnabled(false);
-
-            media.setVisible(false);
-            media.setEnabled(false);
-
-            editWriteMessage.setEnabled(false);
-            editWriteMessage.setVisibility(View.INVISIBLE);
-
-            btnSend.setEnabled(false);
-            btnSend.setVisibility(View.INVISIBLE);
-
-            parentLayout.setVisibility(View.INVISIBLE);
-            parentLayout.setEnabled(false);
-
-            line.setEnabled(false);
-            line.setVisibility(View.INVISIBLE);
-
-            forbidden.setEnabled(true);
-            forbidden.setVisible(true);
           }
-        }
+        });
 
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
+      FirebaseDatabase.getInstance().getReference()
+        .child("blacklist")
+        .child(idFriend.get(0).toString())
+        .orderByValue().equalTo(StaticConfig.UID)
+        .addListenerForSingleValueEvent(new ValueEventListener() {
+          @Override
+          public void onDataChange(DataSnapshot dataSnapshot) {
+            if (dataSnapshot.getValue() != null) {
 
-        }
-      });
+              isInBlackList = true;
+
+              audio_call.setVisible(false);
+              audio_call.setEnabled(false);
+
+              video_call.setVisible(false);
+              video_call.setEnabled(false);
+
+              media.setVisible(false);
+              media.setEnabled(false);
+
+              editWriteMessage.setEnabled(false);
+              editWriteMessage.setVisibility(View.INVISIBLE);
+
+              btnSend.setEnabled(false);
+              btnSend.setVisibility(View.INVISIBLE);
+
+              parentLayout.setVisibility(View.INVISIBLE);
+              parentLayout.setEnabled(false);
+
+              line.setEnabled(false);
+              line.setVisibility(View.INVISIBLE);
+
+              forbidden.setEnabled(true);
+              forbidden.setVisible(true);
+            }
+          }
+
+          @Override
+          public void onCancelled(DatabaseError databaseError) {
+
+          }
+        });
+    }
 
     consersation = new Consersation();
     messageMap = new HashMap<>();
