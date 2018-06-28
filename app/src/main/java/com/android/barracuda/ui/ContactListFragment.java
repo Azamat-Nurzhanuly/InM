@@ -1,10 +1,13 @@
 package com.android.barracuda.ui;
 
+import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.database.Cursor;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
@@ -17,8 +20,10 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
@@ -39,6 +44,7 @@ import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -52,11 +58,32 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
   private LovelyProgressDialog dialogFindAllCalls;
   private SwipeRefreshLayout mSwipeRefreshLayout;
 
+  private static final int PERMISSIONS_REQUEST_READ_CONTACTS = 100;
 
   @Override
   public void onAttach(Context context) {
     super.onAttach(context);
-    getAllPhoneContacts();
+    getAllContactsWithPermissionWrapper();
+  }
+
+  private void getAllContactsWithPermissionWrapper() {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M && this.getContext().checkSelfPermission(Manifest.permission.READ_CONTACTS) != PackageManager.PERMISSION_GRANTED) {
+      requestPermissions(new String[]{Manifest.permission.READ_CONTACTS}, PERMISSIONS_REQUEST_READ_CONTACTS);
+    } else {
+      getAllPhoneContacts();
+    }
+  }
+
+  @Override
+  public void onRequestPermissionsResult(int requestCode, String[] permissions,
+                                         int[] grantResults) {
+    if (requestCode == PERMISSIONS_REQUEST_READ_CONTACTS) {
+      if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+        getAllContactsWithPermissionWrapper();
+      } else {
+        Toast.makeText(this.getContext(), "Пожалуйста, предоставьте доступ, чтобы пользовать полным функционалом приложения.", Toast.LENGTH_SHORT).show();
+      }
+    }
   }
 
   @Override
@@ -365,7 +392,7 @@ class ListContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
   @Override
   public int getItemCount() {
-    return listContact.getListContact() != null ? listContact.getListContact().size() : 0;
+    return (listContact != null && listContact.getListContact() != null) ? listContact.getListContact().size() : 0;
   }
 }
 

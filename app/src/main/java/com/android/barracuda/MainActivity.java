@@ -191,6 +191,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       public void onAuthStateChanged(@NonNull FirebaseAuth firebaseAuth) {
 
         user = firebaseAuth.getCurrentUser();
+
         if (user != null) {
           StaticConfig.UID = user.getUid();
           Log.d(TAG, "onAuthStateChanged:signed_in:" + user.getUid());
@@ -246,11 +247,22 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
         HashMap hashUser = (HashMap) dataSnapshot.getValue();
+
+        if (hashUser == null) return;
+
         User userInfo = new User();
-        assert hashUser != null;
-        userInfo.name = (String) hashUser.get("name");
-        userInfo.phoneNumber = (String) hashUser.get("phoneNumber");
-        userInfo.avata = (String) hashUser.get("avata");
+        if (hashUser.containsKey("name")) {
+          userInfo.name = (String) hashUser.get("name");
+        }
+
+        if (hashUser.containsKey("phoneNumber")) {
+          userInfo.phoneNumber = (String) hashUser.get("phoneNumber");
+        }
+
+        if (hashUser.containsKey("avata")) {
+          userInfo.avata = (String) hashUser.get("avata");
+        }
+
         SharedPreferenceHelper.getInstance(MainActivity.this).saveUserInfo(userInfo);
       }
 
