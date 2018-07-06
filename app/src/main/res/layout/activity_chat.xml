@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
@@ -7,10 +8,10 @@
   android:orientation="vertical">
 
   <ImageView
-      android:id="@+id/wallpaper"
-      android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:scaleType="centerCrop"/>
+    android:id="@+id/wallpaper"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:scaleType="centerCrop" />
 
   <View
     android:id="@+id/line"
@@ -31,24 +32,23 @@
   <EditText
     android:id="@+id/editWriteMessage"
     android:layout_width="match_parent"
-    android:layout_height="45dp"
+    android:layout_height="36dp"
     android:layout_alignParentBottom="true"
-    android:layout_alignParentStart="true"
-    android:layout_marginEnd="45dp"
     android:layout_marginTop="10dp"
+    android:layout_toStartOf="@+id/btnSend"
     android:background="@drawable/edittext_boder"
     android:drawablePadding="20dp"
     android:inputType="textLongMessage"
     android:maxLines="1"
     android:paddingEnd="7dp"
-    android:paddingStart="7dp"
+    android:paddingStart="40dp"
     android:textColorHint="#aeafaf"
     android:textSize="15sp" />
 
   <ImageButton
     android:id="@+id/btnSend"
-    android:layout_width="45dp"
-    android:layout_height="45dp"
+    android:layout_width="36dp"
+    android:layout_height="36dp"
     android:layout_alignParentBottom="true"
     android:layout_alignParentEnd="true"
     android:background="#00000000"
@@ -65,15 +65,27 @@
     android:layout_height="match_parent"
     tools:context=".ui.ChatActivity">
 
+    <ImageButton
+      android:id="@+id/attach_button"
+      android:layout_width="40dp"
+      android:layout_height="50dp"
+      android:layout_alignParentStart="true"
+      android:layout_alignTop="@+id/record_button"
+      android:background="@color/colorTransparent"
+      app:srcCompat="@drawable/ic_attach" />
+
     <com.devlomi.record_view.RecordView
       android:id="@+id/record_view"
       android:layout_width="match_parent"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
-      android:layout_toLeftOf="@id/record_button"
+      android:layout_toEndOf="@id/attach_button"
+      android:layout_toStartOf="@+id/record_button"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
       app:slide_to_cancel_margin_right="10dp"
-      app:slide_to_cancel_text="Slide To Cancel" />
+      app:slide_to_cancel_text="Slide To Cancel">
+
+    </com.devlomi.record_view.RecordView>
 
     <com.devlomi.record_view.RecordButton
       android:id="@+id/record_button"

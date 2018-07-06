@@ -182,6 +182,7 @@ public class ChatActivity extends MainActivity
 
   //audio recording
   private RecordButton recordButton;
+  private ImageButton media;
   private MediaRecorder recorder = null;
   // Requesting permission to RECORD_AUDIO
   private boolean permissionToRecordAccepted = false;
@@ -220,7 +221,6 @@ public class ChatActivity extends MainActivity
 
   MenuItem audio_call;
   MenuItem video_call;
-  MenuItem media;
   MenuItem favorite;
   MenuItem removeFromBlackList;
   MenuItem forbidden;
@@ -229,6 +229,8 @@ public class ChatActivity extends MainActivity
   private RelativeLayout parentLayout;
   private View line;
   private LovelyProgressDialog dialogWaitDeleting;
+  private ChildEventListener onMessageChangedListener;
+  private DatabaseReference roomRef;
 
   @Override
   public boolean onCreateOptionsMenu(Menu menu) {
@@ -236,10 +238,9 @@ public class ChatActivity extends MainActivity
 
     audio_call = menu.getItem(1);
     video_call = menu.getItem(2);
-    media = menu.getItem(3);
-    favorite = menu.getItem(4);
-    removeFromBlackList = menu.getItem(5);
-    forbidden = menu.getItem(6);
+    favorite = menu.getItem(3);
+    removeFromBlackList = menu.getItem(4);
+    forbidden = menu.getItem(5);
 
     removeFromBlackList.setEnabled(false);
     removeFromBlackList.setVisible(false);
@@ -312,7 +313,7 @@ public class ChatActivity extends MainActivity
               video_call.setVisible(false);
               video_call.setEnabled(false);
 
-              media.setVisible(false);
+              media.setVisibility(View.INVISIBLE);
               media.setEnabled(false);
 
               editWriteMessage.setEnabled(false);
@@ -355,7 +356,7 @@ public class ChatActivity extends MainActivity
               video_call.setVisible(false);
               video_call.setEnabled(false);
 
-              media.setVisible(false);
+              media.setVisibility(View.INVISIBLE);
               media.setEnabled(false);
 
               editWriteMessage.setEnabled(false);
@@ -471,6 +472,16 @@ public class ChatActivity extends MainActivity
   }
 
   private void initAttachFileButtons() {
+
+    media = (ImageButton) findViewById(R.id.attach_button);
+
+    media.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        openAttachItemMenu();
+      }
+    });
+
     attach_file_view = (LinearLayout) findViewById(R.id.reveal_items);
     attach_file_view.setVisibility(View.INVISIBLE);
 
@@ -614,7 +625,8 @@ public class ChatActivity extends MainActivity
       recyclerChat = (RecyclerView) findViewById(R.id.recyclerChat);
       recyclerChat.setLayoutManager(linearLayoutManager);
       adapter = new ListMessageAdapter(this, consersation, bitmapAvataFriend, bitmapAvataUser, this, this);
-      FirebaseDatabase.getInstance().getReference().child("message/" + roomId).addChildEventListener(new ChildEventListener() {
+      roomRef = FirebaseDatabase.getInstance().getReference().child("message/" + roomId);
+      onMessageChangedListener = roomRef.addChildEventListener(new ChildEventListener() {
         @Override
         public void onChildAdded(DataSnapshot dataSnapshot, String s) {
           if (dataSnapshot.getValue() != null) {
@@ -624,6 +636,7 @@ public class ChatActivity extends MainActivity
             newMessage.idSender = (String) mapMessage.get("idSender");
             newMessage.idReceiver = (String) mapMessage.get("idReceiver");
             newMessage.timestamp = (long) mapMessage.get("timestamp");
+            newMessage.watched = (Boolean) mapMessage.get("watched");
 
             if (mapMessage.get("text") != null) {
               newMessage.text = (String) mapMessage.get("text");
@@ -709,6 +722,22 @@ public class ChatActivity extends MainActivity
               }
             }
 
+            System.out.println("ASDADASDASDASDASDASDASDASDASDA watched con");
+            System.out.println(newMessage.idSender);
+            System.out.println(StaticConfig.UID);
+            System.out.println(dataSnapshot.getKey());
+
+            if ((newMessage.watched == null || !newMessage.watched) && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              System.out.println("ASDADASDASDASDASDASDASDASDASDA watched IN TRUE");
+              System.out.println(newMessage.idSender);
+              System.out.println(StaticConfig.UID);
+              System.out.println(dataSnapshot.getKey());
+
+              newMessage.watched = true;
+              FirebaseDatabase.getInstance().getReference().child("message/" + roomId + "/" + dataSnapshot.getKey()).setValue(newMessage);
+            }
+
             consersation.getListMessageData().add(newMessage);
             adapter.notifyDataSetChanged();
             linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
@@ -717,7 +746,66 @@ public class ChatActivity extends MainActivity
 
         @Override
         public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+          if (dataSnapshot.getValue() != null) {
 
+            HashMap mapMessage = (HashMap) dataSnapshot.getValue();
+
+            Message newMessage = new Message();
+            newMessage.idSender = (String) mapMessage.get("idSender");
+            newMessage.idReceiver = (String) mapMessage.get("idReceiver");
+            newMessage.timestamp = (long) mapMessage.get("timestamp");
+            newMessage.watched = (Boolean) mapMessage.get("watched");
+
+            if (mapMessage.get("text") != null) {
+              newMessage.text = (String) mapMessage.get("text");
+            }
+
+
+            if (mapMessage.get("fileModel") != null) {
+              FileModel fileModel = new FileModel();
+              HashMap fileHash = (HashMap) mapMessage.get("fileModel");
+              if (fileHash.containsKey("type"))
+                fileModel.type = (String) fileHash.get("type");
+
+              if (fileHash.containsKey("name_file"))
+                fileModel.name_file = (String) fileHash.get("name_file");
+
+              if (fileHash.containsKey("url_file"))
+                fileModel.url_file = (String) fileHash.get("url_file");
+
+              newMessage.fileModel = fileModel;
+            }
+
+            if (mapMessage.get("contact") != null) {
+              ContactModel contact = new ContactModel();
+              HashMap fileHash = (HashMap) mapMessage.get("contact");
+              if (fileHash.containsKey("number"))
+                contact.number = (String) fileHash.get("number");
+
+              if (fileHash.containsKey("name"))
+                contact.name = (String) fileHash.get("name");
+
+              newMessage.contact = contact;
+            }
+
+            if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              newMessage.incognito = (Boolean) mapMessage.get("incognito");
+            }
+
+
+            for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+
+              Message message = consersation.getListMessageData().get(i);
+
+              if (Objects.equals(message, newMessage)) {
+
+                consersation.getListMessageData().get(i).watched = newMessage.watched;
+              }
+            }
+
+            adapter.notifyDataSetChanged();
+          }
         }
 
         @Override
@@ -762,6 +850,15 @@ public class ChatActivity extends MainActivity
     });
   }
 
+  @Override
+  protected void onStop() {
+
+    if(onMessageChangedListener != null && roomRef != null) {
+      roomRef.removeEventListener(onMessageChangedListener);
+    }
+
+    super.onStop();
+  }
 
   @SuppressLint("Recycle")
   @Override
@@ -909,7 +1006,7 @@ public class ChatActivity extends MainActivity
 
       if (media != null) {
         media.setEnabled(false);
-        media.setVisible(false);
+        media.setVisibility(View.INVISIBLE);
       }
 
       if (audio_call != null) {
@@ -930,7 +1027,7 @@ public class ChatActivity extends MainActivity
 
       if (media != null && !isInBlackList) {
         media.setEnabled(true);
-        media.setVisible(true);
+        media.setVisibility(View.VISIBLE);
       }
 
       if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
@@ -1086,7 +1183,7 @@ public class ChatActivity extends MainActivity
 
         if (media != null && !isInBlackList) {
           media.setEnabled(true);
-          media.setVisible(true);
+          media.setVisibility(View.VISIBLE);
         }
 
         if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
@@ -1102,9 +1199,9 @@ public class ChatActivity extends MainActivity
         break;
       }
 
-      case R.id.attach_btn:
-        openAttachItemMenu();
-        break;
+//      case R.id.attach_btn:
+//        openAttachItemMenu();
+//        break;
 
       case R.id.removeFromBlackList: {
 
@@ -1851,6 +1948,14 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (((ItemMessageUserHolder) holder).txtContent != null) {
           ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.VISIBLE);
           ((ItemMessageUserHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
+
+          if(consersation.getListMessageData().get(position).watched) {
+
+            ((ItemMessageUserHolder) holder).txtContent.setCompoundDrawablesWithIntrinsicBounds(null, null, context.getResources().getDrawable(R.drawable.dbird_green), null);
+          } else {
+
+            ((ItemMessageUserHolder) holder).txtContent.setCompoundDrawablesWithIntrinsicBounds(null, null, context.getResources().getDrawable(R.drawable.bird_gray), null);
+          }
         }
       } else {
         if (((ItemMessageUserHolder) holder).txtContent != null)

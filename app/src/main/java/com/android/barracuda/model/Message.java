@@ -13,6 +13,7 @@ public class Message {
   public Boolean incognito = false;
   public long timestamp;
   public Long lifeTime = 30L;
+  public Boolean watched = false;
 
   public String date;
 

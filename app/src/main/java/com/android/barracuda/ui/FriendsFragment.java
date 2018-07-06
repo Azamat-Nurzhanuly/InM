@@ -374,13 +374,14 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
   }
 
-  /**
-   * Lay danh sach ban be tren server
-   */
   private void getListFriendUId() {
+    System.out.println("GET_LIST_FRIEND_STARTED");
     FirebaseDatabase.getInstance().getReference().child("friend/" + StaticConfig.UID).addListenerForSingleValueEvent(new ValueEventListener() {
       @Override
       public void onDataChange(DataSnapshot dataSnapshot) {
+
+        System.out.println("GET_LIST_FRIEND_CAME");
+
         if (dataSnapshot.getValue() != null) {
           HashMap mapRecord = (HashMap) dataSnapshot.getValue();
           Iterator listKey = mapRecord.keySet().iterator();
@@ -397,23 +398,32 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
       @Override
       public void onCancelled(DatabaseError databaseError) {
+        dialogFindAllFriend.dismiss();
       }
     });
   }
 
   private void getAllFriendInfo(final int index) {
+
+    System.out.println("GET_ALL_FRIEND_STARTED");
+
     if (index == listFriendID.size()) {
       //save list friend
       adapter.notifyDataSetChanged();
       dialogFindAllFriend.dismiss();
       mSwipeRefreshLayout.setRefreshing(false);
       detectFriendOnline.start();
+      System.out.println("GET_ALL_FRIEND_FINISHED");
     } else {
+
+      System.out.println("GET_ALL_FRIEND_CONTINUING");
       final String id = listFriendID.get(index);
       FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
         @Override
         public void onDataChange(DataSnapshot dataSnapshot) {
+          System.out.println("GET_ALL_FRIEND_RESPONSE");
           if (dataSnapshot.getValue() != null) {
+            System.out.println("GET_ALL_FRIEND_RESPONSE_NOT_NULL");
             Friend user = new Friend();
             HashMap mapUserInfo = (HashMap) dataSnapshot.getValue();
             user.name = (String) mapUserInfo.get("name");
@@ -429,7 +439,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
 
         @Override
         public void onCancelled(DatabaseError databaseError) {
-
+          dialogFindAllFriend.dismiss();
         }
       });
     }

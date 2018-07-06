@@ -85,14 +85,14 @@
         </menu>
 
     </item>
-    <item
-        android:id="@+id/notification"
-        android:orderInCategory="105"
-        android:title="@string/notification"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/help"
-        android:orderInCategory="106"
-        android:title="@string/help"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/notification"-->
+        <!--android:orderInCategory="105"-->
+        <!--android:title="@string/notification"-->
+        <!--app:showAsAction="never" />-->
+    <!--<item-->
+        <!--android:id="@+id/help"-->
+        <!--android:orderInCategory="106"-->
+        <!--android:title="@string/help"-->
+        <!--app:showAsAction="never" />-->
 </menu>

@@ -11,6 +11,15 @@
     <!--&lt;!&ndash;sinch &ndash;&gt;-->
     <!--<item name="windowActionBar">true</item>-->
     <!--<item name="windowNoTitle">true</item>-->
+
+    <item name="android:actionButtonStyle">@style/myActionButtonStyle</item>
+    <item name="actionButtonStyle">@style/myActionButtonStyle</item>
+  </style>
+
+  <style name="myActionButtonStyle" parent="Widget.AppCompat.ActionButton">
+    <item name="android:minWidth">24dp</item>
+    <item name="android:maxWidth">48dp</item>
+    <item name="android:width">36dp</item>
   </style>
 
   <!-- Purple theme -->

@@ -38,13 +38,6 @@
         android:enabled="false"/>
 
     <item
-      android:id="@+id/attach_btn"
-      android:orderInCategory="103"
-      android:icon="@drawable/ic_attach"
-      app:showAsAction="always"
-      android:title="@string/media"
-      android:enabled="true"/>
-    <item
         android:id="@+id/addFavorites"
         android:orderInCategory="104"
         android:title="@string/addFavorites"

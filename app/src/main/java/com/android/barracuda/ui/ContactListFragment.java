@@ -127,41 +127,42 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
 
   public void getAllPhoneContacts() {
     dataContactList = new ListContact();
-    Log.d("START", "Getting all Contacts");
-    Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-    Cursor cursor = Objects.requireNonNull(getContext())
-      .getContentResolver()
-      .query(uri, new String[]
-        {
-          ContactsContract.CommonDataKinds.Phone.NUMBER,
-          ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-          ContactsContract.CommonDataKinds.Phone._ID
-        }, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
-
-    assert cursor != null;
-    cursor.moveToFirst();
-    while (!cursor.isAfterLast()) {
-      String contactNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-      String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-      int phoneContactID = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
-
-
-      ContactModel phoneContactInfo = new ContactModel();
-      phoneContactInfo.id = String.valueOf(phoneContactID);
-      phoneContactInfo.name = contactName;
-
-      contactNumber = contactNumber != null ? contactNumber.replaceAll("\\s", "").replaceAll("[^0-9]", "") : "";
-
-      phoneContactInfo.number = contactNumber;
-      if (phoneContactInfo.number != null && !dataContactList.getUniqueListContact().contains(contactNumber)) {
-        dataContactList.getUniqueListContact().add(contactNumber);
-        findIDPhoneNumber(phoneContactInfo);
-      }
-      cursor.moveToNext();
-    }
-    cursor.close();
-    cursor = null;
-    Log.d("END", "Got all Contacts");
+    //TODO: исправить, здесь тормозит
+//    Log.d("START", "Getting all Contacts");
+//    Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+//    Cursor cursor = Objects.requireNonNull(getContext())
+//      .getContentResolver()
+//      .query(uri, new String[]
+//        {
+//          ContactsContract.CommonDataKinds.Phone.NUMBER,
+//          ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+//          ContactsContract.CommonDataKinds.Phone._ID
+//        }, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+//
+//    assert cursor != null;
+//    cursor.moveToFirst();
+//    while (!cursor.isAfterLast()) {
+//      String contactNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+//      String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+//      int phoneContactID = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
+//
+//
+//      ContactModel phoneContactInfo = new ContactModel();
+//      phoneContactInfo.id = String.valueOf(phoneContactID);
+//      phoneContactInfo.name = contactName;
+//
+//      contactNumber = contactNumber != null ? contactNumber.replaceAll("\\s", "").replaceAll("[^0-9]", "") : "";
+//
+//      phoneContactInfo.number = contactNumber;
+//      if (phoneContactInfo.number != null && !dataContactList.getUniqueListContact().contains(contactNumber)) {
+//        dataContactList.getUniqueListContact().add(contactNumber);
+//        findIDPhoneNumber(phoneContactInfo);
+//      }
+//      cursor.moveToNext();
+//    }
+//    cursor.close();
+//    cursor = null;
+//    Log.d("END", "Got all Contacts");
   }
 
   private void findIDPhoneNumber(final ContactModel contact) {

@@ -31,6 +31,8 @@
     android:background="@drawable/rounded_corner1"
     android:padding="10dp"
     android:text="a"
+      android:drawableEnd="@drawable/bird_gray"
+      android:drawablePadding="5dp"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="#ffffff" />
 
