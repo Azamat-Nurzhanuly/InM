@@ -51,6 +51,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
+import static com.android.barracuda.MainActivity.friendsMap;
+
 public class FriendProfileActivity extends BarracudaActivity {
 
   public String friend_id = null;
@@ -118,6 +120,8 @@ public class FriendProfileActivity extends BarracudaActivity {
       friendsAccount = dataSnapshot.getValue(User.class);
 
       if(friendsAccount == null) return;
+
+      friendsAccount.name = friendsMap.containsKey(friendsAccount.phoneNumber) ? friendsMap.get(friendsAccount.phoneNumber) : friendsAccount.name;
 
       setupArrayListInfo(friendsAccount);
       if (infoAdapter != null) {

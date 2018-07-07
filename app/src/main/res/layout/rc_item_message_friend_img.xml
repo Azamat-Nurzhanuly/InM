@@ -11,17 +11,6 @@
     android:clickable="true"
     android:background="@color/colorTransparent">
 
-  <de.hdodenhof.circleimageview.CircleImageView
-    android:id="@+id/imageView3"
-    android:layout_width="30dp"
-    android:layout_height="30dp"
-    android:layout_alignParentStart="true"
-    android:layout_alignParentTop="true"
-    android:layout_marginStart="5dp"
-    android:src="@drawable/default_avata"
-      android:clickable="true"
-      android:onClick="onFriendImgClick"/>
-
   <RelativeLayout
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
@@ -37,5 +26,15 @@
       android:maxWidth="200dp"
       android:minHeight="200dp"
       android:minWidth="200dp" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+      android:id="@+id/imageView3"
+      android:layout_width="30dp"
+      android:layout_height="30dp"
+      android:layout_alignBottom="@+id/imageContentFriend"
+      android:layout_alignParentStart="true"
+      android:clickable="true"
+      android:onClick="onFriendImgClick"
+      android:src="@drawable/default_avata" />
   </RelativeLayout>
 </RelativeLayout>

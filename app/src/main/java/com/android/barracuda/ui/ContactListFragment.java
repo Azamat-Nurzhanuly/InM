@@ -32,6 +32,7 @@ import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.ContactModel;
 import com.android.barracuda.model.Friend;
 import com.android.barracuda.model.ListContact;
+import com.android.barracuda.util.SharedPrefUtil;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -48,6 +49,9 @@ import java.util.List;
 import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
+
+import static com.android.barracuda.MainActivity.friendsMap;
+import static com.android.barracuda.util.SharedPrefUtil.FRIENDS_MAP;
 
 public class ContactListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
 
@@ -128,41 +132,41 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
   public void getAllPhoneContacts() {
     dataContactList = new ListContact();
     //TODO: исправить, здесь тормозит
-//    Log.d("START", "Getting all Contacts");
-//    Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
-//    Cursor cursor = Objects.requireNonNull(getContext())
-//      .getContentResolver()
-//      .query(uri, new String[]
-//        {
-//          ContactsContract.CommonDataKinds.Phone.NUMBER,
-//          ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
-//          ContactsContract.CommonDataKinds.Phone._ID
-//        }, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
-//
-//    assert cursor != null;
-//    cursor.moveToFirst();
-//    while (!cursor.isAfterLast()) {
-//      String contactNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
-//      String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
-//      int phoneContactID = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
-//
-//
-//      ContactModel phoneContactInfo = new ContactModel();
-//      phoneContactInfo.id = String.valueOf(phoneContactID);
-//      phoneContactInfo.name = contactName;
-//
-//      contactNumber = contactNumber != null ? contactNumber.replaceAll("\\s", "").replaceAll("[^0-9]", "") : "";
-//
-//      phoneContactInfo.number = contactNumber;
-//      if (phoneContactInfo.number != null && !dataContactList.getUniqueListContact().contains(contactNumber)) {
-//        dataContactList.getUniqueListContact().add(contactNumber);
-//        findIDPhoneNumber(phoneContactInfo);
-//      }
-//      cursor.moveToNext();
-//    }
-//    cursor.close();
-//    cursor = null;
-//    Log.d("END", "Got all Contacts");
+    Log.d("START", "Getting all Contacts");
+    Uri uri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+    Cursor cursor = Objects.requireNonNull(getContext())
+      .getContentResolver()
+      .query(uri, new String[]
+        {
+          ContactsContract.CommonDataKinds.Phone.NUMBER,
+          ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME,
+          ContactsContract.CommonDataKinds.Phone._ID
+        }, null, null, ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME + " ASC");
+
+    assert cursor != null;
+    cursor.moveToFirst();
+    while (!cursor.isAfterLast()) {
+      String contactNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
+      String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
+      int phoneContactID = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
+
+
+      ContactModel phoneContactInfo = new ContactModel();
+      phoneContactInfo.id = String.valueOf(phoneContactID);
+      phoneContactInfo.name = contactName;
+
+      contactNumber = contactNumber != null ? contactNumber.replaceAll("\\s", "").replaceAll("[^0-9]", "") : "";
+
+      phoneContactInfo.number = contactNumber;
+      if (phoneContactInfo.number != null && !dataContactList.getUniqueListContact().contains(contactNumber)) {
+        dataContactList.getUniqueListContact().add(contactNumber);
+        findIDPhoneNumber(phoneContactInfo);
+      }
+      cursor.moveToNext();
+    }
+    cursor.close();
+    cursor = null;
+    Log.d("END", "Got all Contacts");
   }
 
   private void findIDPhoneNumber(final ContactModel contact) {
@@ -180,6 +184,9 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
         public void onDataChange(DataSnapshot dataSnapshot) {
           if (dataSnapshot.getValue() != null) {
             dataContactList.getListContact().add(contact);
+
+            friendsMap.put(contact.number, contact.name);
+            SharedPrefUtil.saveHashMap(FRIENDS_MAP, friendsMap, getActivity());
 
             if (adapter != null) {
               adapter.notifyDataSetChanged();

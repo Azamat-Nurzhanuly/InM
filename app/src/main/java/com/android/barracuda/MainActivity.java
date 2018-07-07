@@ -16,6 +16,7 @@ import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentPagerAdapter;
+import android.support.v4.content.FileProvider;
 import android.support.v4.view.ViewPager;
 import android.util.Log;
 import android.view.Menu;
@@ -35,6 +36,7 @@ import com.android.barracuda.ui.CallListFragment;
 import com.android.barracuda.ui.ContactListFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
+import com.android.barracuda.util.SharedPrefUtil;
 import com.facebook.accountkit.AccessToken;
 import com.facebook.accountkit.Account;
 import com.facebook.accountkit.AccountKit;
@@ -64,12 +66,19 @@ import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 import retrofit2.Retrofit;
+
+import static android.content.Intent.FLAG_ACTIVITY_NO_HISTORY;
+import static android.content.Intent.FLAG_GRANT_READ_URI_PERMISSION;
+import static android.content.Intent.FLAG_GRANT_WRITE_URI_PERMISSION;
+import static android.provider.ContactsContract.Directory.PACKAGE_NAME;
+import static com.android.barracuda.util.SharedPrefUtil.FRIENDS_MAP;
 
 public class MainActivity extends BarracudaActivity implements ServiceConnection {
 
@@ -81,6 +90,8 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   public static String STR_INFO_FRAGMENT = "INFO";
   public static String STR_INFO_CALL = "CALL";
   public static String STR_CONTACTS = "CONTACTS";
+
+  public static Map<String, String> friendsMap = new HashMap<>();
 
   private FloatingActionButton floatButton;
   private ViewPagerAdapter adapter;
@@ -169,6 +180,13 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     super.onCreate(savedInstanceState);
 
     setTheme();
+
+    HashMap<String, String> friendsMapLoc = SharedPrefUtil.getFriendsMap(FRIENDS_MAP, this);
+
+    if(friendsMapLoc != null) {
+
+      friendsMap = friendsMapLoc;
+    }
 
     //SINCH
     getApplicationContext().bindService(new Intent(this, SinchService.class), this,
@@ -315,9 +333,13 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     };
 
     tabLayout.getTabAt(0).setIcon(tabIcons[0]);
+//    tabLayout.getTabAt(0).setText("Чаты");
     tabLayout.getTabAt(1).setIcon(tabIcons[1]);
+//    tabLayout.getTabAt(1).setText("Группы");
     tabLayout.getTabAt(2).setIcon(tabIcons[2]);
+//    tabLayout.getTabAt(2).setText("Звонки");
     tabLayout.getTabAt(3).setIcon(tabIcons[3]);
+//    tabLayout.getTabAt(3).setText("Контакты");
   }
 
   private void setupViewPager(ViewPager viewPager) {
@@ -470,7 +492,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   }
 
   @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
+  public boolean onOptionsItemSelected(final MenuItem item) {
     // Handle action bar item clicks here. The action bar will
     // automatically handle clicks on the Home/Up button, so long
     // as you specify a parent activity in AndroidManifest.xml.
@@ -498,6 +520,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
           item.setChecked(true);
 
           new LovelyTextInputDialog(this, R.style.EditTextTintTheme)
+            .setCancelable(false)
             .setTopColorRes(R.color.colorPrimary)
             .setTitle("Таймер для удаления")
             .setMessage("Укажите через сколько секунд удалять сообщение")
@@ -547,7 +570,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
                     @Override
                     public void onCancelled(DatabaseError databaseError) {
-
+                      item.setChecked(false);
                     }
                   });
               }
@@ -588,10 +611,12 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
     InputStream in = null;
     OutputStream out = null;
-    File file = new File(getFilesDir(), name);
+    File filePath = new File(getFilesDir(), "files");
+    File file = new File(filePath, name);
+
     try {
       in = assetManager.open(name);
-      out = openFileOutput(file.getName(), Context.MODE_WORLD_READABLE);
+      out = openFileOutput(file.getName(), Context.MODE_PRIVATE);
 
       copyFile(in, out);
       in.close();
@@ -603,12 +628,19 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       Log.e("tag", e.getMessage());
     }
 
-    Intent intent = new Intent(Intent.ACTION_VIEW);
-    intent.setDataAndType(
-      Uri.parse("file://" + getFilesDir() + "/" + name),
-      "application/pdf");
+    File docPath = new File(getFilesDir(), "files");
+    File doc = new File(docPath, name);
 
-    startActivity(intent);
+    Uri fileUri = FileProvider.getUriForFile(MainActivity.this,
+      BuildConfig.APPLICATION_ID + ".provider",
+      doc);
+
+    Intent intent = new Intent(Intent.ACTION_VIEW);
+    intent.setDataAndType(fileUri, "application/pdf");
+    intent.setFlags(FLAG_ACTIVITY_NO_HISTORY | FLAG_GRANT_READ_URI_PERMISSION | FLAG_GRANT_WRITE_URI_PERMISSION);
+
+    Intent intentChooser = Intent.createChooser(intent, "Открыть с помощью");
+    startActivity(intentChooser);
   }
 
   private void copyFile(InputStream in, OutputStream out) throws IOException {

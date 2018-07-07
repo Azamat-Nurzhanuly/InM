@@ -43,6 +43,7 @@ import java.util.Objects;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.android.barracuda.MainActivity.friendsMap;
 import static com.android.barracuda.ui.ChatActivity.getBackground;
 
 public class BlacklistActivity extends MainActivity {
@@ -177,7 +178,7 @@ class BlackListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
 
   @Override
   public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-    final String name = blackListFriend.getListFriend().get(position).name;
+    final String name = friendsMap.containsKey(blackListFriend.getListFriend().get(position).phoneNumber) ? friendsMap.get(blackListFriend.getListFriend().get(position).phoneNumber) : blackListFriend.getListFriend().get(position).name ;
     final String status = blackListFriend.getListFriend().get(position).status.text;
     final String id = blackListFriend.getListFriend().get(position).id;
     final String avata = blackListFriend.getListFriend().get(position).avata;
@@ -185,9 +186,9 @@ class BlackListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
     ((ItemBlacklistFriendViewHolder) holder).txtStatus.setText(status);
 
     ((View) ((ItemBlacklistFriendViewHolder) holder).txtName.getParent().getParent().getParent())
-      .setOnLongClickListener(new View.OnLongClickListener() {
+      .setOnClickListener(new View.OnClickListener() {
         @Override
-        public boolean onLongClick(View view) {
+        public void onClick(View view) {
           String friendName = (String) ((ItemBlacklistFriendViewHolder) holder).txtName.getText();
 
           new AlertDialog.Builder(context)
@@ -211,8 +212,6 @@ class BlackListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHold
                 dialogInterface.dismiss();
               }
             }).show();
-
-          return true;
         }
       });
 

@@ -206,6 +206,7 @@ public class ChatActivity extends MainActivity
   private ImageView SAVED_PLAY_AUDIO;
   private ImageView SAVED_PAUSE_AUDIO;
 
+  private ImageButton cameraButton;
 
   private EditText editWriteMessage;
   private LinearLayoutManager linearLayoutManager;
@@ -316,6 +317,9 @@ public class ChatActivity extends MainActivity
               media.setVisibility(View.INVISIBLE);
               media.setEnabled(false);
 
+              cameraButton.setVisibility(View.INVISIBLE);
+              cameraButton.setEnabled(false);
+
               editWriteMessage.setEnabled(false);
               editWriteMessage.setVisibility(View.INVISIBLE);
 
@@ -358,6 +362,9 @@ public class ChatActivity extends MainActivity
 
               media.setVisibility(View.INVISIBLE);
               media.setEnabled(false);
+
+              cameraButton.setVisibility(View.INVISIBLE);
+              cameraButton.setEnabled(false);
 
               editWriteMessage.setEnabled(false);
               editWriteMessage.setVisibility(View.INVISIBLE);
@@ -404,6 +411,15 @@ public class ChatActivity extends MainActivity
     } else {
       bitmapAvataUser = null;
     }
+
+    cameraButton = (ImageButton) findViewById(R.id.camera_button);
+    cameraButton.setOnClickListener(new View.OnClickListener() {
+      @Override
+      public void onClick(View view) {
+        Intent cameraIntent = new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+        startActivityForResult(cameraIntent, IMAGE_CAMERA_REQUEST);
+      }
+    });
 
     initAttachFileButtons();
     initAudioButtons();
@@ -1004,11 +1020,6 @@ public class ChatActivity extends MainActivity
         favorite.setVisible(true);
       }
 
-      if (media != null) {
-        media.setEnabled(false);
-        media.setVisibility(View.INVISIBLE);
-      }
-
       if (audio_call != null) {
         audio_call.setEnabled(false);
         audio_call.setVisible(false);
@@ -1023,11 +1034,6 @@ public class ChatActivity extends MainActivity
       if (favorite != null) {
         favorite.setEnabled(false);
         favorite.setVisible(false);
-      }
-
-      if (media != null && !isInBlackList) {
-        media.setEnabled(true);
-        media.setVisibility(View.VISIBLE);
       }
 
       if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
@@ -1179,11 +1185,6 @@ public class ChatActivity extends MainActivity
         if (favorite != null) {
           favorite.setEnabled(false);
           favorite.setVisible(false);
-        }
-
-        if (media != null && !isInBlackList) {
-          media.setEnabled(true);
-          media.setVisibility(View.VISIBLE);
         }
 
         if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
@@ -1949,12 +1950,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.VISIBLE);
           ((ItemMessageUserHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
 
-          if(consersation.getListMessageData().get(position).watched) {
+          if(consersation.getListMessageData().get(position).watched != null && consersation.getListMessageData().get(position).watched) {
 
-            ((ItemMessageUserHolder) holder).txtContent.setCompoundDrawablesWithIntrinsicBounds(null, null, context.getResources().getDrawable(R.drawable.dbird_green), null);
+            ((ItemMessageUserHolder) holder).watched.setImageDrawable(context.getResources().getDrawable(R.drawable.dbird_green));
           } else {
 
-            ((ItemMessageUserHolder) holder).txtContent.setCompoundDrawablesWithIntrinsicBounds(null, null, context.getResources().getDrawable(R.drawable.bird_gray), null);
+            ((ItemMessageUserHolder) holder).watched.setImageDrawable(context.getResources().getDrawable(R.drawable.bird_gray));
           }
         }
       } else {
@@ -2072,6 +2073,7 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
   public ImageView videoContent;
   public ImageView play_audio;
   public ImageView pause_audio;
+  public ImageView watched;
   public LinearLayout audioContent;
   public CircleImageView avata;
 
@@ -2085,6 +2087,7 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
   public ItemMessageUserHolder(View itemView, ClickListenerChatFirebase clickListenerChatFirebase) {
     super(itemView);
     txtContent = (TextView) itemView.findViewById(R.id.textContentUser);
+    watched = (ImageView) itemView.findViewById(R.id.messageBird);
     contactName = (TextView) itemView.findViewById(R.id.userContactName);
     contactPhone = (TextView) itemView.findViewById(R.id.userContactPhone);
 

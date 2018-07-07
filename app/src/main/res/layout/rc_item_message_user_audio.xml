@@ -2,14 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:background="@color/colorTransparent"
+  android:clickable="true"
+  android:longClickable="true"
+  android:onClick="onMessageMark"
   android:orientation="horizontal"
   android:paddingBottom="5dp"
   android:paddingLeft="16dp"
-  android:paddingRight="16dp"
-    android:onClick="onMessageMark"
-    android:longClickable="true"
-    android:clickable="true"
-    android:background="@color/colorTransparent">
+  android:paddingRight="16dp">
 
   <de.hdodenhof.circleimageview.CircleImageView
     android:id="@+id/imageView2"
@@ -20,10 +21,20 @@
     android:layout_marginEnd="5dp"
     android:src="@drawable/default_avata" />
 
+  <ImageView
+    android:id="@+id/messageBird"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignStart="@+id/imageView2"
+    android:layout_below="@+id/imageView2"
+    app:srcCompat="@drawable/bird_gray" />
+
   <LinearLayout
     android:id="@+id/audioUserView"
     android:layout_width="match_parent"
     android:layout_height="80dp"
+    android:layout_alignBottom="@+id/messageBird"
     android:layout_toStartOf="@id/imageView2"
     android:gravity="center_vertical"
     android:orientation="vertical"
@@ -44,21 +55,21 @@
         android:paddingTop="5dp">
 
         <ImageView
-          android:id="@+id/play_audio"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:padding="6dp"
-          android:layout_marginTop="5dp"
-          android:src="@drawable/play_audio" />
-
-        <ImageView
           android:id="@+id/pause_audio"
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:padding="6dp"
           android:layout_marginTop="5dp"
+          android:padding="6dp"
           android:src="@drawable/pause_audio"
           android:visibility="gone" />
+
+        <ImageView
+          android:id="@+id/play_audio"
+          android:layout_width="match_parent"
+          android:layout_height="match_parent"
+          android:layout_marginTop="5dp"
+          android:padding="6dp"
+          android:src="@drawable/play_audio" />
       </FrameLayout>
 
       <FrameLayout
@@ -70,18 +81,10 @@
         android:paddingRight="5dp"
         android:paddingTop="5dp">
 
-        <SeekBar
-          android:id="@+id/user_seekbar"
-          android:layout_width="match_parent"
-          android:layout_height="wrap_content"
-          android:layout_gravity="center_vertical"
-          />
-
         <LinearLayout
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:orientation="horizontal"
-          >
+          android:orientation="horizontal">
 
           <TextView
             android:id="@+id/total_time"
@@ -115,6 +118,15 @@
             android:textColor="@android:color/darker_gray"
             android:textSize="11sp" />
         </LinearLayout>
+
+        <SeekBar
+          android:id="@+id/user_seekbar"
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:layout_alignParentTop="true"
+          android:layout_marginTop="8dp"
+          android:layout_centerHorizontal="true"
+          android:layout_gravity="center_vertical" />
       </FrameLayout>
     </RelativeLayout>
   </LinearLayout>

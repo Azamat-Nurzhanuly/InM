@@ -43,6 +43,7 @@ import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
+import static com.android.barracuda.MainActivity.friendsMap;
 import static com.android.barracuda.data.StaticConfig.CALL_INCOMING;
 import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
 
@@ -151,7 +152,7 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   @Override
   public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int position) {
     {
-      final String name = listCall.getListCall().get(position).name;
+      final String name = friendsMap.containsKey(listCall.getListCall().get(position).phoneNumber) ? friendsMap.get(listCall.getListCall().get(position).phoneNumber) : listCall.getListCall().get(position).name;
       final String id = listCall.getListCall().get(position).id;
       final String avata = listCall.getListCall().get(position).avata;
       final String type = listCall.getListCall().get(position).type;

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:id="@+id/layout1"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
@@ -14,9 +15,8 @@
     android:id="@+id/imageView2"
     android:layout_width="30dp"
     android:layout_height="30dp"
+    android:layout_alignBottom="@+id/textContentUser"
     android:layout_alignParentEnd="true"
-    android:layout_alignParentTop="true"
-    android:layout_marginEnd="5dp"
     android:src="@drawable/default_avata" />
 
   <TextView
@@ -31,10 +31,17 @@
     android:background="@drawable/rounded_corner1"
     android:padding="10dp"
     android:text="a"
-      android:drawableEnd="@drawable/bird_gray"
-      android:drawablePadding="5dp"
     android:textAppearance="?android:attr/textAppearanceMedium"
     android:textColor="#ffffff" />
+
+  <ImageView
+    android:id="@+id/messageBird"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:layout_alignParentEnd="true"
+    android:layout_alignStart="@+id/imageView2"
+    android:layout_below="@+id/imageView2"
+    app:srcCompat="@drawable/bird_gray" />
 
 
 </RelativeLayout>

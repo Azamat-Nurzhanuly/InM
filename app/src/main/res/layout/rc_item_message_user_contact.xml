@@ -2,23 +2,15 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:orientation="horizontal"
   android:paddingBottom="5dp"
   android:paddingLeft="16dp"
   android:paddingRight="16dp"
-    android:onClick="onMessageMark"
-    android:longClickable="true"
-    android:clickable="true"
-    android:background="@color/colorTransparent">
-
-  <de.hdodenhof.circleimageview.CircleImageView
-    android:id="@+id/imageView2"
-    android:layout_width="30dp"
-    android:layout_height="30dp"
-    android:layout_alignParentEnd="true"
-    android:layout_alignParentTop="true"
-    android:layout_marginEnd="5dp"
-    android:src="@drawable/default_avata" />
+  android:onClick="onMessageMark"
+  android:longClickable="true"
+  android:clickable="true"
+  android:background="@color/colorTransparent">
 
   <RelativeLayout
     android:layout_width="wrap_content"
@@ -34,7 +26,8 @@
       android:layout_marginEnd="31dp"
       android:layout_marginTop="16dp"
       android:background="@drawable/rounded_corner_image"
-      android:minHeight="115dp">
+      android:minHeight="115dp"
+      android:id="@+id/frameLayout">
 
       <TextView
         android:id="@+id/userContactName"
@@ -62,6 +55,23 @@
         android:textAppearance="?android:attr/textAppearanceMedium"
         android:textColor="#ffffff" />
     </FrameLayout>
+
+    <de.hdodenhof.circleimageview.CircleImageView
+      android:id="@+id/imageView2"
+      android:layout_width="30dp"
+      android:layout_height="30dp"
+      android:layout_alignBottom="@+id/frameLayout"
+      android:layout_alignParentEnd="true"
+      android:src="@drawable/default_avata" />
+
+    <ImageView
+      android:id="@+id/messageBird"
+      android:layout_width="wrap_content"
+      android:layout_height="wrap_content"
+      android:layout_alignParentEnd="true"
+      android:layout_alignStart="@+id/imageView2"
+      android:layout_below="@+id/imageView2"
+      app:srcCompat="@drawable/bird_gray" />
   </RelativeLayout>
 
 </RelativeLayout>

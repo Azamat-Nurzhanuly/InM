@@ -2,6 +2,7 @@
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   android:layout_width="match_parent"
   android:layout_height="wrap_content"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:background="@color/colorTransparent"
   android:clickable="true"
   android:longClickable="true"
@@ -11,24 +12,15 @@
   android:paddingLeft="16dp"
   android:paddingRight="16dp">
 
-  <de.hdodenhof.circleimageview.CircleImageView
-    android:id="@+id/imageView2"
-    android:layout_width="30dp"
-    android:layout_height="30dp"
-    android:layout_alignParentEnd="true"
-    android:layout_alignParentTop="true"
-    android:layout_marginEnd="5dp"
-    android:src="@drawable/default_avata" />
-
   <RelativeLayout
     android:layout_width="wrap_content"
-    android:layout_height="200dp">
+    android:layout_height="230dp">
 
 
     <ImageView
       android:id="@+id/videoContentUser"
       android:layout_width="wrap_content"
-      android:layout_height="match_parent"
+      android:layout_height="200dp"
       android:layout_alignParentEnd="true"
       android:layout_alignParentTop="true"
       android:layout_marginEnd="31dp"
@@ -48,6 +40,23 @@
       android:text="Воспроизвести видео"
       android:textAlignment="center"
       android:textSize="17dp" />
+
+    <de.hdodenhof.circleimageview.CircleImageView
+      android:id="@+id/imageView2"
+      android:layout_width="30dp"
+      android:layout_height="30dp"
+      android:layout_alignBottom="@+id/videoContentUser"
+      android:layout_alignParentEnd="true"
+      android:src="@drawable/default_avata" />
+
+    <ImageView
+      android:id="@+id/messageBird"
+      android:layout_width="30dp"
+      android:layout_height="wrap_content"
+      android:layout_alignParentBottom="true"
+      android:layout_alignParentEnd="true"
+      app:srcCompat="@drawable/bird_gray" />
+
   </RelativeLayout>
 
 </RelativeLayout>
