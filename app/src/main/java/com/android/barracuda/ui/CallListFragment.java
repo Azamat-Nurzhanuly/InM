@@ -29,17 +29,12 @@ import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Call;
 import com.android.barracuda.model.ListCall;
 import com.android.barracuda.service.SinchService;
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.FirebaseDatabase;
-import com.google.firebase.database.ValueEventListener;
 import com.sinch.android.rtc.MissingPermissionException;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 
 import de.hdodenhof.circleimageview.CircleImageView;
 
@@ -48,6 +43,11 @@ import static com.android.barracuda.data.StaticConfig.CALL_INCOMING;
 import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
 
 public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
+  @Override
+  public void onResume() {
+    super.onResume();
+    refreshContent();
+  }
 
   private RecyclerView recyclerListCalls;
   private ListCallAdapter adapter;
@@ -100,7 +100,7 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
 //      mSwipeRefreshLayout.setRefreshing(false);
 //    }
 
-    if(dataListCalls.getListCall().size() == 0){
+    if (dataListCalls.getListCall().size() == 0) {
       dataListCalls = CallDB.getInstance(getContext()).getListCall();
       adapter.notifyDataSetChanged();
     }
@@ -121,7 +121,16 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
 
   @Override
   public void onRefresh() {
+    refreshContent();
+  }
+
+  private void refreshContent() {
     dataListCalls = CallDB.getInstance(getContext()).getListCall();
+
+    adapter = new ListCallAdapter(getContext(), dataListCalls, this);
+    adapter.notifyDataSetChanged();
+
+    recyclerListCalls.setAdapter(adapter);
     mSwipeRefreshLayout.setRefreshing(false);
   }
 }
@@ -151,6 +160,7 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
   @Override
   public void onBindViewHolder(@NonNull final RecyclerView.ViewHolder holder, final int position) {
+
     {
       final String name = friendsMap.containsKey(listCall.getListCall().get(position).phoneNumber) ? friendsMap.get(listCall.getListCall().get(position).phoneNumber) : listCall.getListCall().get(position).name;
       final String id = listCall.getListCall().get(position).id;
