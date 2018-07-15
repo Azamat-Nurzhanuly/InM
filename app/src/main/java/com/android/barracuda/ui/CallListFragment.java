@@ -253,7 +253,6 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                   }
                 }
               }).show();
-            return;
           }
         });
 

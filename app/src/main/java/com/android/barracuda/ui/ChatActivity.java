@@ -5,7 +5,9 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -100,6 +102,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
@@ -116,6 +119,7 @@ import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_IMAGE;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_VIDEO;
+import static java.lang.Boolean.TRUE;
 
 
 public class ChatActivity extends MainActivity
@@ -158,12 +162,13 @@ public class ChatActivity extends MainActivity
 
   public boolean isInBlackList = false;
 
-  public Map<String, Integer> messageMap = new HashMap<>();
+  public Map<Integer, Integer> messageMap = new HashMap<Integer, Integer>();
   public Map<Integer, Message> favoriteMessages = new HashMap<>();
-  public Map<String, View> messageViews = new HashMap<>();
+  public Map<Integer, View> messageViews = new HashMap<Integer, View>();
 
   private File filePathImageCamera;
 
+  private Activity activity;
   public Long timeout = 30L;
   private ListMessageAdapter adapter;
   private String roomId;
@@ -223,6 +228,7 @@ public class ChatActivity extends MainActivity
   MenuItem audio_call;
   MenuItem video_call;
   MenuItem favorite;
+  MenuItem removeMessage;
   MenuItem removeFromBlackList;
   MenuItem forbidden;
   private boolean audioVideoServiceConnected = false;
@@ -242,6 +248,7 @@ public class ChatActivity extends MainActivity
     favorite = menu.getItem(3);
     removeFromBlackList = menu.getItem(4);
     forbidden = menu.getItem(5);
+    removeMessage = menu.getItem(7);
 
     removeFromBlackList.setEnabled(false);
     removeFromBlackList.setVisible(false);
@@ -265,6 +272,7 @@ public class ChatActivity extends MainActivity
     super.onCreate(savedInstanceState);
     setContentView(R.layout.activity_chat);
     context = this;
+    activity = this;
     Intent intentData = getIntent();
     idFriend = intentData.getCharSequenceArrayListExtra(INTENT_KEY_CHAT_ID);
     roomId = intentData.getStringExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID);
@@ -294,7 +302,7 @@ public class ChatActivity extends MainActivity
       }
     });
 
-    if(idFriend != null) {
+    if (idFriend != null) {
       FirebaseDatabase.getInstance().getReference()
         .child("blacklist")
         .child(StaticConfig.UID)
@@ -391,7 +399,7 @@ public class ChatActivity extends MainActivity
     }
 
     consersation = new Consersation();
-    messageMap = new HashMap<>();
+    messageMap = new HashMap<Integer, Integer>();
     favoriteMessages = new HashMap<>();
     totalFavoriteMessages = new HashSet<>();
 
@@ -654,10 +662,16 @@ public class ChatActivity extends MainActivity
             newMessage.timestamp = (long) mapMessage.get("timestamp");
             newMessage.watched = (Boolean) mapMessage.get("watched");
 
+            if (mapMessage.get("show") != null) {
+
+              newMessage.show = (Boolean) mapMessage.get("show");
+            } else {
+              newMessage.show = true;
+            }
+
             if (mapMessage.get("text") != null) {
               newMessage.text = (String) mapMessage.get("text");
             }
-
 
             if (mapMessage.get("fileModel") != null) {
               FileModel fileModel = new FileModel();
@@ -738,25 +752,18 @@ public class ChatActivity extends MainActivity
               }
             }
 
-            System.out.println("ASDADASDASDASDASDASDASDASDASDA watched con");
-            System.out.println(newMessage.idSender);
-            System.out.println(StaticConfig.UID);
-            System.out.println(dataSnapshot.getKey());
-
             if ((newMessage.watched == null || !newMessage.watched) && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              System.out.println("ASDADASDASDASDASDASDASDASDASDA watched IN TRUE");
-              System.out.println(newMessage.idSender);
-              System.out.println(StaticConfig.UID);
-              System.out.println(dataSnapshot.getKey());
 
               newMessage.watched = true;
               FirebaseDatabase.getInstance().getReference().child("message/" + roomId + "/" + dataSnapshot.getKey()).setValue(newMessage);
             }
 
-            consersation.getListMessageData().add(newMessage);
-            adapter.notifyDataSetChanged();
-            linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
+            if (newMessage.show || !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              consersation.getListMessageData().add(newMessage);
+              adapter.notifyDataSetChanged();
+              linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
+            }
           }
         }
 
@@ -869,7 +876,7 @@ public class ChatActivity extends MainActivity
   @Override
   protected void onStop() {
 
-    if(onMessageChangedListener != null && roomRef != null) {
+    if (onMessageChangedListener != null && roomRef != null) {
       roomRef.removeEventListener(onMessageChangedListener);
     }
 
@@ -981,10 +988,20 @@ public class ChatActivity extends MainActivity
     startActivity(profIntent);
   }
 
+  public Map<Integer, Boolean> markedMessageMap = new HashMap<>();
+
   @SuppressLint("ResourceAsColor")
   public void onMessageMark(View view) {
 
-    Integer position = messageMap.get(view.toString().substring(30, 38));
+    int id = view.getId();
+
+    System.out.println("ViewId onMark");
+    System.out.println(id);
+
+    Integer position = messageMap.get(id);
+
+    System.out.println("ASDASDASDSADASDASDA");
+    System.out.println(view.toString());
 
     if (position == null) return;
 
@@ -992,24 +1009,20 @@ public class ChatActivity extends MainActivity
 
     if (message == null) return;
 
-    switch (view.getBackground().getAlpha()) {
-      case 0: {
-        view.setBackgroundColor(colorMarked);
+    markedMessageMap.put(id, !(markedMessageMap.containsKey(id) && ((Boolean) markedMessageMap.get(id))));
 
-        favoriteMessages.put(position, message);
-        break;
-      }
-      default: {
-        view.setBackgroundColor(Color.argb(0, 255, 255, 255));
+    if(markedMessageMap.get(id)) {
 
-        for (Iterator<Map.Entry<Integer, Message>> it = favoriteMessages.entrySet().iterator(); it.hasNext(); ) {
-          Map.Entry<Integer, Message> entry = it.next();
-          if (Objects.equals(entry.getKey(), position)) {
-            it.remove();
-          }
+      view.setBackgroundColor(colorMarked);
+      favoriteMessages.put(position, message);
+    } else {
+
+      view.setBackgroundColor(Color.argb(0, 255, 255, 255));
+      for (Iterator<Map.Entry<Integer, Message>> it = favoriteMessages.entrySet().iterator(); it.hasNext(); ) {
+        Map.Entry<Integer, Message> entry = it.next();
+        if (Objects.equals(entry.getKey(), position)) {
+          it.remove();
         }
-
-        break;
       }
     }
 
@@ -1018,6 +1031,11 @@ public class ChatActivity extends MainActivity
       if (favorite != null) {
         favorite.setEnabled(true);
         favorite.setVisible(true);
+      }
+
+      if (removeMessage != null) {
+        removeMessage.setEnabled(true);
+        removeMessage.setVisible(true);
       }
 
       if (audio_call != null) {
@@ -1034,6 +1052,11 @@ public class ChatActivity extends MainActivity
       if (favorite != null) {
         favorite.setEnabled(false);
         favorite.setVisible(false);
+      }
+
+      if (removeMessage != null) {
+        removeMessage.setEnabled(false);
+        removeMessage.setVisible(false);
       }
 
       if (audio_call != null && audioVideoServiceConnected && !isInBlackList) {
@@ -1177,8 +1200,8 @@ public class ChatActivity extends MainActivity
         }
 
         favoriteMessages.clear();
-        for (Iterator<Map.Entry<String, View>> it = messageViews.entrySet().iterator(); it.hasNext(); ) {
-          Map.Entry<String, View> entry = it.next();
+        for (Iterator<Map.Entry<Integer, View>> it = messageViews.entrySet().iterator(); it.hasNext(); ) {
+          Map.Entry<Integer, View> entry = it.next();
           entry.getValue().setBackgroundColor(Color.argb(0, 255, 255, 255));
         }
 
@@ -1197,6 +1220,122 @@ public class ChatActivity extends MainActivity
           video_call.setVisible(true);
         }
 
+        break;
+      }
+
+      case R.id.removeMessage: {
+
+        int remove_messages_array = R.array.remove_messages_array_2_opt;
+
+        for (Object o : favoriteMessages.entrySet()) {
+          Map.Entry pair = (Map.Entry) o;
+
+          Message message = (Message) pair.getValue();
+
+          if (!Objects.equals(message.idSender, StaticConfig.UID)) {
+
+            remove_messages_array = R.array.remove_messages_array_1_opt;
+            break;
+          }
+        }
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context);
+        builder.setTitle("Удаление сообщения")
+          .setItems(remove_messages_array, new DialogInterface.OnClickListener() {
+            public void onClick(DialogInterface dialog, int which) {
+              //0 = from user
+              //1 = from all
+              switch (which) {
+                case 0:
+                  deleteFromMine();
+                case 1:
+                  deleteFromAll();
+              }
+            }
+
+            private void deleteFromMine() {
+
+              final List<Long> timestampList = new ArrayList<>();
+
+              for (Object o : favoriteMessages.entrySet()) {
+                Map.Entry pair = (Map.Entry) o;
+
+                Message message = (Message) pair.getValue();
+
+                timestampList.add(message.timestamp);
+              }
+
+              FirebaseDatabase.getInstance().getReference().child("message").child(roomId).orderByValue().addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot dataSnapshot) {
+                  if (dataSnapshot != null) {
+
+                    for (DataSnapshot snapshot : dataSnapshot.getChildren()) {
+
+                      HashMap mapMessage = (HashMap) snapshot.getValue();
+
+                      Message message = new Message();
+                      message.idSender = (String) mapMessage.get("idSender");
+                      message.idReceiver = (String) mapMessage.get("idReceiver");
+                      message.timestamp = (long) mapMessage.get("timestamp");
+                      message.watched = (Boolean) mapMessage.get("watched");
+
+                      if (!timestampList.contains(message.timestamp)) continue;
+
+                      if (mapMessage.get("text") != null) {
+                        message.text = (String) mapMessage.get("text");
+                      }
+
+                      if (mapMessage.get("fileModel") != null) {
+                        FileModel fileModel = new FileModel();
+                        HashMap fileHash = (HashMap) mapMessage.get("fileModel");
+                        if (fileHash.containsKey("type"))
+                          fileModel.type = (String) fileHash.get("type");
+
+                        if (fileHash.containsKey("name_file"))
+                          fileModel.name_file = (String) fileHash.get("name_file");
+
+                        if (fileHash.containsKey("url_file"))
+                          fileModel.url_file = (String) fileHash.get("url_file");
+
+                        message.fileModel = fileModel;
+                      }
+
+                      if (mapMessage.get("contact") != null) {
+                        ContactModel contact = new ContactModel();
+                        HashMap fileHash = (HashMap) mapMessage.get("contact");
+                        if (fileHash.containsKey("number"))
+                          contact.number = (String) fileHash.get("number");
+
+                        if (fileHash.containsKey("name"))
+                          contact.name = (String) fileHash.get("name");
+
+                        message.contact = contact;
+                      }
+
+                      if (mapMessage.get("incognito") != null && !Objects.equals(message.idSender, StaticConfig.UID)) {
+
+                        message.incognito = (Boolean) mapMessage.get("incognito");
+                      }
+
+                      message.show = false;
+
+                      FirebaseDatabase.getInstance().getReference().child("message").child(roomId).child(snapshot.getKey()).setValue(message);
+                    }
+                  }
+                }
+
+                @Override
+                public void onCancelled(DatabaseError databaseError) {
+
+                }
+              });
+            }
+
+            private void deleteFromAll() {
+
+            }
+          }).show();
         break;
       }
 
@@ -1229,6 +1368,8 @@ public class ChatActivity extends MainActivity
                       .setTitle("Успешно")
                       .setMessage("Удален из черного списка")
                       .show();
+
+                    activity.recreate();
                   }
                 })
                 .addOnFailureListener(new OnFailureListener() {
@@ -1838,11 +1979,32 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     throw new UnsupportedOperationException();
   }
 
+  @SuppressLint("ResourceAsColor")
   @Override
   public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-    this.activity.messageMap.put(holder.itemView.toString().substring(30, 38), position);
-    this.activity.messageViews.put(holder.itemView.toString().substring(30, 38), holder.itemView);
+    System.out.println("OPIMNDQNWDQMDOSJADMASDJQWKD");
+    System.out.println(position);
+//    System.out.println(holder.itemView.toString().substring(30, 38));
+//    System.out.println(holder.itemView.toString());
+
+    int viewId = consersation.getListMessageData().get(position).hashCode();
+
+    System.out.println("viewId");
+    System.out.println(viewId);
+
+    holder.itemView.setId(viewId);
+
+    this.activity.messageMap.put(viewId, position);
+    this.activity.messageViews.put(viewId, holder.itemView);
+
+    if(this.activity.markedMessageMap.containsKey(viewId) && ((Boolean) this.activity.markedMessageMap.get(viewId))) {
+
+      holder.itemView.setBackgroundColor(colorMarked);
+    } else {
+
+      holder.itemView.setBackgroundColor(Color.argb(0, 255, 255, 255));
+    }
 
     if (holder instanceof ItemMessageDate) {
       ((ItemMessageDate) holder).dateContent.setText(consersation.getListMessageData().get(position).date);
@@ -1950,7 +2112,7 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
           ((ItemMessageUserHolder) holder).txtContent.setVisibility(View.VISIBLE);
           ((ItemMessageUserHolder) holder).txtContent.setText(consersation.getListMessageData().get(position).text);
 
-          if(consersation.getListMessageData().get(position).watched != null && consersation.getListMessageData().get(position).watched) {
+          if (consersation.getListMessageData().get(position).watched != null && consersation.getListMessageData().get(position).watched) {
 
             ((ItemMessageUserHolder) holder).watched.setImageDrawable(context.getResources().getDrawable(R.drawable.dbird_green));
           } else {

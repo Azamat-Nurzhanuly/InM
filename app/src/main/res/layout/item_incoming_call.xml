@@ -42,9 +42,8 @@
                     android:layout_marginBottom="8dp"
                     android:layout_marginStart="8dp"
                     android:layout_weight="1.5"
-                    android:gravity="center_vertical|right"
+                    android:gravity="center_vertical"
                     android:paddingRight="10dp"
-                    android:textAlignment="center"
                     android:textAppearance="?android:attr/textAppearanceSmall"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintStart_toStartOf="parent" />

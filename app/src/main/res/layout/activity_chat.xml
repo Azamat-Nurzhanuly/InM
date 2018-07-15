@@ -42,7 +42,7 @@
     android:inputType="textLongMessage"
     android:maxLines="1"
     android:paddingEnd="7dp"
-    android:paddingStart="40dp"
+    android:paddingStart="7dp"
     android:textColorHint="#aeafaf"
     android:textSize="15sp" />
 

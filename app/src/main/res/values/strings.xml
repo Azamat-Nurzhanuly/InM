@@ -6,6 +6,7 @@
     <string name="removeFromBlackList">Убрать из черного списка</string>
     <string name="mediaHistory">Медиа</string>
     <string name="addFavorites">Добавить в избранные</string>
+    <string name="removeMessage">Удалить сообщение</string>
     <string name="removeFavorites">Убрать из избранных</string>
     <string name="download">Сохранить</string>
     <string name="login_success">Успешная авторизация</string>

@@ -45,4 +45,13 @@
         android:visible="false"
         app:showAsAction="always"
         android:icon="@drawable/favorite"/>
+
+    <item
+      android:id="@+id/removeMessage"
+      android:orderInCategory="108"
+      android:title="@string/removeMessage"
+      android:enabled="false"
+      android:visible="false"
+      app:showAsAction="always"
+      android:icon="@drawable/trash"/>
 </menu>
