@@ -5,16 +5,17 @@ import java.util.Objects;
 
 public class Message {
 
-  public String idSender;
-  public String idReceiver;
-  public String text;
+  public String idSender = "";
+  public String idReceiver = "";
+  public String text = "";
   public FileModel fileModel;
   public ContactModel contact;
   public Boolean incognito = false;
   public long timestamp;
   public Long lifeTime = 30L;
   public Boolean watched = false;
-  public Boolean show = true;
+  public Boolean showSender = true;
+  public Boolean showReceiver = true;
 
   public String date;
 
@@ -38,8 +39,6 @@ public class Message {
       return false;
     if (lifeTime != null ? !lifeTime.equals(message.lifeTime) : message.lifeTime != null)
       return false;
-    if (watched != null ? !watched.equals(message.watched) : message.watched != null) return false;
-    if (show != null ? !show.equals(message.show) : message.show != null) return false;
     return date != null ? date.equals(message.date) : message.date == null;
   }
 
@@ -54,7 +53,8 @@ public class Message {
     result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
     result = 31 * result + (lifeTime != null ? lifeTime.hashCode() : 0);
     result = 31 * result + (watched != null ? watched.hashCode() : 0);
-    result = 31 * result + (show != null ? show.hashCode() : 0);
+    result = 31 * result + (showSender != null ? showSender.hashCode() : 0);
+    result = 31 * result + (showReceiver != null ? showReceiver.hashCode() : 0);
     result = 31 * result + (date != null ? date.hashCode() : 0);
     return result;
   }

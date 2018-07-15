@@ -59,6 +59,7 @@ import com.android.barracuda.inter.CallListener;
 import com.android.barracuda.inter.ClickListenerChatFirebase;
 import com.android.barracuda.model.Consersation;
 import com.android.barracuda.model.ContactModel;
+import com.android.barracuda.model.DateMessage;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
 import com.android.barracuda.service.SinchService;
@@ -662,11 +663,18 @@ public class ChatActivity extends MainActivity
             newMessage.timestamp = (long) mapMessage.get("timestamp");
             newMessage.watched = (Boolean) mapMessage.get("watched");
 
-            if (mapMessage.get("show") != null) {
+            if (mapMessage.get("showSender") != null) {
 
-              newMessage.show = (Boolean) mapMessage.get("show");
+              newMessage.showSender = (Boolean) mapMessage.get("showSender");
             } else {
-              newMessage.show = true;
+              newMessage.showSender = true;
+            }
+
+            if (mapMessage.get("showReceiver") != null) {
+
+              newMessage.showReceiver = (Boolean) mapMessage.get("showReceiver");
+            } else {
+              newMessage.showReceiver = true;
             }
 
             if (mapMessage.get("text") != null) {
@@ -733,7 +741,7 @@ public class ChatActivity extends MainActivity
               String date = d_m_y_formatter.format(newMessage.timestamp);
               String currentDate = d_m_y_formatter.format(new Timestamp(System.currentTimeMillis()));
 
-              Message dateMessage = new Message();
+              DateMessage dateMessage = new DateMessage();
               dateMessage.date = date;
 
               if (Objects.equals(date, currentDate)) {
@@ -758,12 +766,37 @@ public class ChatActivity extends MainActivity
               FirebaseDatabase.getInstance().getReference().child("message/" + roomId + "/" + dataSnapshot.getKey()).setValue(newMessage);
             }
 
-            if (newMessage.show || !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+            if (newMessage.showSender && Objects.equals(newMessage.idSender, StaticConfig.UID)) {
 
               consersation.getListMessageData().add(newMessage);
-              adapter.notifyDataSetChanged();
               linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
+            } else {
+
+              if (newMessage.showReceiver && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+                consersation.getListMessageData().add(newMessage);
+                linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
+              }
             }
+
+            int i = 0;
+            while (i + 1 < consersation.getListMessageData().size()) {
+
+              if (consersation.getListMessageData().get(i) instanceof DateMessage
+                && consersation.getListMessageData().get(i + 1) instanceof DateMessage) {
+
+                consersation.getListMessageData().remove(i);
+              } else {
+                i++;
+              }
+            }
+
+            if (consersation.getListMessageData().get(consersation.getListMessageData().size() - 1) instanceof DateMessage) {
+
+              consersation.getListMessageData().remove(consersation.getListMessageData().size() - 1);
+            }
+
+            adapter.notifyDataSetChanged();
           }
         }
 
@@ -778,6 +811,20 @@ public class ChatActivity extends MainActivity
             newMessage.idReceiver = (String) mapMessage.get("idReceiver");
             newMessage.timestamp = (long) mapMessage.get("timestamp");
             newMessage.watched = (Boolean) mapMessage.get("watched");
+
+            if (mapMessage.get("showSender") != null) {
+
+              newMessage.showSender = (Boolean) mapMessage.get("showSender");
+            } else {
+              newMessage.showSender = true;
+            }
+
+            if (mapMessage.get("showReceiver") != null) {
+
+              newMessage.showReceiver = (Boolean) mapMessage.get("showReceiver");
+            } else {
+              newMessage.showReceiver = true;
+            }
 
             if (mapMessage.get("text") != null) {
               newMessage.text = (String) mapMessage.get("text");
@@ -825,6 +872,55 @@ public class ChatActivity extends MainActivity
 
                 consersation.getListMessageData().get(i).watched = newMessage.watched;
               }
+            }
+
+            if (!newMessage.showSender && Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+
+                if (Objects.equals(consersation.getListMessageData().get(i), newMessage)) {
+                  consersation.getListMessageData().remove(i);
+                  break;
+                }
+              }
+            }
+
+            if (!newMessage.showReceiver && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              System.out.println("DATA_CHANGED");
+              System.out.println(newMessage.showReceiver);
+              System.out.println(StaticConfig.UID);
+
+              for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+
+                System.out.println(consersation.getListMessageData().get(i).hashCode());
+                System.out.println(newMessage.hashCode());
+
+                if (Objects.equals(consersation.getListMessageData().get(i), newMessage)) {
+                  System.out.println("ASDASDADSASDASDASDASASDASD_EQUALITY");
+                  System.out.println(consersation.getListMessageData().get(i).hashCode());
+                  System.out.println(newMessage.hashCode());
+                  consersation.getListMessageData().remove(i);
+                  break;
+                }
+              }
+            }
+
+            int i = 0;
+            while (i + 1 < consersation.getListMessageData().size()) {
+
+              if (consersation.getListMessageData().get(i) instanceof DateMessage
+                && consersation.getListMessageData().get(i + 1) instanceof DateMessage) {
+
+                consersation.getListMessageData().remove(i);
+              } else {
+                i++;
+              }
+            }
+
+            if (consersation.getListMessageData().get(consersation.getListMessageData().size() - 1) instanceof DateMessage) {
+
+              consersation.getListMessageData().remove(consersation.getListMessageData().size() - 1);
             }
 
             adapter.notifyDataSetChanged();
@@ -1011,7 +1107,7 @@ public class ChatActivity extends MainActivity
 
     markedMessageMap.put(id, !(markedMessageMap.containsKey(id) && ((Boolean) markedMessageMap.get(id))));
 
-    if(markedMessageMap.get(id)) {
+    if (markedMessageMap.get(id)) {
 
       view.setBackgroundColor(colorMarked);
       favoriteMessages.put(position, message);
@@ -1318,7 +1414,13 @@ public class ChatActivity extends MainActivity
                         message.incognito = (Boolean) mapMessage.get("incognito");
                       }
 
-                      message.show = false;
+                      if (Objects.equals(message.idSender, StaticConfig.UID)) {
+
+                        message.showSender = false;
+                      } else {
+
+                        message.showReceiver = false;
+                      }
 
                       FirebaseDatabase.getInstance().getReference().child("message").child(roomId).child(snapshot.getKey()).setValue(message);
                     }
@@ -1998,7 +2100,7 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     this.activity.messageMap.put(viewId, position);
     this.activity.messageViews.put(viewId, holder.itemView);
 
-    if(this.activity.markedMessageMap.containsKey(viewId) && ((Boolean) this.activity.markedMessageMap.get(viewId))) {
+    if (this.activity.markedMessageMap.containsKey(viewId) && ((Boolean) this.activity.markedMessageMap.get(viewId))) {
 
       holder.itemView.setBackgroundColor(colorMarked);
     } else {
@@ -2184,6 +2286,7 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     if (consersation.getListMessageData() != null
       && !consersation.getListMessageData().isEmpty()
       && position < consersation.getListMessageData().size()
+      && consersation.getListMessageData().get(position) instanceof DateMessage
       && consersation.getListMessageData().get(position).date != null) {
       return ChatActivity.VIEW_TYPE_MESSAGE_DATE;
     }
