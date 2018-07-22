@@ -120,7 +120,6 @@ import static com.android.barracuda.data.StaticConfig.INTENT_KEY_CHAT_ID;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_AUDIO;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_IMAGE;
 import static com.android.barracuda.ui.ChatActivity.MESSAGE_TYPE_VIDEO;
-import static java.lang.Boolean.TRUE;
 
 
 public class ChatActivity extends MainActivity
@@ -450,9 +449,15 @@ public class ChatActivity extends MainActivity
           HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
           Message newMessage = new Message();
-          newMessage.idSender = (String) mapMessage.get("idSender");
-          newMessage.idReceiver = (String) mapMessage.get("idReceiver");
-          newMessage.timestamp = (long) mapMessage.get("timestamp");
+
+          if (mapMessage.containsKey("idSender"))
+            newMessage.idSender = (String) mapMessage.get("idSender");
+
+          if (mapMessage.containsKey("idReceiver"))
+            newMessage.idReceiver = (String) mapMessage.get("idReceiver");
+
+          if (mapMessage.containsKey("timestamp"))
+            newMessage.timestamp = (Long) mapMessage.get("timestamp");
 
           if (mapMessage.get("text") != null) {
             newMessage.text = (String) mapMessage.get("text");

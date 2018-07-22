@@ -1,5 +1,7 @@
 package com.android.barracuda.service;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.app.Service;
@@ -7,11 +9,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.os.Binder;
+import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
+import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Log;
@@ -47,6 +52,11 @@ public class FriendChatService extends Service {
   public ListFriend listFriend;
   public ArrayList<Group> listGroup;
   public CountDownTimer updateOnline;
+  public NotificationManager manager;
+
+  public static final String NOTIFICATION_CHANNEL_ID = "com.android.barracuda.channel_id";
+  public static final String NOTIFICATION_CHANNEL_NAME = "com.android.barracuda.channel_name";
+
 
   public FriendChatService() {
   }
@@ -81,6 +91,7 @@ public class FriendChatService extends Service {
         if (!listKey.contains(friend.idRoom)) {
           mapQuery.put(friend.idRoom, FirebaseDatabase.getInstance().getReference().child("message/" + friend.idRoom).limitToLast(1));
           mapChildEventListenerMap.put(friend.idRoom, new ChildEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
               if (mapMark.get(friend.idRoom) != null && mapMark.get(friend.idRoom)) {
@@ -129,6 +140,7 @@ public class FriendChatService extends Service {
         if (!listKey.contains(group.id)) {
           mapQuery.put(group.id, FirebaseDatabase.getInstance().getReference().child("message/" + group.id).limitToLast(1));
           mapChildEventListenerMap.put(group.id, new ChildEventListener() {
+            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
               if (mapMark.get(group.id) != null && mapMark.get(group.id)) {
@@ -175,15 +187,28 @@ public class FriendChatService extends Service {
     mapMark.put(id, false);
   }
 
+  @RequiresApi(api = Build.VERSION_CODES.O)
   public void createNotify(String name, String content, int id, Bitmap icon, boolean isGroup) {
-    Intent activityIntent = new Intent(this, MainActivity.class);
-    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+
+
+    NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+      NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
+    // Configure the notification channel
+    channel.enableLights(true);
+    channel.enableVibration(true);
+    channel.setDescription("MyApp event controls");
+    channel.setShowBadge(false);
+    channel.setLightColor(Color.GREEN);
+    channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+    channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
+
+    getManager().createNotificationChannel(channel);
+
     NotificationCompat.Builder notificationBuilder = new
-      NotificationCompat.Builder(this)
+      NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
       .setLargeIcon(icon)
       .setContentTitle(name)
       .setContentText(content)
-      .setContentIntent(pendingIntent)
       .setVibrate(new long[]{1000, 1000})
       .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
       .setAutoCancel(true);
@@ -192,12 +217,13 @@ public class FriendChatService extends Service {
     } else {
       notificationBuilder.setSmallIcon(R.drawable.ic_tab_person);
     }
-    NotificationManager notificationManager =
-      (NotificationManager) this.getSystemService(
-        Context.NOTIFICATION_SERVICE);
-    notificationManager.cancel(id);
-    notificationManager.notify(id,
-      notificationBuilder.build());
+
+    Intent activityIntent = new Intent(this, MainActivity.class);
+    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+
+    notificationBuilder.setContentIntent(pendingIntent);
+    manager.notify(id, notificationBuilder.build());
+
   }
 
   @Override
@@ -224,6 +250,13 @@ public class FriendChatService extends Service {
     mapBitmap.clear();
     updateOnline.cancel();
     Log.d(TAG, "OnDestroyService");
+  }
+
+  public NotificationManager getManager() {
+    if (manager == null)
+      manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+    return manager;
   }
 
   public class LocalBinder extends Binder {
