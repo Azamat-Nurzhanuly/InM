@@ -236,16 +236,16 @@ public class ProfileActivity extends BarracudaActivity {
 
   public void setupArrayListInfo(User myAccount) {
     listConfig.clear();
-    Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
+    Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.drawable.ic_contact_black);
     listConfig.add(userNameConfig);
 
-    Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
+    Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.drawable.ic_phone_black);
     listConfig.add(phoneNumberConfig);
 
-    Configuration statusConfig = new Configuration(STATUS_LABEL, myAccount.status.text, R.drawable.status);
+    Configuration statusConfig = new Configuration(STATUS_LABEL, myAccount.status.text, R.drawable.ic_chat_black);
     listConfig.add(statusConfig);
 
-    Configuration signout = new Configuration(SIGNOUT_LABEL, "", R.mipmap.ic_power_settings);
+    Configuration signout = new Configuration(SIGNOUT_LABEL, "", R.drawable.ic_x_black);
     listConfig.add(signout);
   }
 
@@ -290,6 +290,23 @@ public class ProfileActivity extends BarracudaActivity {
       holder.label.setText(config.getLabel());
       holder.value.setText(config.getValue());
       holder.icon.setImageResource(config.getIcon());
+
+      (holder.label).setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View view) {
+          if (config.getLabel().equals(SIGNOUT_LABEL)) {
+            FirebaseAuth.getInstance().signOut();
+            FriendDB.getInstance(context).dropDB();
+            GroupDB.getInstance(context).dropDB();
+            ServiceUtils.stopServiceFriendChat(context.getApplicationContext(), true);
+            Intent i = getBaseContext().getPackageManager()
+              .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
+          }
+        }
+      });
+
       ((RelativeLayout) holder.label.getParent()).setOnClickListener(new View.OnClickListener() {
         @Override
         public void onClick(View view) {
@@ -298,7 +315,10 @@ public class ProfileActivity extends BarracudaActivity {
             FriendDB.getInstance(context).dropDB();
             GroupDB.getInstance(context).dropDB();
             ServiceUtils.stopServiceFriendChat(context.getApplicationContext(), true);
-            activity.finish();
+            Intent i = getBaseContext().getPackageManager()
+              .getLaunchIntentForPackage( getBaseContext().getPackageName() );
+            i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(i);
           }
 
           if (config.getLabel().equals(USERNAME_LABEL)) {
