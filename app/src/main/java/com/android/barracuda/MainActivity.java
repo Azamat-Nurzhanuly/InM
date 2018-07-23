@@ -37,15 +37,6 @@ import com.android.barracuda.ui.ContactListFragment;
 import com.android.barracuda.ui.FriendsFragment;
 import com.android.barracuda.ui.GroupFragment;
 import com.android.barracuda.util.SharedPrefUtil;
-import com.facebook.accountkit.AccessToken;
-import com.facebook.accountkit.Account;
-import com.facebook.accountkit.AccountKit;
-import com.facebook.accountkit.AccountKitCallback;
-import com.facebook.accountkit.AccountKitError;
-import com.facebook.accountkit.AccountKitLoginResult;
-import com.facebook.accountkit.ui.AccountKitActivity;
-import com.facebook.accountkit.ui.AccountKitConfiguration;
-import com.facebook.accountkit.ui.LoginType;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.Task;
@@ -108,7 +99,7 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   private SinchService.SinchServiceInterface mSinchServiceInterface;
 
   public void onLogoutClick(View view) {
-    AccountKit.logOut();
+//    AccountKit.logOut();
     mAuth.signOut();
   }
 
@@ -218,12 +209,12 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
           Log.d(TAG, "onAuthStateChanged:signed_out");
 
-          final AccessToken accessToken = AccountKit.getCurrentAccessToken();
-          if (accessToken != null) {
-            getCustomToken(accessToken);
-          } else {
-            phoneLogin();
-          }
+//          final AccessToken accessToken = AccountKit.getCurrentAccessToken();
+//          if (accessToken != null) {
+//            getCustomToken(accessToken);
+//          } else {
+//            phoneLogin();
+//          }
         }
       }
 
@@ -293,23 +284,23 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
 
   void initNewUserInfo() {
 
-    AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
-      @Override
-      public void onSuccess(final Account account) {
-
-        User newUser = new User();
-        newUser.id = account.getId();
-        newUser.phoneNumber = account.getPhoneNumber().getPhoneNumber();
-        newUser.name = account.getPhoneNumber().getPhoneNumber();
-        newUser.avata = StaticConfig.STR_DEFAULT_BASE64;
-        FirebaseDatabase.getInstance().getReference().child("user/" + user.getUid()).setValue(newUser);
-      }
-
-      @Override
-      public void onError(final AccountKitError error) {
-        Log.e(TAG, "GetCurrentAccountError: " + error);
-      }
-    });
+//    AccountKit.getCurrentAccount(new AccountKitCallback<Account>() {
+//      @Override
+//      public void onSuccess(final Account account) {
+//
+//        User newUser = new User();
+//        newUser.id = account.getId();
+//        newUser.phoneNumber = account.getPhoneNumber().getPhoneNumber();
+//        newUser.name = account.getPhoneNumber().getPhoneNumber();
+//        newUser.avata = StaticConfig.STR_DEFAULT_BASE64;
+//        FirebaseDatabase.getInstance().getReference().child("user/" + user.getUid()).setValue(newUser);
+//      }
+//
+//      @Override
+//      public void onError(final AccountKitError error) {
+//        Log.e(TAG, "GetCurrentAccountError: " + error);
+//      }
+//    });
   }
 
   /**
@@ -389,56 +380,56 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   protected void onActivityResult(final int requestCode, final int resultCode, final Intent data) {
     super.onActivityResult(requestCode, resultCode, data);
 
-    if (requestCode == APP_REQUEST_CODE) {
-      handleFacebookLoginResult(resultCode, data);
-    }
+//    if (requestCode == APP_REQUEST_CODE) {
+//      handleFacebookLoginResult(resultCode, data);
+//    }
   }
 
-  private void handleFacebookLoginResult(final int resultCode, final Intent data) {
-    final AccountKitLoginResult loginResult =
-      data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
+//  private void handleFacebookLoginResult(final int resultCode, final Intent data) {
+//    final AccountKitLoginResult loginResult =
+//      data.getParcelableExtra(AccountKitLoginResult.RESULT_KEY);
+//
+//    if (loginResult.getError() != null) {
+//      final String toastMessage = loginResult.getError().getErrorType().getMessage();
+//      Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
+//    } else if (loginResult.wasCancelled() || resultCode == RESULT_CANCELED) {
+//      Log.d(TAG, "Login cancelled");
+//      finish();
+//    } else {
+//      if (loginResult.getAccessToken() != null) {
+//        Log.d(TAG, "We have logged with FB Account Kit. ID: " +
+//          loginResult.getAccessToken().getAccountId());
+//        getCustomToken(loginResult.getAccessToken());
+//      } else {
+//        Log.wtf(TAG, "It should not have been happened");
+//      }
+//    }
+//  }
 
-    if (loginResult.getError() != null) {
-      final String toastMessage = loginResult.getError().getErrorType().getMessage();
-      Toast.makeText(this, toastMessage, Toast.LENGTH_LONG).show();
-    } else if (loginResult.wasCancelled() || resultCode == RESULT_CANCELED) {
-      Log.d(TAG, "Login cancelled");
-      finish();
-    } else {
-      if (loginResult.getAccessToken() != null) {
-        Log.d(TAG, "We have logged with FB Account Kit. ID: " +
-          loginResult.getAccessToken().getAccountId());
-        getCustomToken(loginResult.getAccessToken());
-      } else {
-        Log.wtf(TAG, "It should not have been happened");
-      }
-    }
-  }
-
-  private void getCustomToken(final AccessToken accessToken) {
-    Log.d(TAG, "Getting custom token for Account Kit access token: " + accessToken.getToken());
-    mCloudFunctions.getCustomToken(accessToken.getToken()).enqueue(new Callback<ResponseBody>() {
-      @Override
-      public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
-        try {
-          if (response.isSuccessful()) {
-            final String customToken = response.body().string();
-            Log.d(TAG, "Custom token: " + customToken);
-            signInWithCustomToken(customToken);
-          } else {
-            Log.e(TAG, response.errorBody().string());
-          }
-        } catch (IOException e) {
-          e.printStackTrace();
-        }
-      }
-
-      @Override
-      public void onFailure(Call<ResponseBody> call, Throwable e) {
-        Log.e(TAG, "Request getCustomToken failed", e);
-      }
-    });
-  }
+//  private void getCustomToken(final AccessToken accessToken) {
+//    Log.d(TAG, "Getting custom token for Account Kit access token: " + accessToken.getToken());
+//    mCloudFunctions.getCustomToken(accessToken.getToken()).enqueue(new Callback<ResponseBody>() {
+//      @Override
+//      public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
+//        try {
+//          if (response.isSuccessful()) {
+//            final String customToken = response.body().string();
+//            Log.d(TAG, "Custom token: " + customToken);
+//            signInWithCustomToken(customToken);
+//          } else {
+//            Log.e(TAG, response.errorBody().string());
+//          }
+//        } catch (IOException e) {
+//          e.printStackTrace();
+//        }
+//      }
+//
+//      @Override
+//      public void onFailure(Call<ResponseBody> call, Throwable e) {
+//        Log.e(TAG, "Request getCustomToken failed", e);
+//      }
+//    });
+//  }
 
   private void signInWithCustomToken(String customToken) {
     mAuth.signInWithCustomToken(customToken)
@@ -457,15 +448,15 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
       });
   }
 
-  private void phoneLogin() {
-    final Intent intent = new Intent(this, AccountKitActivity.class);
-    final AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
-      new AccountKitConfiguration.AccountKitConfigurationBuilder(LoginType.PHONE,
-        AccountKitActivity.ResponseType.TOKEN);
-    intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
-      configurationBuilder.build());
-    startActivityForResult(intent, APP_REQUEST_CODE);
-  }
+//  private void phoneLogin() {
+//    final Intent intent = new Intent(this, AccountKitActivity.class);
+//    final AccountKitConfiguration.AccountKitConfigurationBuilder configurationBuilder =
+//      new AccountKitConfiguration.AccountKitConfigurationBuilder(LoginType.PHONE,
+//        AccountKitActivity.ResponseType.TOKEN);
+//    intent.putExtra(AccountKitActivity.ACCOUNT_KIT_ACTIVITY_CONFIGURATION,
+//      configurationBuilder.build());
+//    startActivityForResult(intent, APP_REQUEST_CODE);
+//  }
 
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {

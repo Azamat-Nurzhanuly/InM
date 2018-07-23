@@ -835,7 +835,6 @@ public class ChatActivity extends MainActivity
               newMessage.text = (String) mapMessage.get("text");
             }
 
-
             if (mapMessage.get("fileModel") != null) {
               FileModel fileModel = new FileModel();
               HashMap fileHash = (HashMap) mapMessage.get("fileModel");
