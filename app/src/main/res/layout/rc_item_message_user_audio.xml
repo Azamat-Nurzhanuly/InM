@@ -32,7 +32,7 @@
 
   <LinearLayout
     android:id="@+id/audioUserView"
-    android:layout_width="match_parent"
+    android:layout_width="480dp"
     android:layout_height="80dp"
     android:layout_alignBottom="@+id/messageBird"
     android:layout_toStartOf="@id/imageView2"
