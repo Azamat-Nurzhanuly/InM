@@ -403,7 +403,6 @@ public class ChatActivity extends MainActivity
     favoriteMessages = new HashMap<>();
     totalFavoriteMessages = new HashSet<>();
 
-    //TODO здесь падает
     int background = getBackground(this);
     View wallpaper = findViewById(R.id.wallpaper);
     wallpaper.setBackgroundResource(background);

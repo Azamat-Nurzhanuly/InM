@@ -129,13 +129,13 @@ public class FriendProfileActivity extends BarracudaActivity {
 
   public void setupArrayListInfo(User myAccount) {
     listConfig.clear();
-    Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.mipmap.ic_account_box);
+    Configuration userNameConfig = new Configuration(USERNAME_LABEL, myAccount.name, R.drawable.ic_contact_black);
     listConfig.add(userNameConfig);
 
-    Configuration statusConfig = new Configuration(STATUS_LABEL, myAccount.status.text, R.drawable.status);
+    Configuration statusConfig = new Configuration(STATUS_LABEL, myAccount.status.text, R.drawable.ic_chat_black);
     listConfig.add(statusConfig);
 
-    Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.mipmap.ic_email);
+    Configuration phoneNumberConfig = new Configuration(PHONE_NUMBER_LABEL, myAccount.phoneNumber, R.drawable.ic_phone_black);
     listConfig.add(phoneNumberConfig);
   }
 

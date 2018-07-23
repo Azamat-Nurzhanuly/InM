@@ -81,14 +81,14 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/parent_layout"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content"
+    android:layout_height="match_parent"
     android:layout_toEndOf="@id/attach_button"
     tools:context=".ui.ChatActivity">
 
     <com.devlomi.record_view.RecordView
       android:id="@+id/record_view"
       android:layout_width="match_parent"
-      android:layout_height="wrap_content"
+      android:layout_height="40dp"
       android:layout_alignParentBottom="true"
       android:layout_toStartOf="@+id/record_button"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
