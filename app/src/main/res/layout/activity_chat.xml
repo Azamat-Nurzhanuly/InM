@@ -88,7 +88,8 @@
     <com.devlomi.record_view.RecordView
       android:id="@+id/record_view"
       android:layout_width="match_parent"
-      android:layout_height="40dp"
+      android:translationY="10dp"
+      android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
       android:layout_toStartOf="@+id/record_button"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
