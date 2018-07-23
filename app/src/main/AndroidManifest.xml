@@ -83,7 +83,10 @@
     <activity
       android:name=".ui.ChatActivity"
       android:parentActivityName=".MainActivity"
-      android:screenOrientation="portrait" />
+      android:screenOrientation="portrait"
+      android:windowSoftInputMode="adjustResize|stateAlwaysHidden|adjustPan"
+      android:isScrollContainer="false"
+      />
     <activity
         android:name=".MediaChatActivity"
         android:parentActivityName=".ui.ChatActivity"

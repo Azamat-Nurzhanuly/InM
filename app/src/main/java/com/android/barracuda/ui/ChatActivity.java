@@ -403,9 +403,9 @@ public class ChatActivity extends MainActivity
     favoriteMessages = new HashMap<>();
     totalFavoriteMessages = new HashSet<>();
 
-//    int background = getBackground(this);
-//    View wallpaper = findViewById(R.id.wallpaper);
-//    wallpaper.setBackgroundResource(background);
+    int background = getBackground(this);
+    View wallpaper = findViewById(R.id.wallpaper);
+    wallpaper.setBackgroundResource(background);
 
     final Retrofit retrofit = new Retrofit.Builder()
       .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
