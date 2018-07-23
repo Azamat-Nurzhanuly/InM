@@ -206,8 +206,10 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                   switch (which) {
                     case 0:
                       audioCall();
+                      break;
                     case 1:
                       videoCall();
+                      break;
                   }
                 }
 
@@ -251,6 +253,7 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                   } catch (MissingPermissionException e) {
                     ActivityCompat.requestPermissions((Activity) context, new String[]{e.getRequiredPermission()}, 0);
                   }
+
                 }
               }).show();
           }

@@ -16,7 +16,6 @@ import android.widget.TextView;
 
 import com.android.barracuda.R;
 import com.android.barracuda.data.CallDB;
-
 import com.android.barracuda.model.AudioPlayer;
 import com.android.barracuda.model.User;
 import com.android.barracuda.service.SinchService;
@@ -32,7 +31,6 @@ import com.sinch.android.rtc.calling.CallState;
 import com.sinch.android.rtc.video.VideoCallListener;
 import com.sinch.android.rtc.video.VideoController;
 
-import java.sql.Timestamp;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -108,6 +106,8 @@ public class CallScreenActivity extends ChatActivity {
       }
     });
     mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
+
+    removeVideoViews();
   }
 
   @Override
@@ -198,6 +198,7 @@ public class CallScreenActivity extends ChatActivity {
     mTimer = new Timer();
     mDurationTask = new UpdateCallDurationTask();
     mTimer.schedule(mDurationTask, 0, 500);
+    updateUI();
   }
 
   @Override
@@ -228,7 +229,6 @@ public class CallScreenActivity extends ChatActivity {
   }
 
   private class SinchCallListener implements CallListener, VideoCallListener {
-
     @Override
     public void onCallEnded(Call call) {
       CallEndCause cause = call.getDetails().getEndCause();
@@ -245,7 +245,12 @@ public class CallScreenActivity extends ChatActivity {
       Log.d(TAG, "Call established");
       mAudioPlayer.stopProgressTone();
       mCallState.setText("Соединено");
-      setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+//      setVolumeControlStream(AudioManager.STREAM_VOICE_CALL);
+
+      if (call.getDetails().isVideoOffered()) {
+      } else {
+        getSinchServiceInterface().getAudioController().disableSpeaker();
+      }
     }
 
     @Override
@@ -311,8 +316,8 @@ public class CallScreenActivity extends ChatActivity {
 
 
   //VIDEO CALL
-  private boolean mLocalVideoViewAdded = false;
-  private boolean mRemoteVideoViewAdded = false;
+  public boolean mLocalVideoViewAdded = false;
+  public boolean mRemoteVideoViewAdded = false;
 
   private void addLocalView() {
     if (mLocalVideoViewAdded || getSinchServiceInterface() == null) {
@@ -346,7 +351,7 @@ public class CallScreenActivity extends ChatActivity {
   }
 
 
-  private void removeVideoViews() {
+  public void removeVideoViews() {
     if (getSinchServiceInterface() == null) {
       return; // early
     }
