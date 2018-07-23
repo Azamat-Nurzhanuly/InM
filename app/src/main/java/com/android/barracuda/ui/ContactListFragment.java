@@ -363,12 +363,12 @@ class ListContactAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
           int themeColor = MainActivity.getThemeColor((MainActivity) context);
 
-          new LovelyInfoDialog(context)
-            .setTopColorRes(themeColor)
-            .setIcon(R.drawable.ic_add_friend)
-            .setTitle("Успешно")
-            .setMessage("Номер добавлен в список друзей")
-            .show();
+//          new LovelyInfoDialog(context)
+//            .setTopColorRes(themeColor)
+//            .setIcon(R.drawable.ic_add_friend)
+//            .setTitle("Успешно")
+//            .setMessage("Номер добавлен в список друзей")
+//            .show();
 
           Intent intent = new Intent(context, ChatActivity.class);
           intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, userInfo.name);
