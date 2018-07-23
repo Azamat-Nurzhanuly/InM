@@ -143,7 +143,7 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
 
     assert cursor != null;
     cursor.moveToFirst();
-    while (!cursor.isAfterLast()) {
+    while (cursor.moveToNext()) {
       String contactNumber = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER));
       String contactName = cursor.getString(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.DISPLAY_NAME));
       int phoneContactID = cursor.getInt(cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone._ID));
@@ -160,7 +160,6 @@ public class ContactListFragment extends Fragment implements SwipeRefreshLayout.
         dataContactList.getUniqueListContact().add(contactNumber);
         findIDPhoneNumber(phoneContactInfo);
       }
-      cursor.moveToNext();
     }
     cursor.close();
     cursor = null;
