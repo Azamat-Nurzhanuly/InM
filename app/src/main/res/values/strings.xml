@@ -10,20 +10,18 @@
     <string name="removeFavorites">Убрать из избранных</string>
     <string name="download">Сохранить</string>
     <string name="login_success">Успешная авторизация</string>
-    <string name="login">ЛОГИН</string>
+    <string name="login">Авторизация</string>
     <string name="Username">Почта</string>
-    <string name="Password">Пароль</string>
+    <string name="SmsCode">Код из СМС</string>
     <string name="forgot_your_password">Забыли пароль?</string>
-    <string name="go">GO</string>
+    <string name="go">Далее</string>
+    <string name="enter">Войти</string>
     <string name="repeat_password">ПОВТОРИТЕ ПАРОЛЬ</string>
     <string name="next">СЛЕДУЮЩИЙ</string>
     <string name="register">РЕГИСТРАЦИЯ</string>
 
     <string name="deleteFriend">Удалить</string>
     <string name="addBlackList">Добавить в черный список</string>
-
-    <string name="FACEBOOK_APP_ID">169006583806838</string>
-    <string name="ACCOUNT_KIT_CLIENT_TOKEN">1153d3100ba8ab55a91b6ec4d717151d</string>
 
     <string name="hint_username">Введите имя</string>
     <string name="hint_status">Введите статус</string>

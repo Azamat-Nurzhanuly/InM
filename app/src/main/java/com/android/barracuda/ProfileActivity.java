@@ -11,11 +11,9 @@ import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.util.Base64;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -34,9 +32,7 @@ import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.Configuration;
 import com.android.barracuda.model.User;
 import com.android.barracuda.service.ServiceUtils;
-import com.android.barracuda.ProfileActivity;
 import com.android.barracuda.util.ImageUtils;
-import com.facebook.accountkit.AccountKit;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.Task;
@@ -298,7 +294,6 @@ public class ProfileActivity extends BarracudaActivity {
         @Override
         public void onClick(View view) {
           if (config.getLabel().equals(SIGNOUT_LABEL)) {
-            AccountKit.logOut();
             FirebaseAuth.getInstance().signOut();
             FriendDB.getInstance(context).dropDB();
             GroupDB.getInstance(context).dropDB();

@@ -20,8 +20,8 @@ public class StaticConfig {
   public static long TIME_TO_OFFLINE = 2 * 60 * 1000;
 
   //sinch
-  public static String SINCH_KEY = "b77572b7-a9cc-4dc8-b7ad-09254cf7182d";
-  public static String SINCH_SECRET = "PkUMsoJsDk+8uGzCEerM5A==";
+  public static String SINCH_KEY = "a6ec7c38-fa70-4090-ba70-fbcd69029dfa";
+  public static String SINCH_SECRET = "Q4DDVRFEnE2Y1lPvESGVag==";
   public static String SINCH_HOST = "clientapi.sinch.com";
 
 
