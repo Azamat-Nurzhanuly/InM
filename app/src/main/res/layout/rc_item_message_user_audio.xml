@@ -8,9 +8,7 @@
   android:longClickable="true"
   android:onClick="onMessageMark"
   android:orientation="horizontal"
-  android:paddingBottom="5dp"
-  android:paddingLeft="16dp"
-  android:paddingRight="16dp">
+  android:paddingRight="5dp">
 
   <de.hdodenhof.circleimageview.CircleImageView
     android:id="@+id/imageView2"
@@ -32,8 +30,8 @@
 
   <LinearLayout
     android:id="@+id/audioUserView"
-    android:layout_width="480dp"
-    android:layout_height="80dp"
+    android:layout_width="260dp"
+    android:layout_height="wrap_content"
     android:layout_alignBottom="@+id/messageBird"
     android:layout_toStartOf="@id/imageView2"
     android:gravity="center_vertical"
@@ -42,17 +40,16 @@
 
     <RelativeLayout
       android:layout_width="match_parent"
-      android:layout_height="match_parent"
-      android:gravity="center_vertical">
+      android:layout_height="wrap_content"
+      android:gravity="bottom">
 
       <FrameLayout
         android:id="@+id/play_pause_layout"
-        android:layout_width="50dp"
-        android:layout_height="match_parent"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
         android:layout_alignParentLeft="true"
-        android:paddingBottom="5dp"
-        android:paddingRight="5dp"
-        android:paddingTop="5dp">
+        android:layout_marginBottom="5dp"
+        android:paddingRight="5dp">
 
         <ImageView
           android:id="@+id/pause_audio"
@@ -66,7 +63,7 @@
         <ImageView
           android:id="@+id/play_audio"
           android:layout_width="match_parent"
-          android:layout_height="match_parent"
+          android:layout_height="wrap_content"
           android:layout_marginTop="5dp"
           android:padding="6dp"
           android:src="@drawable/play_audio" />
@@ -75,19 +72,19 @@
       <FrameLayout
         android:id="@+id/seekbar_layout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="50dp"
         android:layout_toRightOf="@id/play_pause_layout"
-        android:paddingBottom="5dp"
-        android:paddingRight="5dp"
-        android:paddingTop="5dp">
+        android:layout_alignBottom="@id/play_pause_layout">
 
         <LinearLayout
           android:layout_width="wrap_content"
           android:layout_height="wrap_content"
-          android:orientation="horizontal">
+          android:orientation="horizontal"
+          android:layout_gravity="center_vertical"
+          android:paddingBottom="10dp">
 
           <TextView
-            android:id="@+id/total_time"
+            android:id="@+id/totalTimeAudio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -98,7 +95,6 @@
             android:textSize="11sp" />
 
           <TextView
-            android:id="@+id/date_time"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -109,6 +105,7 @@
             android:textSize="11sp" />
 
           <TextView
+            android:id="@+id/dateTimeAudio"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
@@ -126,7 +123,7 @@
           android:layout_alignParentTop="true"
           android:layout_marginTop="8dp"
           android:layout_centerHorizontal="true"
-          android:layout_gravity="center_vertical" />
+          android:layout_gravity="center_vertical"/>
       </FrameLayout>
     </RelativeLayout>
   </LinearLayout>
