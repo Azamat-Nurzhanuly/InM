@@ -2290,7 +2290,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
       return ChatActivity.VIEW_TYPE_MESSAGE_DATE;
     }
 
-    if (consersation.getListMessageData().get(position).text == null && consersation.getListMessageData().get(position).fileModel != null) {
+    System.out.println("ASDASDASDASDASD getViewType");
+    System.out.println(consersation.getListMessageData().get(position).text + "////");
+    System.out.println(consersation.getListMessageData().get(position).text == null);
+    System.out.println(consersation.getListMessageData().get(position).fileModel);
+
+    if ((consersation.getListMessageData().get(position).text == null || Objects.equals(consersation.getListMessageData().get(position).text, "")) && consersation.getListMessageData().get(position).fileModel != null) {
       if (MESSAGE_TYPE_IMAGE.equals(consersation.getListMessageData().get(position).fileModel.type)) {
         return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
           ? ChatActivity.VIEW_TYPE_USER_MESSAGE_IMAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE;

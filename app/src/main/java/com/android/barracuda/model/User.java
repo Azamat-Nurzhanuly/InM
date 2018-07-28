@@ -21,7 +21,7 @@ public class User {
         status.timestamp = 0;
         message.idReceiver = "0";
         message.idSender = "0";
-        message.text = "";
+        message.text = null;
         message.timestamp = 0;
     }
 }
