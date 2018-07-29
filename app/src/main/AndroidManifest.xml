@@ -84,7 +84,7 @@
       android:name=".ui.ChatActivity"
       android:parentActivityName=".MainActivity"
       android:screenOrientation="portrait"
-      android:windowSoftInputMode="stateVisible|adjustPan"
+      android:windowSoftInputMode="adjustPan"
       android:isScrollContainer="false"
       />
     <activity
