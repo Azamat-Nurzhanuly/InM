@@ -9,7 +9,7 @@
     android:clickable="true"
     android:background="@color/colorTransparent"
   android:paddingTop="10dp"
-  android:paddingRight="10dp"
+  android:paddingRight="5dp"
   android:paddingLeft="10dp"
   android:paddingBottom="0dp">
 

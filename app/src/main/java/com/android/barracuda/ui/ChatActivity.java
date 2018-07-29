@@ -405,6 +405,9 @@ public class ChatActivity extends MainActivity
 
     int background = getBackground(this);
     View wallpaper = findViewById(R.id.wallpaper);
+    System.out.println("ASDADASDASASDDASWQEQW");
+    System.out.println(background);
+    System.out.println(wallpaper);
     wallpaper.setBackgroundResource(background);
 
     final Retrofit retrofit = new Retrofit.Builder()
@@ -2089,15 +2092,7 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
   @Override
   public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
 
-    System.out.println("OPIMNDQNWDQMDOSJADMASDJQWKD");
-    System.out.println(position);
-//    System.out.println(holder.itemView.toString().substring(30, 38));
-//    System.out.println(holder.itemView.toString());
-
     int viewId = consersation.getListMessageData().get(position).hashCode();
-
-    System.out.println("viewId");
-    System.out.println(viewId);
 
     holder.itemView.setId(viewId);
 
@@ -2295,7 +2290,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
       return ChatActivity.VIEW_TYPE_MESSAGE_DATE;
     }
 
-    if (consersation.getListMessageData().get(position).text == null && consersation.getListMessageData().get(position).fileModel != null) {
+    System.out.println("ASDASDASDASDASD getViewType");
+    System.out.println(consersation.getListMessageData().get(position).text + "////");
+    System.out.println(consersation.getListMessageData().get(position).text == null);
+    System.out.println(consersation.getListMessageData().get(position).fileModel);
+
+    if ((consersation.getListMessageData().get(position).text == null || Objects.equals(consersation.getListMessageData().get(position).text, "")) && consersation.getListMessageData().get(position).fileModel != null) {
       if (MESSAGE_TYPE_IMAGE.equals(consersation.getListMessageData().get(position).fileModel.type)) {
         return consersation.getListMessageData().get(position).idSender.equals(StaticConfig.UID)
           ? ChatActivity.VIEW_TYPE_USER_MESSAGE_IMAGE : ChatActivity.VIEW_TYPE_FRIEND_MESSAGE_IMAGE;
@@ -2368,8 +2368,8 @@ class ItemMessageUserHolder extends RecyclerView.ViewHolder implements View.OnCl
     user_seekbar = (SeekBar) itemView.findViewById(R.id.user_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
 
-    totalTime = (TextView) itemView.findViewById(R.id.total_time);
-    dateTime = (TextView) itemView.findViewById(R.id.date_time);
+    totalTime = (TextView) itemView.findViewById(R.id.totalTimeAudio);
+    dateTime = (TextView) itemView.findViewById(R.id.dateTimeAudio);
 
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
@@ -2480,8 +2480,8 @@ class ItemMessageFriendHolder extends RecyclerView.ViewHolder implements View.On
     friend_seekbar = (SeekBar) itemView.findViewById(R.id.friend_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
 
-    totalTime = (TextView) itemView.findViewById(R.id.total_time);
-    dateTime = (TextView) itemView.findViewById(R.id.date_time);
+    totalTime = (TextView) itemView.findViewById(R.id.totalTimeAudio);
+    dateTime = (TextView) itemView.findViewById(R.id.dateTimeAudio);
 
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 

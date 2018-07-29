@@ -963,8 +963,8 @@ class ItemMediaUserHolder extends RecyclerView.ViewHolder implements View.OnClic
     user_seekbar = (SeekBar) itemView.findViewById(R.id.user_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView2);
 
-    totalTime = (TextView) itemView.findViewById(R.id.total_time);
-    dateTime = (TextView) itemView.findViewById(R.id.date_time);
+    totalTime = (TextView) itemView.findViewById(R.id.totalTimeAudio);
+    dateTime = (TextView) itemView.findViewById(R.id.dateTimeAudio);
 
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 
@@ -1075,8 +1075,8 @@ class ItemMediaFriendHolder extends RecyclerView.ViewHolder implements View.OnCl
     friend_seekbar = (SeekBar) itemView.findViewById(R.id.friend_seekbar);
     avata = (CircleImageView) itemView.findViewById(R.id.imageView3);
 
-    totalTime = (TextView) itemView.findViewById(R.id.total_time);
-    dateTime = (TextView) itemView.findViewById(R.id.date_time);
+    totalTime = (TextView) itemView.findViewById(R.id.totalTimeAudio);
+    dateTime = (TextView) itemView.findViewById(R.id.dateTimeAudio);
 
     this.clickListenerChatFirebase = clickListenerChatFirebase;
 

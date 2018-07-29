@@ -7,7 +7,7 @@ public class Message {
 
   public String idSender = "";
   public String idReceiver = "";
-  public String text = "";
+  public String text = null;
   public FileModel fileModel;
   public ContactModel contact;
   public Boolean incognito = false;
