@@ -113,14 +113,14 @@
       android:name=".service.FriendChatService"
       android:exported="false"
       android:persistent="true" />
-    <service android:name=".service.BFirebaseInstanceIDService">
-      <intent-filter>
-        <action android:name="com.google.firebase.MESSAGING_EVENT" />
-      </intent-filter>
-    </service>
+    <!--<service android:name=".service.BFirebaseInstanceIDService">-->
+      <!--<intent-filter>-->
+        <!--<action android:name="com.google.firebase.MESSAGING_EVENT" />-->
+      <!--</intent-filter>-->
+    <!--</service>-->
     <service android:name=".service.BFirebaseMessagingService">
       <intent-filter>
-        <action android:name="com.google.firebase.INSTANCE_ID_EVENT" />
+        <action android:name="com.google.firebase.MESSAGING_EVENT" />
       </intent-filter>
     </service>
     <service android:name=".service.SinchService" />

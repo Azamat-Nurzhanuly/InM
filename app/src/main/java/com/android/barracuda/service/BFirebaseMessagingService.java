@@ -24,6 +24,7 @@ import static android.support.v4.app.NotificationCompat.Builder;
 
 public class BFirebaseMessagingService extends FirebaseMessagingService {
   private static final String TAG = "BFirebaseMessagingServ";
+
   public static final String NOTIFICATION_CHANNEL_ID = "com.android.barracuda.channel_id";
   public static final String NOTIFICATION_CHANNEL_NAME = "com.android.barracuda.channel_name";
 
