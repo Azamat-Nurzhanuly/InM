@@ -9,12 +9,12 @@ android {
       storePassword 'InstantMessagingPasswordToKeystore0129384756'
     }
   }
-  compileSdkVersion 27
-  buildToolsVersion '27.0.3'
+  compileSdkVersion 26
+  buildToolsVersion '26.0.2'
   defaultConfig {
     applicationId 'kz.salsery.barracuda'
     minSdkVersion 19
-    targetSdkVersion 27
+    targetSdkVersion 26
     versionCode 1
     multiDexEnabled true
     versionName "1.0"
