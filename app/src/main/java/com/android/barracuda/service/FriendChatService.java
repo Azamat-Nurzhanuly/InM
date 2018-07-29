@@ -10,6 +10,8 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.CountDownTimer;
@@ -91,7 +93,6 @@ public class FriendChatService extends Service {
         if (!listKey.contains(friend.idRoom)) {
           mapQuery.put(friend.idRoom, FirebaseDatabase.getInstance().getReference().child("message/" + friend.idRoom).limitToLast(1));
           mapChildEventListenerMap.put(friend.idRoom, new ChildEventListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
               if (mapMark.get(friend.idRoom) != null && mapMark.get(friend.idRoom)) {
@@ -140,7 +141,6 @@ public class FriendChatService extends Service {
         if (!listKey.contains(group.id)) {
           mapQuery.put(group.id, FirebaseDatabase.getInstance().getReference().child("message/" + group.id).limitToLast(1));
           mapChildEventListenerMap.put(group.id, new ChildEventListener() {
-            @RequiresApi(api = Build.VERSION_CODES.O)
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
               if (mapMark.get(group.id) != null && mapMark.get(group.id)) {
@@ -187,22 +187,12 @@ public class FriendChatService extends Service {
     mapMark.put(id, false);
   }
 
-  @RequiresApi(api = Build.VERSION_CODES.O)
   public void createNotify(String name, String content, int id, Bitmap icon, boolean isGroup) {
 
 
-    NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
-      NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_LOW);
-    // Configure the notification channel
-    channel.enableLights(true);
-    channel.enableVibration(true);
-    channel.setDescription("MyApp event controls");
-    channel.setShowBadge(false);
-    channel.setLightColor(Color.GREEN);
-    channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
-    channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
-
-    getManager().createNotificationChannel(channel);
+    Intent activityIntent = new Intent(this, MainActivity.class);
+    activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
     NotificationCompat.Builder notificationBuilder = new
       NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
@@ -211,17 +201,29 @@ public class FriendChatService extends Service {
       .setContentText(content)
       .setVibrate(new long[]{1000, 1000})
       .setSound(Settings.System.DEFAULT_NOTIFICATION_URI)
-      .setAutoCancel(true);
+      .setAutoCancel(true)
+      .setContentIntent(pendingIntent);
     if (isGroup) {
       notificationBuilder.setSmallIcon(R.drawable.ic_tab_group);
     } else {
       notificationBuilder.setSmallIcon(R.drawable.ic_tab_person);
     }
 
-    Intent activityIntent = new Intent(this, MainActivity.class);
-    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_ONE_SHOT);
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
+        NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+      // Configure the notification channel
+      channel.enableLights(true);
+      channel.enableVibration(true);
+      channel.setDescription("MyApp event controls");
+      channel.setShowBadge(false);
+      channel.setLightColor(Color.GREEN);
+      channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
+      channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
-    notificationBuilder.setContentIntent(pendingIntent);
+      getManager().createNotificationChannel(channel);
+    }
+
     manager.notify(id, notificationBuilder.build());
 
   }

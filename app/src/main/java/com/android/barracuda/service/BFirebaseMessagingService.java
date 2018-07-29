@@ -5,9 +5,11 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 
 import com.android.barracuda.MainActivity;
@@ -25,6 +27,9 @@ public class BFirebaseMessagingService extends FirebaseMessagingService {
   public static final String NOTIFICATION_CHANNEL_ID = "com.android.barracuda.channel_id";
   public static final String NOTIFICATION_CHANNEL_NAME = "com.android.barracuda.channel_name";
 
+
+  private NotificationManager mNotificationManager;
+  private NotificationCompat.Builder mBuilder;
 
   @Override
   public void onMessageReceived(RemoteMessage remoteMessage) {
@@ -48,13 +53,13 @@ public class BFirebaseMessagingService extends FirebaseMessagingService {
 
   private void sendNotification(String body) {
     Intent intent = new Intent(this, MainActivity.class);
-    intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 
-    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_ONE_SHOT);
+    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     Uri notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
 
 
-    Builder notificationBuilder = new Builder(this)
+    mBuilder = new NotificationCompat.Builder(this)
       .setSmallIcon(R.mipmap.ic_email)
       .setContentTitle("Barracuda Notification")
       .setContentText(body)
@@ -62,16 +67,27 @@ public class BFirebaseMessagingService extends FirebaseMessagingService {
       .setSound(notificationSound)
       .setContentIntent(pendingIntent);
 
-    NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-    assert notificationManager != null;
+    mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      int importance = NotificationManager.IMPORTANCE_HIGH;
+
+
       NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
         NOTIFICATION_CHANNEL_NAME,
-        NotificationManager.IMPORTANCE_DEFAULT);
-      notificationManager.createNotificationChannel(channel);
+        importance);
+
+      channel.enableLights(true);
+      channel.setLightColor(Color.RED);
+      channel.enableVibration(true);
+      channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+      assert mNotificationManager != null;
+      mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
+
+      mNotificationManager.createNotificationChannel(channel);
     }
 
-    notificationManager.notify(0, notificationBuilder.build());
+    assert mNotificationManager != null;
+    mNotificationManager.notify(0, mBuilder.build());
   }
 }
