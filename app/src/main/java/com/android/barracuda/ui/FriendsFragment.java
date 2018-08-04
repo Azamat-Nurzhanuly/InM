@@ -28,6 +28,7 @@ import android.widget.TextView;
 
 import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
+import com.android.barracuda.data.FriendDB;
 import com.android.barracuda.data.StaticConfig;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Friend;
@@ -109,16 +110,16 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     };
 
     dataListFriend = new ListFriend();
-//    if (dataListFriend == null) {
-//      dataListFriend = FriendDB.getInstance(getContext()).getListFriend();
-//      if (dataListFriend.getListFriend().size() > 0) {
-//        listFriendID = new ArrayList<>();
-//        for (Friend friend : dataListFriend.getListFriend()) {
-//          listFriendID.add(friend.id);
-//        }
-//        detectFriendOnline.start();
-//      }
-//    }
+    if (dataListFriend == null) {
+      dataListFriend = FriendDB.getInstance(getContext()).getListFriend();
+      if (dataListFriend.getListFriend().size() > 0) {
+        listFriendID = new ArrayList<>();
+        for (Friend friend : dataListFriend.getListFriend()) {
+          listFriendID.add(friend.id);
+        }
+        detectFriendOnline.start();
+      }
+    }
 
     View layout = inflater.inflate(R.layout.fragment_people, container, false);
     LinearLayoutManager linearLayoutManager = new LinearLayoutManager(getContext(), LinearLayoutManager.VERTICAL, false);
@@ -181,7 +182,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
     listFriendID.clear();
     dataListFriend.getListFriend().clear();
     adapter.notifyDataSetChanged();
-//    FriendDB.getInstance(getContext()).dropDB();
+    FriendDB.getInstance(getContext()).dropDB();
     detectFriendOnline.cancel();
     getListFriendUId();
   }
@@ -304,7 +305,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         addFriend(idFriend, true);
         listFriendID.add(idFriend);
         dataListFriend.getListFriend().add(userInfo);
-//        FriendDB.getInstance(getContext()).addFriend(userInfo);
+        FriendDB.getInstance(getContext()).addFriend(userInfo);
         adapter.notifyDataSetChanged();
       }
     }
@@ -435,7 +436,7 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
             user.id = id;
             user.idRoom = id.compareTo(StaticConfig.UID) > 0 ? (StaticConfig.UID + id).hashCode() + "" : "" + (id + StaticConfig.UID).hashCode();
             dataListFriend.getListFriend().add(user);
-//            FriendDB.getInstance(getContext()).addFriend(user);
+            FriendDB.getInstance(getContext()).addFriend(user);
           }
           getAllFriendInfo(index + 1);
         }

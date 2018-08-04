@@ -92,6 +92,7 @@ public class FriendChatService extends Service {
           mapChildEventListenerMap.put(friend.idRoom, new ChildEventListener() {
             @Override
             public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+              System.out.println("FRIEND ROOM " + friend.idRoom);
               if (mapMark.get(friend.idRoom) != null && mapMark.get(friend.idRoom)) {
 //                                Toast.makeText(FriendChatService.this, friend.name + ": " + ((HashMap)dataSnapshot.getValue()).get("text"), Toast.LENGTH_SHORT).show();
                 if (mapBitmap.get(friend.idRoom) == null) {
