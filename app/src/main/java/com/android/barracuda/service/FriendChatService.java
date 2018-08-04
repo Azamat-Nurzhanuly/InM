@@ -184,14 +184,17 @@ public class FriendChatService extends Service {
     mapMark.put(id, false);
   }
 
+  private NotificationCompat.Builder mBuilder;
+
   public void createNotify(String name, String content, int id, Bitmap icon, boolean isGroup) {
 
 
     Intent activityIntent = new Intent(this, MainActivity.class);
     activityIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
     PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, activityIntent, PendingIntent.FLAG_UPDATE_CURRENT);
 
-    NotificationCompat.Builder notificationBuilder = new
+    mBuilder = new
       NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
       .setLargeIcon(icon)
       .setContentTitle(name)
@@ -201,10 +204,13 @@ public class FriendChatService extends Service {
       .setAutoCancel(true)
       .setContentIntent(pendingIntent);
     if (isGroup) {
-      notificationBuilder.setSmallIcon(R.drawable.ic_tab_group);
+      mBuilder.setSmallIcon(R.drawable.ic_tab_group);
     } else {
-      notificationBuilder.setSmallIcon(R.drawable.ic_tab_person);
+      mBuilder.setSmallIcon(R.drawable.ic_tab_person);
     }
+
+    manager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
@@ -223,10 +229,12 @@ public class FriendChatService extends Service {
       channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);
       channel.setLockscreenVisibility(Notification.VISIBILITY_PUBLIC);
 
-      getManager().createNotificationChannel(channel);
+      mBuilder.setChannelId(channelId);
+      manager.createNotificationChannel(channel);
+
     }
 
-    manager.notify(id, notificationBuilder.build());
+    manager.notify(id, mBuilder.build());
 
   }
 

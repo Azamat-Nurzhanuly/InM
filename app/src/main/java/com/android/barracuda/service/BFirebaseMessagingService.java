@@ -81,7 +81,7 @@ public class BFirebaseMessagingService extends FirebaseMessagingService {
       channel.enableVibration(true);
       channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
       assert mNotificationManager != null;
-      mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
+      mBuilder.setChannelId(channelId);
 
       mNotificationManager.createNotificationChannel(channel);
     }
