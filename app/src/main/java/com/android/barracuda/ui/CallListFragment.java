@@ -271,18 +271,29 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         }
 
         ((ItemCallViewHolder) holder).txtTime.setVisibility(View.VISIBLE);
-        if (!listCall.getListCall().get(position).message.text.startsWith(id)) {
+        if (listCall != null && listCall.getListCall().get(position).message.text != null &&
+          !listCall.getListCall().get(position).message.text.startsWith(id)) {
           ((ItemCallViewHolder) holder).txtName.setTypeface(Typeface.DEFAULT);
         } else {
           ((ItemCallViewHolder) holder).txtName.setTypeface(Typeface.DEFAULT_BOLD);
         }
-        String time = new SimpleDateFormat("EEE, d MMM yyyy").format(new Date(listCall.getListCall().get(position).message.timestamp));
+
+
+        SimpleDateFormat d_m_y_formatter = new SimpleDateFormat("EEE, d MMM HH:mm, yyyy");
+
+        String date = "";
+        if (listCall.getListCall().get(position).time != null)
+          date = d_m_y_formatter.format(listCall.getListCall().get(position).time);
+
+
         String today = new SimpleDateFormat("EEE, d MMM yyyy").format(new Date(System.currentTimeMillis()));
-        if (today.equals(time)) {
-          ((ItemCallViewHolder) holder).txtTime.setText(new SimpleDateFormat("HH:mm").format(new Date(listCall.getListCall().get(position).message.timestamp)));
-        } else {
-          ((ItemCallViewHolder) holder).txtTime.setText(new SimpleDateFormat("MMM d").format(new Date(listCall.getListCall().get(position).message.timestamp)));
-        }
+//        if (today.equals(date)) {
+//          ((ItemCallViewHolder) holder).txtTime.setText(date);
+//        } else {
+//          ((ItemCallViewHolder) holder).txtTime.setText(date);
+//        }
+        ((ItemCallViewHolder) holder).txtTime.setText(date);
+
       } else {
         ((ItemCallViewHolder) holder).txtTime.setVisibility(View.GONE);
       }

@@ -184,6 +184,9 @@ public class IncomingCallScreenActivity extends ChatActivity {
             call.id = id;
             call.type = CALL_INCOMING;
             call.callId = String.valueOf(new Date().getTime());
+            call.time = System.currentTimeMillis();
+
+
             CallDB.getInstance(getContext()).addCall(call);
           }
         }

@@ -2147,7 +2147,13 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             ((ItemMessageFriendHolder) holder).audioContent.setVisibility(View.VISIBLE);
             //TODO AUDIO PLAYER
             if (((ItemMessageFriendHolder) holder).dateTime != null) {
-              ((ItemMessageFriendHolder) holder).dateTime.setText(new SimpleDateFormat("yyyy-MMMM-dd, EEEE").format((consersation.getListMessageData().get(position).timestamp)));
+
+              SimpleDateFormat d_m_y_formatter = new SimpleDateFormat("yyyy-MMMM-dd, EEEE");
+
+              String date = d_m_y_formatter.format(consersation.getListMessageData().get(position).timestamp);
+
+
+              ((ItemMessageFriendHolder) holder).dateTime.setText(date);
             }
           }
         }
@@ -2254,8 +2260,12 @@ class ListMessageAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             if (((ItemMessageUserHolder) holder).totalTime != null) {
 //              ((ItemMessageUserHolder) holder).totalTime.setText("test");
             }
+            SimpleDateFormat d_m_y_formatter = new SimpleDateFormat("yyyy-MMMM-dd, EEEE");
+
+            String date = d_m_y_formatter.format(consersation.getListMessageData().get(position).timestamp);
+
             if (((ItemMessageUserHolder) holder).dateTime != null) {
-              ((ItemMessageUserHolder) holder).dateTime.setText(new SimpleDateFormat("yyyy-MMMM-dd, EEEE").format((consersation.getListMessageData().get(position).timestamp)));
+              ((ItemMessageUserHolder) holder).dateTime.setText(date);
             }
 
             //TODO AUDIO PLAYER

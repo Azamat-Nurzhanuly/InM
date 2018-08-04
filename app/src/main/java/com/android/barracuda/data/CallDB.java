@@ -40,6 +40,7 @@ public final class CallDB {
     values.put(FeedEntry.COLUMN_NAME_PHONE_NUMBER, call.phoneNumber);
     values.put(FeedEntry.COLUMN_NAME_AVATA, call.avata);
     values.put(FeedEntry.COLUMN_NAME_TYPE, call.type);
+    values.put(FeedEntry.COLUMN_NAME_TIME, call.time);
     // Insert the new row, returning the primary key value of the new row
     return db.insert(FeedEntry.TABLE_NAME, null, values);
   }
@@ -66,6 +67,7 @@ public final class CallDB {
         call.phoneNumber = cursor.getString(3);
         call.type = cursor.getString(4);
         call.avata = cursor.getString(5);
+        call.time = cursor.getLong(6);
         listCall.getListCall().add(call);
       }
       cursor.close();
@@ -85,8 +87,7 @@ public final class CallDB {
     SQLiteDatabase db = mDbHelper.getWritableDatabase();
     try {
       db.execSQL(SQL_CREATE_ENTRIES);
-    }
-    catch (Exception e){
+    } catch (Exception e) {
       Log.w("Calls table", e);
     }
   }
@@ -100,6 +101,7 @@ public final class CallDB {
     static final String COLUMN_NAME_PHONE_NUMBER = "phoneNumber";
     static final String COLUMN_NAME_AVATA = "avata";
     static final String COLUMN_NAME_TYPE = "type";
+    static final String COLUMN_NAME_TIME = "time";
   }
 
   private static final String TEXT_TYPE = " TEXT";
@@ -111,7 +113,9 @@ public final class CallDB {
       FeedEntry.COLUMN_NAME_NAME + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_PHONE_NUMBER + TEXT_TYPE + COMMA_SEP +
       FeedEntry.COLUMN_NAME_TYPE + TEXT_TYPE + COMMA_SEP +
-      FeedEntry.COLUMN_NAME_AVATA + TEXT_TYPE + " )";
+      FeedEntry.COLUMN_NAME_AVATA + TEXT_TYPE + COMMA_SEP +
+      FeedEntry.COLUMN_NAME_TIME + TEXT_TYPE +
+      " )";
 
   private static final String SQL_DELETE_ENTRIES =
     "DROP TABLE IF EXISTS " + FeedEntry.TABLE_NAME;

@@ -277,6 +277,7 @@ public class CallScreenActivity extends ChatActivity {
             call.id = id;
             call.type = CALL_OUTGOING;
             call.callId = String.valueOf(new Date().getTime());
+            call.time = System.currentTimeMillis();
             CallDB.getInstance(getContext()).addCall(call);
           }
         }
