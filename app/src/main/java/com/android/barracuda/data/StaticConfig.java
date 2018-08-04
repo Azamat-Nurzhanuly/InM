@@ -28,6 +28,7 @@ public class StaticConfig {
   //type of call
   public final static String CALL_OUTGOING = "outgoing";
   public final static String CALL_INCOMING = "incoming";
+  public final static String CALL_MISSED = "missed";
 
   //image view
   public static final String IMAGE_URL = "image_url";

@@ -1,11 +1,19 @@
 package com.android.barracuda.ui;
 
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
 import android.media.AudioManager;
+import android.media.RingtoneManager;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.support.annotation.RequiresApi;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v4.app.NotificationCompat;
 import android.util.Log;
 import android.view.Menu;
 import android.view.View;
@@ -14,6 +22,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 
+import com.android.barracuda.MainActivity;
 import com.android.barracuda.R;
 import com.android.barracuda.data.CallDB;
 import com.android.barracuda.model.AudioPlayer;
@@ -39,6 +48,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
+import static com.android.barracuda.service.BFirebaseMessagingService.NOTIFICATION_CHANNEL_ID;
+import static com.android.barracuda.service.BFirebaseMessagingService.NOTIFICATION_CHANNEL_NAME;
 
 public class CallScreenActivity extends ChatActivity {
 
@@ -260,8 +271,12 @@ public class CallScreenActivity extends ChatActivity {
     }
 
     private void saveCallInCallsHistory(Call call) {
+
       final String id = call.getRemoteUserId();
       final String callId = call.getRemoteUserId();
+
+      final int duration = call.getDetails().getDuration();
+
 
       FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
         @Override
@@ -292,6 +307,33 @@ public class CallScreenActivity extends ChatActivity {
     @Override
     public void onShouldSendPushNotification(Call call, List<PushPair> pushPairs) {
       // Send a push through your push provider here, e.g. GCM
+
+
+      final String id = call.getRemoteUserId();
+      final String callId = call.getRemoteUserId();
+
+      FirebaseDatabase.getInstance().getReference().child("user/" + id).addListenerForSingleValueEvent(new ValueEventListener() {
+        @Override
+        public void onDataChange(DataSnapshot dataSnapshot) {
+
+
+          if (dataSnapshot.getValue() != null) {
+            com.android.barracuda.model.Call call = new com.android.barracuda.model.Call();
+            HashMap mapUserInfo = (HashMap) dataSnapshot.getValue();
+            call.name = (String) mapUserInfo.get("name");
+
+
+            String preCallText = "Вам звонок " + call.name;
+            sendNotification(preCallText);
+          }
+        }
+
+        @Override
+        public void onCancelled(DatabaseError databaseError) {
+
+        }
+      });
+
     }
 
 
@@ -367,6 +409,51 @@ public class CallScreenActivity extends ChatActivity {
       mLocalVideoViewAdded = false;
       mRemoteVideoViewAdded = false;
     }
+  }
+
+
+  private NotificationCompat.Builder mBuilder;
+  private NotificationManager mNotificationManager;
+
+
+  private void sendNotification(String body) {
+    Intent intent = new Intent(this, MainActivity.class);
+    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+    PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
+    Uri notificationSound = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_NOTIFICATION);
+
+
+    mBuilder = new NotificationCompat.Builder(this)
+      .setSmallIcon(R.mipmap.ic_email)
+      .setContentTitle("Barracuda Notification")
+      .setContentText(body)
+      .setAutoCancel(true)
+      .setSound(notificationSound)
+      .setContentIntent(pendingIntent);
+
+    mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+      int importance = NotificationManager.IMPORTANCE_HIGH;
+
+
+      String channelId = this.getString(R.string.default_notification_channel_id);
+      NotificationChannel channel = new NotificationChannel(channelId, NOTIFICATION_CHANNEL_NAME, importance);
+
+      channel.setDescription(body);
+      channel.enableLights(true);
+      channel.setLightColor(Color.RED);
+      channel.enableVibration(true);
+      channel.setVibrationPattern(new long[]{100, 200, 300, 400, 500, 400, 300, 200, 400});
+      assert mNotificationManager != null;
+      mBuilder.setChannelId(NOTIFICATION_CHANNEL_ID);
+
+      mNotificationManager.createNotificationChannel(channel);
+    }
+
+    assert mNotificationManager != null;
+    mNotificationManager.notify(0, mBuilder.build());
   }
 
 

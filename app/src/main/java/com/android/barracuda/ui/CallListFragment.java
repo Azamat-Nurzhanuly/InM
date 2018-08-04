@@ -40,6 +40,7 @@ import de.hdodenhof.circleimageview.CircleImageView;
 
 import static com.android.barracuda.MainActivity.friendsMap;
 import static com.android.barracuda.data.StaticConfig.CALL_INCOMING;
+import static com.android.barracuda.data.StaticConfig.CALL_MISSED;
 import static com.android.barracuda.data.StaticConfig.CALL_OUTGOING;
 
 public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnRefreshListener {
@@ -267,6 +268,8 @@ class ListCallAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         } else {
           if (CALL_INCOMING.equalsIgnoreCase(type)) {
             ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.call_in);
+          } else if (CALL_MISSED.equalsIgnoreCase(type)) {
+            ((ItemCallViewHolder) holder).type.setImageResource(R.drawable.call_missed);
           }
         }
 
