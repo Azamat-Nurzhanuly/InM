@@ -10,15 +10,12 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.media.RingtoneManager;
-import android.net.Uri;
 import android.os.Binder;
 import android.os.Build;
 import android.os.CountDownTimer;
 import android.os.IBinder;
 import android.provider.Settings;
 import android.support.annotation.Nullable;
-import android.support.annotation.RequiresApi;
 import android.support.v4.app.NotificationCompat;
 import android.util.Base64;
 import android.util.Log;
@@ -210,12 +207,17 @@ public class FriendChatService extends Service {
     }
 
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
-        NOTIFICATION_CHANNEL_NAME, NotificationManager.IMPORTANCE_HIGH);
+
+      int importance = NotificationManager.IMPORTANCE_HIGH;
+
+
+      String channelId = this.getString(R.string.default_notification_channel_id);
+      NotificationChannel channel = new NotificationChannel(channelId, NOTIFICATION_CHANNEL_NAME, importance);
+
       // Configure the notification channel
       channel.enableLights(true);
       channel.enableVibration(true);
-      channel.setDescription("MyApp event controls");
+      channel.setDescription(content);
       channel.setShowBadge(false);
       channel.setLightColor(Color.GREEN);
       channel.setLockscreenVisibility(Notification.VISIBILITY_PRIVATE);

@@ -20,8 +20,6 @@ import com.google.firebase.messaging.RemoteMessage.Notification;
 
 import java.util.Map;
 
-import static android.support.v4.app.NotificationCompat.Builder;
-
 public class BFirebaseMessagingService extends FirebaseMessagingService {
   private static final String TAG = "BFirebaseMessagingServ";
 
@@ -74,10 +72,10 @@ public class BFirebaseMessagingService extends FirebaseMessagingService {
       int importance = NotificationManager.IMPORTANCE_HIGH;
 
 
-      NotificationChannel channel = new NotificationChannel(NOTIFICATION_CHANNEL_ID,
-        NOTIFICATION_CHANNEL_NAME,
-        importance);
+      String channelId = this.getString(R.string.default_notification_channel_id);
+      NotificationChannel channel = new NotificationChannel(channelId, NOTIFICATION_CHANNEL_NAME, importance);
 
+      channel.setDescription(body);
       channel.enableLights(true);
       channel.setLightColor(Color.RED);
       channel.enableVibration(true);
