@@ -23,7 +23,8 @@
     <color name="colorOrangeAccent">#fca487</color>
 
     <color name="colorWhiteDecline">#ffffff</color>
-    <color name="colorGreenAnswer">#ffffff</color>
+    <color name="colorDecline">#C44141</color>
+    <color name="colorGreenAnswer">#75B63B</color>
     <color name="colorIndivateTab">#FFFFFF</color>
     <color name="colorTransparent">#00ffffff</color>
     <color name="colorCardView">#f7f7f7</color>

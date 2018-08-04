@@ -48,7 +48,7 @@
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:backgroundTint="@color/colorGreenAnswer"
-      android:src="@drawable/call"
+      android:src="@drawable/call_trn"
       app:borderWidth="0dp"
 
       />
@@ -59,7 +59,7 @@
       android:layout_height="wrap_content"
       android:layout_marginLeft="30dp"
       android:layout_toRightOf="@+id/answerButton"
-      android:backgroundTint="@color/colorWhiteDecline"
+      android:backgroundTint="@color/colorDecline"
       android:src="@drawable/decline"
       app:borderWidth="0dp"
       />
