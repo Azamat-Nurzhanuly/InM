@@ -461,15 +461,15 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
   @Override
   public boolean onPrepareOptionsMenu(Menu menu) {
 
-    SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
-    final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
-
-    MenuItem item = menu.findItem(R.id.incognito);
-
-    if (item != null) {
-
-      item.setChecked(incognito);
-    }
+//    SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+//    final Boolean incognito = sharedPreferences.getBoolean(SharedPreferenceHelper.INCOGNITO, false);
+//
+//    MenuItem item = menu.findItem(R.id.incognito);
+//
+//    if (item != null) {
+//
+//      item.setChecked(incognito);
+//    }
 
     return true;
   }
@@ -480,6 +480,11 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
     getMenuInflater().inflate(R.menu.menu_main, menu);
 
     return true;
+  }
+
+  @Override
+  protected void onResume() {
+    super.onResume();
   }
 
   @Override
@@ -503,76 +508,76 @@ public class MainActivity extends BarracudaActivity implements ServiceConnection
           .show();
         break;
       }
-      case R.id.incognito: {
-
-        if (item.isChecked()) {
-          item.setChecked(false);
-        } else {
-          item.setChecked(true);
-
-          new LovelyTextInputDialog(this, R.style.EditTextTintTheme)
-            .setCancelable(false)
-            .setTopColorRes(R.color.colorPrimary)
-            .setTitle("Таймер для удаления")
-            .setMessage("Укажите через сколько секунд удалять сообщение")
-            .setInputFilter("Введите только число", new LovelyTextInputDialog.TextFilter() {
-              @Override
-              public boolean check(String text) {
-                return text.matches("\\d+");
-              }
-            })
-            .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
-              @Override
-              public void onTextInputConfirmed(final String text) {
-
-                FirebaseDatabase.getInstance().getReference()
-                  .child("user")
-                  .child(StaticConfig.UID)
-                  .addListenerForSingleValueEvent(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(DataSnapshot dataSnapshot) {
-                      if (dataSnapshot.getValue() != null) {
-                        HashMap userMap = (HashMap) dataSnapshot.getValue();
-
-                        User user = new User();
-                        user.name = (String) userMap.get("name");
-                        user.avata = (String) userMap.get("avata");
-                        user.id = (String) userMap.get("id");
-                        user.phoneNumber = (String) userMap.get("phoneNumber");
-
-                        user.lifeTimeForMessage = Integer.parseInt(text);
-
-                        HashMap statusMap = (HashMap) userMap.get("status");
-
-                        user.status = new Status();
-                        user.status.isOnline = (Boolean) statusMap.get("isOnline");
-                        user.status.text = (String) statusMap.get("text");
-                        user.status.timestamp = (Long) statusMap.get("timestamp");
-
-                        HashMap<String, Object> children = new HashMap<>();
-
-                        children.put(StaticConfig.UID, user);
-
-                        FirebaseDatabase.getInstance().getReference()
-                          .child("user")
-                          .updateChildren(children);
-                      }
-                    }
-
-                    @Override
-                    public void onCancelled(DatabaseError databaseError) {
-                      item.setChecked(false);
-                    }
-                  });
-              }
-            })
-            .show();
-        }
-
-        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
-        sharedPreferences.edit().putBoolean(SharedPreferenceHelper.INCOGNITO, item.isChecked()).commit();
-        break;
-      }
+//      case R.id.incognito: {
+//
+//        if (item.isChecked()) {
+//          item.setChecked(false);
+//        } else {
+//          item.setChecked(true);
+//
+//          new LovelyTextInputDialog(this, R.style.EditTextTintTheme)
+//            .setCancelable(false)
+//            .setTopColorRes(R.color.colorPrimary)
+//            .setTitle("Таймер для удаления")
+//            .setMessage("Укажите через сколько секунд удалять сообщение")
+//            .setInputFilter("Введите только число", new LovelyTextInputDialog.TextFilter() {
+//              @Override
+//              public boolean check(String text) {
+//                return text.matches("\\d+");
+//              }
+//            })
+//            .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+//              @Override
+//              public void onTextInputConfirmed(final String text) {
+//
+//                FirebaseDatabase.getInstance().getReference()
+//                  .child("user")
+//                  .child(StaticConfig.UID)
+//                  .addListenerForSingleValueEvent(new ValueEventListener() {
+//                    @Override
+//                    public void onDataChange(DataSnapshot dataSnapshot) {
+//                      if (dataSnapshot.getValue() != null) {
+//                        HashMap userMap = (HashMap) dataSnapshot.getValue();
+//
+//                        User user = new User();
+//                        user.name = (String) userMap.get("name");
+//                        user.avata = (String) userMap.get("avata");
+//                        user.id = (String) userMap.get("id");
+//                        user.phoneNumber = (String) userMap.get("phoneNumber");
+//
+//                        user.lifeTimeForMessage = Integer.parseInt(text);
+//
+//                        HashMap statusMap = (HashMap) userMap.get("status");
+//
+//                        user.status = new Status();
+//                        user.status.isOnline = (Boolean) statusMap.get("isOnline");
+//                        user.status.text = (String) statusMap.get("text");
+//                        user.status.timestamp = (Long) statusMap.get("timestamp");
+//
+//                        HashMap<String, Object> children = new HashMap<>();
+//
+//                        children.put(StaticConfig.UID, user);
+//
+//                        FirebaseDatabase.getInstance().getReference()
+//                          .child("user")
+//                          .updateChildren(children);
+//                      }
+//                    }
+//
+//                    @Override
+//                    public void onCancelled(DatabaseError databaseError) {
+//                      item.setChecked(false);
+//                    }
+//                  });
+//              }
+//            })
+//            .show();
+//        }
+//
+//        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+//        sharedPreferences.edit().putBoolean(SharedPreferenceHelper.INCOGNITO, item.isChecked()).commit();
+//        break;
+//      }
       case R.id.favMes: {
         Intent intent = new Intent(this, FavoritesActivity.class);
         startActivity(intent);

@@ -3,12 +3,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="com.android.barracuda.MainActivity">
 
-    <item
-        android:id="@+id/incognito"
-        android:checkable="true"
-        android:orderInCategory="100"
-        android:title="@string/incognito"
-        app:showAsAction="never" />
+    <!--<item-->
+        <!--android:id="@+id/incognito"-->
+        <!--android:checkable="true"-->
+        <!--android:orderInCategory="100"-->
+        <!--android:title="@string/incognito"-->
+        <!--app:showAsAction="never" />-->
     <item
         android:id="@+id/setProfile"
         android:orderInCategory="101"

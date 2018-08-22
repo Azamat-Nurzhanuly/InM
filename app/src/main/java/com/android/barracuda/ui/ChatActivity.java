@@ -282,7 +282,6 @@ public class ChatActivity extends MainActivity
 
     editWriteMessage = (EditText) findViewById(R.id.editWriteMessage);
     btnSend = (ImageButton) findViewById(R.id.btnSend);
-    parentLayout = (RelativeLayout) findViewById(R.id.parent_layout);
     line = (View) findViewById(R.id.line);
 
     FirebaseDatabase.getInstance().getReference()
@@ -405,9 +404,7 @@ public class ChatActivity extends MainActivity
 
     int background = getBackground(this);
     View wallpaper = findViewById(R.id.wallpaper);
-    System.out.println("ASDADASDASASDDASWQEQW");
-    System.out.println(background);
-    System.out.println(wallpaper);
+
     wallpaper.setBackgroundResource(background);
 
     final Retrofit retrofit = new Retrofit.Builder()
@@ -448,6 +445,7 @@ public class ChatActivity extends MainActivity
     FirebaseDatabase.getInstance().getReference().child("favorites/" + StaticConfig.UID).addChildEventListener(new ChildEventListener() {
       @Override
       public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+
         if (dataSnapshot.getValue() != null) {
           HashMap mapMessage = (HashMap) dataSnapshot.getValue();
 
@@ -522,14 +520,14 @@ public class ChatActivity extends MainActivity
     photo_btn = (ImageButton) findViewById(R.id.photo_img_btn);
     video_btn = (ImageButton) findViewById(R.id.video_img_btn);
     audio_btn = (ImageButton) findViewById(R.id.audio_img_btn);
-    location_btn = (ImageButton) findViewById(R.id.location_img_btn);
+//    location_btn = (ImageButton) findViewById(R.id.location_img_btn);
     contact_btn = (ImageButton) findViewById(R.id.contact_img_btn);
 
     gallery_btn.setOnClickListener(this);
     photo_btn.setOnClickListener(this);
     video_btn.setOnClickListener(this);
     audio_btn.setOnClickListener(this);
-    location_btn.setOnClickListener(this);
+//    location_btn.setOnClickListener(this);
     contact_btn.setOnClickListener(this);
 
   }
@@ -659,296 +657,7 @@ public class ChatActivity extends MainActivity
       recyclerChat.setLayoutManager(linearLayoutManager);
       adapter = new ListMessageAdapter(this, consersation, bitmapAvataFriend, bitmapAvataUser, this, this);
       roomRef = FirebaseDatabase.getInstance().getReference().child("message/" + roomId);
-      onMessageChangedListener = roomRef.addChildEventListener(new ChildEventListener() {
-        @Override
-        public void onChildAdded(DataSnapshot dataSnapshot, String s) {
-          if (dataSnapshot.getValue() != null) {
-            HashMap mapMessage = (HashMap) dataSnapshot.getValue();
-
-            Message newMessage = new Message();
-            newMessage.idSender = (String) mapMessage.get("idSender");
-            newMessage.idReceiver = (String) mapMessage.get("idReceiver");
-            newMessage.timestamp = (long) mapMessage.get("timestamp");
-            newMessage.watched = (Boolean) mapMessage.get("watched");
-
-            if (mapMessage.get("showSender") != null) {
-
-              newMessage.showSender = (Boolean) mapMessage.get("showSender");
-            } else {
-              newMessage.showSender = true;
-            }
-
-            if (mapMessage.get("showReceiver") != null) {
-
-              newMessage.showReceiver = (Boolean) mapMessage.get("showReceiver");
-            } else {
-              newMessage.showReceiver = true;
-            }
-
-            if (mapMessage.get("text") != null) {
-              newMessage.text = (String) mapMessage.get("text");
-            }
-
-            if (mapMessage.get("fileModel") != null) {
-              FileModel fileModel = new FileModel();
-              HashMap fileHash = (HashMap) mapMessage.get("fileModel");
-              if (fileHash.containsKey("type"))
-                fileModel.type = (String) fileHash.get("type");
-
-              if (fileHash.containsKey("name_file"))
-                fileModel.name_file = (String) fileHash.get("name_file");
-
-              if (fileHash.containsKey("url_file"))
-                fileModel.url_file = (String) fileHash.get("url_file");
-
-              newMessage.fileModel = fileModel;
-            }
-
-            if (mapMessage.get("contact") != null) {
-              ContactModel contact = new ContactModel();
-              HashMap fileHash = (HashMap) mapMessage.get("contact");
-              if (fileHash.containsKey("number"))
-                contact.number = (String) fileHash.get("number");
-
-              if (fileHash.containsKey("name"))
-                contact.name = (String) fileHash.get("name");
-
-              newMessage.contact = contact;
-            }
-
-            if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              Boolean incognito = (Boolean) mapMessage.get("incognito");
-              newMessage.incognito = incognito;
-
-              if (incognito) {
-
-                mCloudFunctions.deleteMessage(roomId, dataSnapshot.getKey()).enqueue(new Callback<Void>() {
-                  @Override
-                  public void onResponse(retrofit2.Call<Void> call, Response<Void> response) {
-                    try {
-                      if (response.isSuccessful()) {
-                        Log.d(TAG, "DELETE MESSAGE TRIGGERED");
-                      } else {
-                        Log.e(TAG, response.errorBody().string());
-                      }
-                    } catch (IOException e) {
-                      e.printStackTrace();
-                    }
-                  }
-
-                  @Override
-                  public void onFailure(retrofit2.Call<Void> call, Throwable e) {
-                    Log.e(TAG, "Request deleteMessage failed", e);
-                  }
-                });
-              }
-            }
-
-            {
-              String date = d_m_y_formatter.format(newMessage.timestamp);
-              String currentDate = d_m_y_formatter.format(new Timestamp(System.currentTimeMillis()));
-
-              DateMessage dateMessage = new DateMessage();
-              dateMessage.date = date;
-
-              if (Objects.equals(date, currentDate)) {
-                dateMessage.date = "Сегодня";
-              }
-
-              boolean exist = false;
-              for (int i = 0; i < consersation.getListMessageData().size(); i++) {
-                if (consersation.getListMessageData().get(i).date != null
-                  && consersation.getListMessageData().get(i).date.equals(date) || "Сегодня".equals(consersation.getListMessageData().get(i).date)) {
-                  exist = true;
-                }
-              }
-              if (!exist) {
-                consersation.getListMessageData().add(dateMessage);
-              }
-            }
-
-            if ((newMessage.watched == null || !newMessage.watched) && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              newMessage.watched = true;
-              FirebaseDatabase.getInstance().getReference().child("message/" + roomId + "/" + dataSnapshot.getKey()).setValue(newMessage);
-            }
-
-            if (newMessage.showSender && Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              consersation.getListMessageData().add(newMessage);
-              linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
-            } else {
-
-              if (newMessage.showReceiver && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-                consersation.getListMessageData().add(newMessage);
-                linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
-              }
-            }
-
-            int i = 0;
-            while (i + 1 < consersation.getListMessageData().size()) {
-
-              if (consersation.getListMessageData().get(i) instanceof DateMessage
-                && consersation.getListMessageData().get(i + 1) instanceof DateMessage) {
-
-                consersation.getListMessageData().remove(i);
-              } else {
-                i++;
-              }
-            }
-
-            if (consersation.getListMessageData().get(consersation.getListMessageData().size() - 1) instanceof DateMessage) {
-
-              consersation.getListMessageData().remove(consersation.getListMessageData().size() - 1);
-            }
-
-            adapter.notifyDataSetChanged();
-          }
-        }
-
-        @Override
-        public void onChildChanged(DataSnapshot dataSnapshot, String s) {
-          if (dataSnapshot.getValue() != null) {
-
-            HashMap mapMessage = (HashMap) dataSnapshot.getValue();
-
-            Message newMessage = new Message();
-            newMessage.idSender = (String) mapMessage.get("idSender");
-            newMessage.idReceiver = (String) mapMessage.get("idReceiver");
-            newMessage.timestamp = (long) mapMessage.get("timestamp");
-            newMessage.watched = (Boolean) mapMessage.get("watched");
-
-            if (mapMessage.get("showSender") != null) {
-
-              newMessage.showSender = (Boolean) mapMessage.get("showSender");
-            } else {
-              newMessage.showSender = true;
-            }
-
-            if (mapMessage.get("showReceiver") != null) {
-
-              newMessage.showReceiver = (Boolean) mapMessage.get("showReceiver");
-            } else {
-              newMessage.showReceiver = true;
-            }
-
-            if (mapMessage.get("text") != null) {
-              newMessage.text = (String) mapMessage.get("text");
-            }
-
-            if (mapMessage.get("fileModel") != null) {
-              FileModel fileModel = new FileModel();
-              HashMap fileHash = (HashMap) mapMessage.get("fileModel");
-              if (fileHash.containsKey("type"))
-                fileModel.type = (String) fileHash.get("type");
-
-              if (fileHash.containsKey("name_file"))
-                fileModel.name_file = (String) fileHash.get("name_file");
-
-              if (fileHash.containsKey("url_file"))
-                fileModel.url_file = (String) fileHash.get("url_file");
-
-              newMessage.fileModel = fileModel;
-            }
-
-            if (mapMessage.get("contact") != null) {
-              ContactModel contact = new ContactModel();
-              HashMap fileHash = (HashMap) mapMessage.get("contact");
-              if (fileHash.containsKey("number"))
-                contact.number = (String) fileHash.get("number");
-
-              if (fileHash.containsKey("name"))
-                contact.name = (String) fileHash.get("name");
-
-              newMessage.contact = contact;
-            }
-
-            if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              newMessage.incognito = (Boolean) mapMessage.get("incognito");
-            }
-
-
-            for (int i = 0; i < consersation.getListMessageData().size(); i++) {
-
-              Message message = consersation.getListMessageData().get(i);
-
-              if (Objects.equals(message, newMessage)) {
-
-                consersation.getListMessageData().get(i).watched = newMessage.watched;
-              }
-            }
-
-            if (!newMessage.showSender && Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              for (int i = 0; i < consersation.getListMessageData().size(); i++) {
-
-                if (Objects.equals(consersation.getListMessageData().get(i), newMessage)) {
-                  consersation.getListMessageData().remove(i);
-                  break;
-                }
-              }
-            }
-
-            if (!newMessage.showReceiver && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
-
-              System.out.println("DATA_CHANGED");
-              System.out.println(newMessage.showReceiver);
-              System.out.println(StaticConfig.UID);
-
-              for (int i = 0; i < consersation.getListMessageData().size(); i++) {
-
-                System.out.println(consersation.getListMessageData().get(i).hashCode());
-                System.out.println(newMessage.hashCode());
-
-                if (Objects.equals(consersation.getListMessageData().get(i), newMessage)) {
-                  System.out.println("ASDASDADSASDASDASDASASDASD_EQUALITY");
-                  System.out.println(consersation.getListMessageData().get(i).hashCode());
-                  System.out.println(newMessage.hashCode());
-                  consersation.getListMessageData().remove(i);
-                  break;
-                }
-              }
-            }
-
-            int i = 0;
-            while (i + 1 < consersation.getListMessageData().size()) {
-
-              if (consersation.getListMessageData().get(i) instanceof DateMessage
-                && consersation.getListMessageData().get(i + 1) instanceof DateMessage) {
-
-                consersation.getListMessageData().remove(i);
-              } else {
-                i++;
-              }
-            }
-
-            if (consersation.getListMessageData().get(consersation.getListMessageData().size() - 1) instanceof DateMessage) {
-
-              consersation.getListMessageData().remove(consersation.getListMessageData().size() - 1);
-            }
-
-            adapter.notifyDataSetChanged();
-          }
-        }
-
-        @Override
-        public void onChildRemoved(DataSnapshot dataSnapshot) {
-
-        }
-
-        @Override
-        public void onChildMoved(DataSnapshot dataSnapshot, String s) {
-
-        }
-
-        @Override
-        public void onCancelled(DatabaseError databaseError) {
-
-        }
-      });
+      initOnMessageChangedListener();
       recyclerChat.setAdapter(adapter);
     }
 
@@ -976,14 +685,318 @@ public class ChatActivity extends MainActivity
     });
   }
 
+  private void initOnMessageChangedListener() {
+    if (onMessageChangedListener != null) return;
+    onMessageChangedListener = roomRef.addChildEventListener(new ChildEventListener() {
+      @Override
+      public void onChildAdded(DataSnapshot dataSnapshot, String s) {
+        if (dataSnapshot.getValue() != null) {
+          HashMap mapMessage = (HashMap) dataSnapshot.getValue();
+
+          Message newMessage = new Message();
+          newMessage.idSender = (String) mapMessage.get("idSender");
+          newMessage.idReceiver = (String) mapMessage.get("idReceiver");
+          newMessage.timestamp = (long) mapMessage.get("timestamp");
+          newMessage.watched = (Boolean) mapMessage.get("watched");
+
+          if (mapMessage.get("showSender") != null) {
+
+            newMessage.showSender = (Boolean) mapMessage.get("showSender");
+          } else {
+            newMessage.showSender = true;
+          }
+
+          if (mapMessage.get("showReceiver") != null) {
+
+            newMessage.showReceiver = (Boolean) mapMessage.get("showReceiver");
+          } else {
+            newMessage.showReceiver = true;
+          }
+
+          if (mapMessage.get("text") != null) {
+            newMessage.text = (String) mapMessage.get("text");
+          }
+
+          if (mapMessage.get("fileModel") != null) {
+            FileModel fileModel = new FileModel();
+            HashMap fileHash = (HashMap) mapMessage.get("fileModel");
+            if (fileHash.containsKey("type"))
+              fileModel.type = (String) fileHash.get("type");
+
+            if (fileHash.containsKey("name_file"))
+              fileModel.name_file = (String) fileHash.get("name_file");
+
+            if (fileHash.containsKey("url_file"))
+              fileModel.url_file = (String) fileHash.get("url_file");
+
+            newMessage.fileModel = fileModel;
+          }
+
+          if (mapMessage.get("contact") != null) {
+            ContactModel contact = new ContactModel();
+            HashMap fileHash = (HashMap) mapMessage.get("contact");
+            if (fileHash.containsKey("number"))
+              contact.number = (String) fileHash.get("number");
+
+            if (fileHash.containsKey("name"))
+              contact.name = (String) fileHash.get("name");
+
+            newMessage.contact = contact;
+          }
+
+          if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+            Boolean incognito = (Boolean) mapMessage.get("incognito");
+            newMessage.incognito = incognito;
+
+            if (incognito) {
+
+              mCloudFunctions.deleteMessage(roomId, dataSnapshot.getKey()).enqueue(new Callback<Void>() {
+                @Override
+                public void onResponse(retrofit2.Call<Void> call, Response<Void> response) {
+                  try {
+                    if (response.isSuccessful()) {
+                      Log.d(TAG, "DELETE MESSAGE TRIGGERED");
+                    } else {
+                      Log.e(TAG, response.errorBody().string());
+                    }
+                  } catch (IOException e) {
+                    e.printStackTrace();
+                  }
+                }
+
+                @Override
+                public void onFailure(retrofit2.Call<Void> call, Throwable e) {
+                  Log.e(TAG, "Request deleteMessage failed", e);
+                }
+              });
+            }
+          }
+
+          {
+            String date = d_m_y_formatter.format(newMessage.timestamp);
+            String currentDate = d_m_y_formatter.format(new Timestamp(System.currentTimeMillis()));
+
+            DateMessage dateMessage = new DateMessage();
+            dateMessage.date = date;
+
+            if (Objects.equals(date, currentDate)) {
+              dateMessage.date = "Сегодня";
+            }
+
+            boolean exist = false;
+            for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+              if (consersation.getListMessageData().get(i).date != null
+                && consersation.getListMessageData().get(i).date.equals(date) || "Сегодня".equals(consersation.getListMessageData().get(i).date)) {
+                exist = true;
+              }
+            }
+            if (!exist) {
+              consersation.getListMessageData().add(dateMessage);
+            }
+          }
+
+          if ((newMessage.watched == null || !newMessage.watched) && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+            newMessage.watched = true;
+            FirebaseDatabase.getInstance().getReference().child("message/" + roomId + "/" + dataSnapshot.getKey()).setValue(newMessage);
+          }
+
+          if (newMessage.showSender && Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+            consersation.getListMessageData().add(newMessage);
+            linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
+          } else {
+
+            if (newMessage.showReceiver && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+              consersation.getListMessageData().add(newMessage);
+              linearLayoutManager.scrollToPosition(consersation.getListMessageData().size() - 1);
+            }
+          }
+
+          int i = 0;
+          while (i + 1 < consersation.getListMessageData().size()) {
+
+            if (consersation.getListMessageData().get(i) instanceof DateMessage
+              && consersation.getListMessageData().get(i + 1) instanceof DateMessage) {
+
+              consersation.getListMessageData().remove(i);
+            } else {
+              i++;
+            }
+          }
+
+          if (consersation.getListMessageData().get(consersation.getListMessageData().size() - 1) instanceof DateMessage) {
+
+            consersation.getListMessageData().remove(consersation.getListMessageData().size() - 1);
+          }
+
+          adapter.notifyDataSetChanged();
+        }
+      }
+
+      @Override
+      public void onChildChanged(DataSnapshot dataSnapshot, String s) {
+        if (dataSnapshot.getValue() != null) {
+
+          HashMap mapMessage = (HashMap) dataSnapshot.getValue();
+
+          Message newMessage = new Message();
+          newMessage.idSender = (String) mapMessage.get("idSender");
+          newMessage.idReceiver = (String) mapMessage.get("idReceiver");
+          newMessage.timestamp = (long) mapMessage.get("timestamp");
+          newMessage.watched = (Boolean) mapMessage.get("watched");
+
+          if (mapMessage.get("showSender") != null) {
+
+            newMessage.showSender = (Boolean) mapMessage.get("showSender");
+          } else {
+            newMessage.showSender = true;
+          }
+
+          if (mapMessage.get("showReceiver") != null) {
+
+            newMessage.showReceiver = (Boolean) mapMessage.get("showReceiver");
+          } else {
+            newMessage.showReceiver = true;
+          }
+
+          if (mapMessage.get("text") != null) {
+            newMessage.text = (String) mapMessage.get("text");
+          }
+
+          if (mapMessage.get("fileModel") != null) {
+            FileModel fileModel = new FileModel();
+            HashMap fileHash = (HashMap) mapMessage.get("fileModel");
+            if (fileHash.containsKey("type"))
+              fileModel.type = (String) fileHash.get("type");
+
+            if (fileHash.containsKey("name_file"))
+              fileModel.name_file = (String) fileHash.get("name_file");
+
+            if (fileHash.containsKey("url_file"))
+              fileModel.url_file = (String) fileHash.get("url_file");
+
+            newMessage.fileModel = fileModel;
+          }
+
+          if (mapMessage.get("contact") != null) {
+            ContactModel contact = new ContactModel();
+            HashMap fileHash = (HashMap) mapMessage.get("contact");
+            if (fileHash.containsKey("number"))
+              contact.number = (String) fileHash.get("number");
+
+            if (fileHash.containsKey("name"))
+              contact.name = (String) fileHash.get("name");
+
+            newMessage.contact = contact;
+          }
+
+          if (mapMessage.get("incognito") != null && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+            newMessage.incognito = (Boolean) mapMessage.get("incognito");
+          }
+
+
+          for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+
+            Message message = consersation.getListMessageData().get(i);
+
+            if (Objects.equals(message, newMessage)) {
+
+              consersation.getListMessageData().get(i).watched = newMessage.watched;
+            }
+          }
+
+          if (!newMessage.showSender && Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+            for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+
+              if (Objects.equals(consersation.getListMessageData().get(i), newMessage)) {
+                consersation.getListMessageData().remove(i);
+                break;
+              }
+            }
+          }
+
+          if (!newMessage.showReceiver && !Objects.equals(newMessage.idSender, StaticConfig.UID)) {
+
+            System.out.println("DATA_CHANGED");
+            System.out.println(newMessage.showReceiver);
+            System.out.println(StaticConfig.UID);
+
+            for (int i = 0; i < consersation.getListMessageData().size(); i++) {
+
+              if (Objects.equals(consersation.getListMessageData().get(i), newMessage)) {
+                consersation.getListMessageData().remove(i);
+                break;
+              }
+            }
+          }
+
+          int i = 0;
+          while (i + 1 < consersation.getListMessageData().size()) {
+
+            if (consersation.getListMessageData().get(i) instanceof DateMessage
+              && consersation.getListMessageData().get(i + 1) instanceof DateMessage) {
+
+              consersation.getListMessageData().remove(i);
+            } else {
+              i++;
+            }
+          }
+
+          if (consersation.getListMessageData().get(consersation.getListMessageData().size() - 1) instanceof DateMessage) {
+
+            consersation.getListMessageData().remove(consersation.getListMessageData().size() - 1);
+          }
+
+          adapter.notifyDataSetChanged();
+        }
+      }
+
+      @Override
+      public void onChildRemoved(DataSnapshot dataSnapshot) {
+
+      }
+
+      @Override
+      public void onChildMoved(DataSnapshot dataSnapshot, String s) {
+
+      }
+
+      @Override
+      public void onCancelled(DatabaseError databaseError) {
+
+      }
+    });
+
+  }
+
   @Override
   protected void onStop() {
+    //TODO Aza zdes' lomaetsya proga, potomu chto ty ne uchel zhiznenniy cikl.
+    // Kogda vibiraem fotku ili ewe 4to libo, to on popadet syuda i unichtozhit listener
 
-    if (onMessageChangedListener != null && roomRef != null) {
-      roomRef.removeEventListener(onMessageChangedListener);
-    }
+//    if (onMessageChangedListener != null && roomRef != null) {
+//      roomRef.removeEventListener(onMessageChangedListener);
+//    }
 
     super.onStop();
+  }
+
+  @Override
+  protected void onResume() {
+//    if (onMessageChangedListener != null && roomRef != null) {
+//      initOnMessageChangedListener();
+//    }
+    super.onResume();
+  }
+
+  @Override
+  protected void onStart() {
+    super.onStart();
   }
 
   @SuppressLint("Recycle")
@@ -1607,9 +1620,9 @@ public class ChatActivity extends MainActivity
         chooseMedia(IMAGE_GALLERY_REQUEST);
         break;
 
-      case R.id.location_img_btn:
-        chooseMedia(PLACE_PICKER_REQUEST);
-        break;
+//      case R.id.location_img_btn:
+//        chooseMedia(PLACE_PICKER_REQUEST);
+//        break;
     }
   }
 
