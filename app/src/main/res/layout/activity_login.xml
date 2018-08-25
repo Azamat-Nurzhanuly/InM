@@ -14,6 +14,7 @@
     android:layout_marginTop="50dp"
     app:cardCornerRadius="6dp"
     app:cardElevation="10dp"
+    app:cardBackgroundColor="@color/colorPrimary"
     app:cardUseCompatPadding="true">
 
     <LinearLayout
@@ -30,7 +31,7 @@
           android:layout_width="8dp"
           android:layout_height="match_parent"
           android:layout_alignParentStart="true"
-          android:background="#2fa881" />
+          android:background="#ffffff" />
 
         <TextView
           android:layout_width="wrap_content"
@@ -38,7 +39,7 @@
           android:layout_centerVertical="true"
           android:layout_marginStart="50dp"
           android:text="@string/login"
-          android:textColor="#FFCC00"
+          android:textColor="#ffffff"
           android:textSize="18sp"
           android:textStyle="bold" />
       </RelativeLayout>
@@ -54,7 +55,7 @@
         <android.support.design.widget.TextInputLayout
           android:layout_width="match_parent"
           android:layout_height="wrap_content"
-          android:textColorHint="#c5c5c5">
+          android:textColorHint="#ffffff">
 
           <EditText
             android:id="@+id/et_username"
@@ -64,9 +65,9 @@
             android:hint="@string/phone_number"
             android:inputType="numberDecimal"
             android:paddingBottom="2dp"
-            android:textColor="#2fa881"
+            android:textColor="#ffffff"
             android:textCursorDrawable="@drawable/bg_input_cursor"
-            android:textSize="13sp" />
+            android:textSize="15sp" />
         </android.support.design.widget.TextInputLayout>
       </LinearLayout>
 
@@ -83,7 +84,7 @@
           android:onClick="clickLogin"
           android:stateListAnimator="@drawable/state_list_animator_z"
           android:text="@string/enter"
-          android:textColor="#3dece0"
+          android:textColor="#ffffff"
           tools:targetApi="lollipop" />
       </RelativeLayout>
     </LinearLayout>
