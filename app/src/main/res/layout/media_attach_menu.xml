@@ -51,7 +51,7 @@
           android:id="@+id/photo_img_btn"
           android:layout_width="35dp"
           android:layout_height="35dp"
-          android:background="@drawable/photo" />
+          android:background="@drawable/camera" />
 
         <TextView
           android:layout_width="wrap_content"
@@ -103,7 +103,7 @@
           android:id="@+id/audio_img_btn"
           android:layout_width="35dp"
           android:layout_height="35dp"
-          android:background="@drawable/audio" />
+          android:background="@drawable/audio_att" />
 
         <TextView
           android:layout_width="wrap_content"
@@ -123,7 +123,7 @@
           android:id="@+id/contact_img_btn"
           android:layout_width="35dp"
           android:layout_height="35dp"
-          android:background="@drawable/contact" />
+          android:background="@drawable/ic_contact_black" />
 
         <TextView
           android:layout_width="wrap_content"
