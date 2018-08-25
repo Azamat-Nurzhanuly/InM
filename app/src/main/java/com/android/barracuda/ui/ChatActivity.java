@@ -15,6 +15,7 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
 import android.net.Uri;
@@ -62,6 +63,8 @@ import com.android.barracuda.model.ContactModel;
 import com.android.barracuda.model.DateMessage;
 import com.android.barracuda.model.FileModel;
 import com.android.barracuda.model.Message;
+import com.android.barracuda.model.Status;
+import com.android.barracuda.model.User;
 import com.android.barracuda.service.SinchService;
 import com.android.barracuda.service.cloud.CloudFunctions;
 import com.bumptech.glide.Glide;
@@ -92,6 +95,7 @@ import com.sinch.android.rtc.calling.Call;
 import com.yarolegovich.lovelydialog.LovelyCustomDialog;
 import com.yarolegovich.lovelydialog.LovelyInfoDialog;
 import com.yarolegovich.lovelydialog.LovelyProgressDialog;
+import com.yarolegovich.lovelydialog.LovelyTextInputDialog;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -979,6 +983,8 @@ public class ChatActivity extends MainActivity
     //TODO Aza zdes' lomaetsya proga, potomu chto ty ne uchel zhiznenniy cikl.
     // Kogda vibiraem fotku ili ewe 4to libo, to on popadet syuda i unichtozhit listener
 
+    //TODO etot bag ispravlen?
+    //net vozmozhnosti protestirovat's
 //    if (onMessageChangedListener != null && roomRef != null) {
 //      roomRef.removeEventListener(onMessageChangedListener);
 //    }
@@ -1262,7 +1268,7 @@ public class ChatActivity extends MainActivity
   }
 
   @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
+  public boolean onOptionsItemSelected(final MenuItem item) {
 
     switch (item.getItemId()) {
       case R.id.mediaHistory: {
@@ -1458,6 +1464,89 @@ public class ChatActivity extends MainActivity
 
             }
           }).show();
+        break;
+      }
+
+      case R.id.incognitoSwitcher: {
+
+        new LovelyTextInputDialog(this, R.style.EditTextTintTheme)
+          .setCancelable(false)
+          .setTopColorRes(R.color.colorPrimary)
+          .setTitle("Таймер для удаления")
+          .setMessage("Укажите через сколько секунд удалять сообщение")
+          .setInputFilter("Введите только число", new LovelyTextInputDialog.TextFilter() {
+            @Override
+            public boolean check(String text) {
+              return text.matches("\\d+");
+            }
+          })
+          .setConfirmButton(android.R.string.ok, new LovelyTextInputDialog.OnTextInputConfirmListener() {
+            @Override
+            public void onTextInputConfirmed(final String text) {
+
+              Intent intent = new Intent(context, ChatActivity.class);
+              intent.putExtra(StaticConfig.INTENT_KEY_CHAT_FRIEND, nameFriend);
+              intent.putCharSequenceArrayListExtra(StaticConfig.INTENT_KEY_CHAT_ID, idFriend);
+
+              String secretChatId = "";
+              int index = roomId.indexOf("SECRET_CHAT");
+
+              if(index != -1) {
+
+                secretChatId = roomId.substring(0, index) + "SECRET_CHAT" + Integer.parseInt(text);
+              } else {
+                secretChatId = roomId + "SECRET_CHAT" + Integer.parseInt(text);
+              }
+
+              intent.putExtra(StaticConfig.INTENT_KEY_CHAT_ROOM_ID, secretChatId);
+
+              startActivityForResult(intent, FriendsFragment.ACTION_START_CHAT);
+
+//              FirebaseDatabase.getInstance().getReference()
+//                .child("user")
+//                .child(StaticConfig.UID)
+//                .addListenerForSingleValueEvent(new ValueEventListener() {
+//                  @Override
+//                  public void onDataChange(DataSnapshot dataSnapshot) {
+//                    if (dataSnapshot.getValue() != null) {
+//                      HashMap userMap = (HashMap) dataSnapshot.getValue();
+//
+//                      User user = new User();
+//                      user.name = (String) userMap.get("name");
+//                      user.avata = (String) userMap.get("avata");
+//                      user.id = (String) userMap.get("id");
+//                      user.phoneNumber = (String) userMap.get("phoneNumber");
+//
+//                      user.lifeTimeForMessage = Integer.parseInt(text);
+//
+//                      HashMap statusMap = (HashMap) userMap.get("status");
+//
+//                      user.status = new Status();
+//                      user.status.isOnline = (Boolean) statusMap.get("isOnline");
+//                      user.status.text = (String) statusMap.get("text");
+//                      user.status.timestamp = (Long) statusMap.get("timestamp");
+//
+//                      HashMap<String, Object> children = new HashMap<>();
+//
+//                      children.put(StaticConfig.UID, user);
+//
+//                      FirebaseDatabase.getInstance().getReference()
+//                        .child("user")
+//                        .updateChildren(children);
+//                    }
+//                  }
+//
+//                  @Override
+//                  public void onCancelled(DatabaseError databaseError) {
+//                    item.setChecked(false);
+//                  }
+//                });
+            }
+          })
+          .show();
+
+        SharedPreferences sharedPreferences = getSharedPreferences(SharedPreferenceHelper.USER_SELECTION, MODE_PRIVATE);
+        sharedPreferences.edit().putBoolean(SharedPreferenceHelper.INCOGNITO, item.isChecked()).commit();
         break;
       }
 

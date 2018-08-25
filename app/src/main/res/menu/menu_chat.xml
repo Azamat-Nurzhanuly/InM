@@ -54,4 +54,10 @@
       android:visible="false"
       app:showAsAction="always"
       android:icon="@drawable/trash"/>
+
+    <item
+      android:id="@+id/incognitoSwitcher"
+      android:orderInCategory="109"
+      android:title="@string/incognito"
+      app:showAsAction="never"/>
 </menu>

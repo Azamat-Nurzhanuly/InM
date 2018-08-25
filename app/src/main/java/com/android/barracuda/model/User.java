@@ -7,7 +7,6 @@ public class User {
     public String name;
     public String phoneNumber;
     public String avata;
-    public Integer lifeTimeForMessage;
     public Status status;
     public Message message;
 
@@ -15,7 +14,6 @@ public class User {
     public User(){
         status = new Status();
         message = new Message();
-        lifeTimeForMessage = 30;
         status.text = "";
         status.isOnline = false;
         status.timestamp = 0;

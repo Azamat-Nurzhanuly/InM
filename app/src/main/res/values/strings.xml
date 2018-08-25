@@ -20,6 +20,7 @@
     <string name="next">СЛЕДУЮЩИЙ</string>
     <string name="register">РЕГИСТРАЦИЯ</string>
 
+    <string name="incognitoChat">Секретный чат</string>
     <string name="deleteFriend">Удалить</string>
     <string name="addBlackList">Добавить в черный список</string>
 
