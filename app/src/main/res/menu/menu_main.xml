@@ -24,29 +24,29 @@
       android:orderInCategory="103"
       android:title="@string/blacklist"
       app:showAsAction="never" />
-    <!--<item-->
-        <!--android:id="@+id/account"-->
-        <!--android:orderInCategory="103"-->
-        <!--android:title="@string/account"-->
-        <!--app:showAsAction="never">-->
-        <!--<menu>-->
-            <!--<item-->
-                <!--android:id="@+id/account.rules"-->
-                <!--android:orderInCategory="200"-->
-                <!--android:title="@string/rules"-->
-                <!--app:showAsAction="never" />-->
-            <!--<item-->
-                <!--android:id="@+id/account.contract"-->
-                <!--android:orderInCategory="201"-->
-                <!--android:title="@string/contract"-->
-                <!--app:showAsAction="never" />-->
+    <item
+        android:id="@+id/account"
+        android:orderInCategory="103"
+        android:title="@string/account"
+        app:showAsAction="never">
+        <menu>
+            <item
+                android:id="@+id/account.rules"
+                android:orderInCategory="200"
+                android:title="@string/rules"
+                app:showAsAction="never" />
+            <item
+                android:id="@+id/account.contract"
+                android:orderInCategory="201"
+                android:title="@string/contract"
+                app:showAsAction="never" />
             <!--<item-->
                 <!--android:id="@+id/account.blacklist"-->
                 <!--android:orderInCategory="202"-->
                 <!--android:title="@string/blacklist"-->
                 <!--app:showAsAction="never" />-->
-        <!--</menu>-->
-    <!--</item>-->
+        </menu>
+    </item>
 
     <item
       android:id="@+id/chats.themes"

@@ -173,7 +173,7 @@ public class LoginActivity extends AppCompatActivity {
           return super.setConfirmButtonText(text);
         }
       }
-        .setTopColorRes(R.color.colorAccent)
+        .setTopColorRes(R.color.colorDarkBluePrimary)
         .setIcon(R.drawable.ic_person_low)
         .setTitle("Неуспешная авторизация")
         .setMessage("Неверно введён телефонный номер, телефон вводится без 8 и не должен начинаться с +7")
@@ -210,7 +210,7 @@ public class LoginActivity extends AppCompatActivity {
     void createUser(String email, String password) {
       waitingDialog.setIcon(R.drawable.ic_add_friend)
         .setTitle("Registering....")
-        .setTopColorRes(R.color.colorPrimary)
+        .setTopColorRes(R.color.colorDarkBluePrimary)
         .show();
       mAuth.createUserWithEmailAndPassword(email, password)
         .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
@@ -261,7 +261,7 @@ public class LoginActivity extends AppCompatActivity {
 
       waitingDialog.setIcon(R.drawable.ic_person_low)
         .setTitle("Авторизация....")
-        .setTopColorRes(R.color.colorPrimary)
+        .setTopColorRes(R.color.colorDarkBluePrimary)
         .show();
 
       Config config = SinchVerification.config().applicationKey(StaticConfig.SINCH_KEY).context(getApplicationContext()).build();
@@ -303,7 +303,7 @@ public class LoginActivity extends AppCompatActivity {
               return super.setConfirmButtonText(text);
             }
           }
-            .setTopColorRes(R.color.colorAccent)
+            .setTopColorRes(R.color.colorDarkBluePrimary)
             .setIcon(R.drawable.ic_person_low)
             .setTitle("Неуспешная авторизация")
             .setMessage(description)
@@ -347,7 +347,7 @@ public class LoginActivity extends AppCompatActivity {
               return super.setConfirmButtonText(text);
             }
           }
-            .setTopColorRes(R.color.colorAccent)
+            .setTopColorRes(R.color.colorDarkBluePrimary)
             .setIcon(R.drawable.ic_person_low)
             .setTitle("Неуспешная авторизация")
             .setMessage(description)
@@ -396,7 +396,7 @@ public class LoginActivity extends AppCompatActivity {
     void signIn(String customToken) {
       waitingDialog.setIcon(R.drawable.ic_person_low)
         .setTitle("Выполняется вход....")
-        .setTopColorRes(R.color.colorPrimary)
+        .setTopColorRes(R.color.colorDarkBluePrimary)
         .show();
       mAuth.signInWithCustomToken(customToken)
         .addOnCompleteListener(LoginActivity.this, new OnCompleteListener<AuthResult>() {
@@ -421,7 +421,7 @@ public class LoginActivity extends AppCompatActivity {
                   return super.setConfirmButtonText(text);
                 }
               }
-                .setTopColorRes(R.color.colorAccent)
+                .setTopColorRes(R.color.colorDarkBluePrimary)
                 .setIcon(R.drawable.ic_person_low)
                 .setTitle("Login false")
                 .setMessage("Email not exist or wrong password!")

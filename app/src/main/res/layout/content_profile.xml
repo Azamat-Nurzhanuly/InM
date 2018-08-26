@@ -18,7 +18,7 @@ tools:showIn="@layout/activity_profile">
 
 <RelativeLayout
     android:id="@+id/profile"
-    app:layout_aspectRatio="150%"
+    app:layout_aspectRatio="300%"
     app:layout_widthPercent="100%">
     <LinearLayout
         android:layout_centerVertical="true"
@@ -30,8 +30,8 @@ tools:showIn="@layout/activity_profile">
         <ImageView
             android:id="@+id/img_avatar"
             android:layout_gravity="center"
-            android:layout_width="104dp"
-            android:layout_height="104dp"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
             android:src="@drawable/default_avata"
             android:background="#00000000"/>
         <TextView
