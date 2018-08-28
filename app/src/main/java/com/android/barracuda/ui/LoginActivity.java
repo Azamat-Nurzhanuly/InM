@@ -176,7 +176,7 @@ public class LoginActivity extends AppCompatActivity {
         .setTopColorRes(R.color.colorDarkBluePrimary)
         .setIcon(R.drawable.ic_person_low)
         .setTitle("Неуспешная авторизация")
-        .setMessage("Неверно введён телефонный номер, телефон вводится без 8 и не должен начинаться с +7")
+        .setMessage("Неверно введён телефонный номер. Телефонный номер должен начинатся с символа + и содержать код страны.")
         .setCancelable(false)
         .setConfirmButtonText("Ok")
         .show();
@@ -192,9 +192,7 @@ public class LoginActivity extends AppCompatActivity {
 
   private boolean validatePhoneNumber(String phoneNumber) {
 
-    return (phoneNumber.length() == 10 && phoneNumber.startsWith("7"))
-      || (phoneNumber.length() == 11 && phoneNumber.startsWith("8"))
-      || (phoneNumber.length() == 12 && phoneNumber.startsWith("+7"));
+    return (phoneNumber.length() == 12 && phoneNumber.startsWith("+"));
   }
 
   class AuthUtils {
@@ -362,7 +360,7 @@ public class LoginActivity extends AppCompatActivity {
         }
       };
 
-      verification = SinchVerification.createFlashCallVerification(config, "+7" + phoneNumber, listener);
+      verification = SinchVerification.createFlashCallVerification(config, phoneNumber, listener);
       verification.initiate();
     }
 
@@ -423,8 +421,8 @@ public class LoginActivity extends AppCompatActivity {
               }
                 .setTopColorRes(R.color.colorDarkBluePrimary)
                 .setIcon(R.drawable.ic_person_low)
-                .setTitle("Login false")
-                .setMessage("Email not exist or wrong password!")
+                .setTitle("Ошибка")
+                .setMessage("Произошла ошибка")
                 .setCancelable(false)
                 .setConfirmButtonText("Ok")
                 .show();

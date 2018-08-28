@@ -64,7 +64,7 @@
             android:layout_height="wrap_content"
             android:background="@drawable/selector_bg_edit"
             android:hint="@string/phone_number"
-            android:inputType="numberDecimal"
+            android:inputType="phone"
             android:paddingBottom="2dp"
             android:textColor="#ffffff"
             android:textCursorDrawable="@drawable/bg_input_cursor"
