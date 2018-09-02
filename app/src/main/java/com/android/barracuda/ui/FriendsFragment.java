@@ -398,6 +398,8 @@ public class FriendsFragment extends Fragment implements SwipeRefreshLayout.OnRe
         } else {
           dialogFindAllFriend.dismiss();
         }
+
+        mSwipeRefreshLayout.setRefreshing(false);
       }
 
       @Override
@@ -665,7 +667,7 @@ class ListFriendsAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
 
   @Override
   public void onBindViewHolder(final RecyclerView.ViewHolder holder, final int position) {
-    final String name = friendsMap.containsKey (listFriend.getListFriend().get(position).phoneNumber) ? friendsMap.get(listFriend.getListFriend().get(position).phoneNumber) : listFriend.getListFriend().get(position).name;
+    final String name = friendsMap.containsKey(listFriend.getListFriend().get(position).phoneNumber) ? friendsMap.get(listFriend.getListFriend().get(position).phoneNumber) : listFriend.getListFriend().get(position).name;
     final String id = listFriend.getListFriend().get(position).id;
     final String idRoom = listFriend.getListFriend().get(position).idRoom;
     final String avata = listFriend.getListFriend().get(position).avata;
