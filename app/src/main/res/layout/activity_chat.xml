@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
   xmlns:app="http://schemas.android.com/apk/res-auto"
-  xmlns:tools="http://schemas.android.com/tools"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
   android:background="@color/grey_100"
@@ -31,23 +30,22 @@
 
 
   <RelativeLayout
+    android:id="@+id/buttons"
     android:layout_width="match_parent"
     android:layout_height="30dp"
-    android:layout_alignParentBottom="true"
-    android:id="@+id/buttons">
+    android:layout_alignParentBottom="true">
 
     <EditText
       android:id="@+id/editWriteMessage"
       android:layout_width="match_parent"
       android:layout_height="match_parent"
-      android:layout_alignParentBottom="true"
       android:layout_toEndOf="@id/attach_button"
       android:layout_toStartOf="@+id/btnSend"
       android:background="@drawable/edittext_boder"
       android:drawablePadding="20dp"
       android:inputType="textLongMessage"
-      android:maxLines="1"
       android:paddingEnd="7dp"
+      android:paddingBottom="10dp"
       android:paddingStart="7dp"
       android:textColorHint="#aeafaf"
       android:textSize="15sp" />
@@ -65,8 +63,8 @@
       android:id="@+id/attach_button"
       android:layout_width="40dp"
       android:layout_height="50dp"
-      android:layout_toEndOf="@id/camera_button"
       android:layout_alignTop="@+id/editWriteMessage"
+      android:layout_toEndOf="@id/camera_button"
       android:background="@color/colorTransparent"
       app:srcCompat="@drawable/ic_attach" />
 
@@ -74,8 +72,8 @@
       android:id="@+id/btnSend"
       android:layout_width="40dp"
       android:layout_height="36dp"
-      android:layout_alignParentTop="true"
       android:layout_alignParentEnd="true"
+      android:layout_alignParentTop="true"
       android:background="#00000000"
       android:padding="10dp"
       android:scaleType="centerInside"
@@ -85,10 +83,10 @@
     <com.devlomi.record_view.RecordView
       android:id="@+id/record_view"
       android:layout_width="match_parent"
-      android:translationY="10dp"
       android:layout_height="wrap_content"
       android:layout_alignParentBottom="true"
       android:layout_toStartOf="@+id/record_button"
+      android:translationY="10dp"
       app:slide_to_cancel_arrow="@drawable/ic_keyboard_arrow_left"
       app:slide_to_cancel_margin_right="10dp"
       app:slide_to_cancel_text="Slide To Cancel">
@@ -99,8 +97,8 @@
       android:id="@+id/record_button"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
-      android:layout_alignParentTop="true"
       android:layout_alignParentRight="true"
+      android:layout_alignParentTop="true"
       android:scaleType="centerInside"
       app:src="@drawable/record" />
   </RelativeLayout>
