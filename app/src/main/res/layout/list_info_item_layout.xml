@@ -9,8 +9,7 @@
     android:id="@+id/config_item"
     android:layout_width="match_parent"
     android:background="@android:color/transparent"
-    android:layout_height="72dp"
-    android:minHeight="60px"
+    android:layout_height="wrap_content"
     app:layout_behavior="@string/appbar_scrolling_view_behavior"
     tools:context="com.android.barracuda.MainActivity"
     tools:showIn="@layout/activity_main">

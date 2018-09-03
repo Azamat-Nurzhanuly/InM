@@ -114,4 +114,5 @@
     <item name="colorAccent">#ffffff</item>
     <item name="android:windowBackground">@color/colorDarkBluePrimary</item>
   </style>
+
 </resources>
