@@ -34,6 +34,7 @@ import com.yarolegovich.lovelydialog.LovelyProgressDialog;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 
 import de.hdodenhof.circleimageview.CircleImageView;
@@ -127,6 +128,7 @@ public class CallListFragment extends Fragment implements SwipeRefreshLayout.OnR
 
   private void refreshContent() {
     dataListCalls = CallDB.getInstance(getContext()).getListCall();
+    Collections.sort(dataListCalls.getListCall());
 
     adapter = new ListCallAdapter(getContext(), dataListCalls, this);
     adapter.notifyDataSetChanged();

@@ -251,20 +251,23 @@ public class CallScreenActivity extends ChatActivity {
     if (audioManager.isMicrophoneMute()) {
       audioManager.setMicrophoneMute(false);
       micro.setBackgroundColor(getResources().getColor(R.color.colorWhiteDecline));
+      micro.setImageResource(R.drawable.micro);
+
 
     } else {
       audioManager.setMicrophoneMute(true);
-      micro.setBackgroundColor(getResources().getColor(R.color.red));
+      micro.setImageResource(R.drawable.micro_off);
     }
   }
 
   private void enableOrDisableSpeaker() {
     if (audioManager.isSpeakerphoneOn()) {
       audioManager.setSpeakerphoneOn(false);
-      micro.setBackgroundColor(getResources().getColor(R.color.colorWhiteDecline));
+      speaker.setBackgroundColor(getResources().getColor(R.color.colorWhiteDecline));
+      speaker.setImageResource(R.drawable.speaker);
     } else {
       audioManager.setSpeakerphoneOn(true);
-      micro.setBackgroundColor(getResources().getColor(R.color.red));
+      speaker.setImageResource(R.drawable.speaker_off);
     }
   }
 
