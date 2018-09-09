@@ -1,17 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+  xmlns:app="http://schemas.android.com/apk/res-auto"
   android:layout_width="match_parent"
   android:layout_height="match_parent"
-  xmlns:app="http://schemas.android.com/apk/res-auto"
+  android:background="#ffffffff"
   android:orientation="vertical"
-  android:weightSum="5"
-  android:background="#ffffffff">
+  android:weightSum="5">
 
   <LinearLayout
     android:layout_width="match_parent"
     android:layout_height="60dp"
     android:layout_weight="1"
-    android:background="#fffafafa"
+    android:background="#ffffff"
     android:orientation="vertical">
 
     <TextView
@@ -49,20 +49,70 @@
   <RelativeLayout
     android:layout_width="wrap_content"
     android:layout_height="0dp"
-    android:padding="0dip"
     android:layout_weight="3"
-    android:orientation="vertical">
+    android:orientation="vertical"
+    android:padding="0dip">
 
-    <LinearLayout android:id="@+id/remoteVideo"
+    <LinearLayout
+      android:id="@+id/remoteVideo"
       android:layout_width="match_parent"
-      android:layout_height="match_parent" android:layout_alignParentLeft="true"
-      android:layout_alignParentTop="true" android:orientation="horizontal"/>
+      android:layout_height="match_parent"
+      android:layout_alignParentLeft="true"
+      android:layout_alignParentTop="true"
+      android:orientation="horizontal" />
 
-    <RelativeLayout android:id="@+id/localVideo" android:layout_width="150dp"
-      android:layout_alignParentRight="true" android:layout_height="200dp"
+    <RelativeLayout
+      android:id="@+id/localVideo"
+      android:layout_width="150dp"
+      android:layout_height="200dp"
+      android:layout_alignParentRight="true"
       android:layout_alignParentTop="true" />
 
+    <RelativeLayout
+      android:layout_width="200dp"
+      android:layout_height="wrap_content"
+      android:layout_centerInParent="true">
+
+      <android.support.design.widget.FloatingActionButton
+        android:id="@+id/micro"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="@color/colorWhiteDecline"
+        android:elevation="0dp"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
+        android:layout_alignParentStart="true"
+        android:src="@drawable/micro"
+        android:scaleType="center"
+        app:borderWidth="0dp"
+        app:fabSize="normal" />
+
+      <android.support.design.widget.FloatingActionButton
+        android:id="@+id/speaker"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:elevation="0dp"
+        android:backgroundTint="@color/colorWhiteDecline"
+        android:paddingBottom="20dp"
+        android:paddingTop="20dp"
+        android:scaleType="center"
+        android:src="@drawable/speaker"
+        app:borderWidth="0dp"
+        app:fabSize="normal" />
+    </RelativeLayout>
+
+  </RelativeLayout>
+
+
+  <RelativeLayout
+    android:id="@+id/bottomPanel"
+    android:layout_width="match_parent"
+    android:layout_height="0dp"
+    android:layout_weight="1">
+
     <android.support.design.widget.FloatingActionButton
+      android:id="@+id/hangupButton"
       android:layout_width="wrap_content"
       android:layout_height="wrap_content"
       android:layout_centerInParent="true"
@@ -71,30 +121,8 @@
       android:paddingTop="20dp"
       android:src="@drawable/decline"
       app:borderWidth="0dp"
-      app:fabSize="normal"/>
+      app:fabSize="normal" />
 
   </RelativeLayout>
-
-
-
-    <RelativeLayout
-            android:id="@+id/bottomPanel"
-            android:layout_width="match_parent"
-            android:layout_height="0dp"
-            android:layout_weight="1">
-
-      <android.support.design.widget.FloatingActionButton
-          android:id="@+id/hangupButton"
-          android:layout_width="wrap_content"
-          android:layout_height="wrap_content"
-          android:layout_centerInParent="true"
-          android:backgroundTint="@color/colorDecline"
-          android:paddingBottom="20dp"
-          android:paddingTop="20dp"
-          android:src="@drawable/decline"
-          app:borderWidth="0dp"
-          app:fabSize="normal"/>
-
-    </RelativeLayout>
 
 </LinearLayout>

@@ -66,6 +66,9 @@ public class CallScreenActivity extends ChatActivity {
   private TextView mCallDuration;
   private TextView mCallState;
   private TextView mCallerName;
+  private FloatingActionButton speaker;
+  private FloatingActionButton micro;
+  private AudioManager audioManager;
 
   private static Context mContext;
 
@@ -104,16 +107,33 @@ public class CallScreenActivity extends ChatActivity {
     setContext(this);
     setContentView(R.layout.callscreen);
 
+    audioManager = (AudioManager) getSystemService(AUDIO_SERVICE);
+
     mAudioPlayer = new AudioPlayer(this);
     mCallDuration = (TextView) findViewById(R.id.callDuration);
     mCallerName = (TextView) findViewById(R.id.remoteUser);
     mCallState = (TextView) findViewById(R.id.callState);
+    micro = (FloatingActionButton) findViewById(R.id.micro);
+    speaker = (FloatingActionButton) findViewById(R.id.speaker);
     FloatingActionButton endCallButton = (FloatingActionButton) findViewById(R.id.hangupButton);
 
     endCallButton.setOnClickListener(new OnClickListener() {
       @Override
       public void onClick(View v) {
         endCall();
+      }
+    });
+    micro.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        enableOrDisableMute();
+      }
+    });
+
+    speaker.setOnClickListener(new OnClickListener() {
+      @Override
+      public void onClick(View v) {
+        enableOrDisableSpeaker();
       }
     });
     mCallId = getIntent().getStringExtra(SinchService.CALL_ID);
@@ -226,6 +246,28 @@ public class CallScreenActivity extends ChatActivity {
     finish();
   }
 
+  private void enableOrDisableMute() {
+
+    if (audioManager.isMicrophoneMute()) {
+      audioManager.setMicrophoneMute(false);
+      micro.setBackgroundColor(getResources().getColor(R.color.colorWhiteDecline));
+
+    } else {
+      audioManager.setMicrophoneMute(true);
+      micro.setBackgroundColor(getResources().getColor(R.color.red));
+    }
+  }
+
+  private void enableOrDisableSpeaker() {
+    if (audioManager.isSpeakerphoneOn()) {
+      audioManager.setSpeakerphoneOn(false);
+      micro.setBackgroundColor(getResources().getColor(R.color.colorWhiteDecline));
+    } else {
+      audioManager.setSpeakerphoneOn(true);
+      micro.setBackgroundColor(getResources().getColor(R.color.red));
+    }
+  }
+
   private String formatTimespan(int totalSeconds) {
     long minutes = totalSeconds / 60;
     long seconds = totalSeconds % 60;
@@ -249,6 +291,7 @@ public class CallScreenActivity extends ChatActivity {
       String endMsg = "Call ended: " + call.getDetails().toString();
       endCall();
       saveCallInCallsHistory(call);
+      setModeNormal();
     }
 
     @Override
@@ -266,8 +309,21 @@ public class CallScreenActivity extends ChatActivity {
 
     @Override
     public void onCallProgressing(Call call) {
+
+      setModeCall();
+
       Log.d(TAG, "Call progressing");
       mAudioPlayer.playProgressTone();
+    }
+
+    private void setModeCall() {
+      audioManager.setMode(AudioManager.MODE_IN_CALL);
+      audioManager.setSpeakerphoneOn(true);
+    }
+
+    private void setModeNormal() {
+      audioManager.setMode(AudioManager.MODE_NORMAL);
+      audioManager.setSpeakerphoneOn(false);
     }
 
     private void saveCallInCallsHistory(Call call) {
