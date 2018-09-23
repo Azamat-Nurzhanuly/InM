@@ -1,19 +1,28 @@
 package com.android.barracuda.ui;
 
 import android.Manifest;
+import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.android.barracuda.BarracudaActivity;
 import com.android.barracuda.BuildConfig;
+import com.android.barracuda.MainActivity;
+import com.android.barracuda.R;
+import com.android.barracuda.data.SharedPreferenceHelper;
+import com.android.barracuda.data.StaticConfig;
+import com.android.barracuda.model.User;
 import com.android.barracuda.service.cloud.CloudFunctions;
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -25,11 +34,6 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.database.ValueEventListener;
-import com.android.barracuda.MainActivity;
-import com.android.barracuda.R;
-import com.android.barracuda.data.SharedPreferenceHelper;
-import com.android.barracuda.data.StaticConfig;
-import com.android.barracuda.model.User;
 import com.sinch.verification.CodeInterceptionException;
 import com.sinch.verification.Config;
 import com.sinch.verification.IncorrectCodeException;
@@ -53,7 +57,7 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 
 
-public class LoginActivity extends AppCompatActivity {
+public class LoginActivity extends BarracudaActivity {
   private static String TAG = "LoginActivity";
   FloatingActionButton fab;
   private final Pattern VALID_EMAIL_ADDRESS_REGEX =
@@ -69,6 +73,7 @@ public class LoginActivity extends AppCompatActivity {
   private CloudFunctions mCloudFunctions;
   private int PERMISSION_REQUEST_CODE = 200;
   private String phoneNumberSt = "";
+  private Context context;
 
   @Override
   protected void onStart() {
@@ -79,11 +84,17 @@ public class LoginActivity extends AppCompatActivity {
   @Override
   protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
+
+    setTheme();
+
+
     setContentView(R.layout.activity_login);
+
     fab = (FloatingActionButton) findViewById(R.id.fab);
     editTextUsername = (EditText) findViewById(R.id.et_username);
     editTextPassword = (EditText) findViewById(R.id.et_password);
     firstTimeAccess = true;
+
 
     final Retrofit retrofit = new Retrofit.Builder()
       .baseUrl(BuildConfig.CLOUD_FUNCTIONS_BASE_URL)
@@ -159,7 +170,9 @@ public class LoginActivity extends AppCompatActivity {
 
     if (validatePhoneNumber(phoneNumber)) {
       ((Button) view).setEnabled(false);
-      authUtils.flashCallVerification(phoneNumber);
+      authUtils.smsVerification(phoneNumber);
+      ((Button) view).setEnabled(true);
+
     } else {
       new LovelyInfoDialog(LoginActivity.this) {
         @Override
@@ -193,6 +206,15 @@ public class LoginActivity extends AppCompatActivity {
   private boolean validatePhoneNumber(String phoneNumber) {
 
     return (phoneNumber.length() == 12 && phoneNumber.startsWith("+"));
+  }
+
+  public Context getContext() {
+    if (context != null)
+      return context;
+    else {
+      context = this;
+      return context;
+    }
   }
 
   class AuthUtils {
@@ -361,6 +383,116 @@ public class LoginActivity extends AppCompatActivity {
       };
 
       verification = SinchVerification.createFlashCallVerification(config, phoneNumber, listener);
+      verification.initiate();
+    }
+
+
+    void smsVerification(final String phoneNumber) {
+
+      waitingDialog.setIcon(R.drawable.ic_person_low)
+        .setTitle("Авторизация....")
+        .setTopColorRes(R.color.colorDarkBluePrimary)
+        .show();
+
+      Config config = SinchVerification.config().applicationKey(StaticConfig.SINCH_KEY).context(getApplicationContext()).build();
+
+      VerificationListener listener = new VerificationListener() {
+
+        @Override
+        public void onInitiated(InitiationResult initiationResult) {
+        }
+
+        @Override
+        public void onInitiationFailed(Exception e) {
+
+          waitingDialog.dismiss();
+
+          String description = "Возникла ошибка при авторизации, проверьте введённый номер телефона";
+
+          if (e instanceof InvalidInputException) {
+            // Incorrect number provided
+            Log.w(TAG, "Incorrect number or code provided");
+            description = "Неправильно введён номер телефона";
+          } else if (e instanceof ServiceErrorException) {
+            // Sinch service error
+            Log.w(TAG, "Sinch service error");
+          } else {
+            // Other system error, such as UnknownHostException in case of network error
+            Log.w(TAG, "Other system error, such as UnknownHostException in case of network error");
+          }
+
+          new LovelyInfoDialog(LoginActivity.this) {
+            @Override
+            public LovelyInfoDialog setConfirmButtonText(String text) {
+              findView(com.yarolegovich.lovelydialog.R.id.ld_btn_confirm).setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                  dismiss();
+                }
+              });
+              return super.setConfirmButtonText(text);
+            }
+          }
+            .setTopColorRes(R.color.colorDarkBluePrimary)
+            .setIcon(R.drawable.ic_person_low)
+            .setTitle("Неуспешная авторизация")
+            .setMessage(description)
+            .setCancelable(false)
+            .setConfirmButtonText("Ok")
+            .show();
+        }
+
+        @Override
+        public void onVerified() {
+          waitingDialog.dismiss();
+          getCustomToken(phoneNumber);
+        }
+
+        @Override
+        public void onVerificationFailed(Exception e) {
+
+          waitingDialog.dismiss();
+
+          if (e instanceof CodeInterceptionException || e instanceof IncorrectCodeException) {
+            View vewInflater = LayoutInflater.from(getContext())
+              .inflate(R.layout.dialog_sms_code, (ViewGroup) findViewById(R.id.profile), false);
+            final EditText input = (EditText) vewInflater.findViewById(R.id.sms_code);
+
+            new android.support.v7.app.AlertDialog.Builder(getContext())
+              .setTitle("Введите код из смс")
+              .setView(vewInflater)
+              .setPositiveButton("ок", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  verification.verify(String.valueOf(input.getText()));
+
+//                  waitingDialog.dismiss();
+//                  getCustomToken(phoneNumber);
+                }
+              })
+              .setNegativeButton("Отменить", new DialogInterface.OnClickListener() {
+                @Override
+                public void onClick(DialogInterface dialogInterface, int i) {
+                  dialogInterface.dismiss();
+                }
+              }).show();
+
+          } else if (e instanceof ServiceErrorException) {
+            // Sinch service error
+            Log.w(TAG, "Sinch service error");
+          } else {
+            // Other system error, such as UnknownHostException in case of network error
+            Log.w(TAG, "Other system error, such as UnknownHostException in case of network error");
+          }
+        }
+
+        @Override
+        public void onVerificationFallback() {
+
+        }
+      };
+
+      verification = SinchVerification.createSmsVerification(config, phoneNumber, listener);
       verification.initiate();
     }
 

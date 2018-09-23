@@ -25,6 +25,7 @@
     <string name="addBlackList">Добавить в черный список</string>
 
     <string name="hint_username">Введите имя</string>
+    <string name="hint_sms_code">Введите код из смс</string>
     <string name="hint_status">Введите статус</string>
     <string name="hint_email_reset">Введите свою почту</string>
     <string name="enter_group_name">Введите название группы</string>

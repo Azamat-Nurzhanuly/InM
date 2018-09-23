@@ -142,7 +142,7 @@ public class RegisterActivity extends AppCompatActivity {
             setResult(RESULT_OK, data);
             finish();
         }else {
-            Toast.makeText(this, "Invalid email or not match password", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Invalid phone", Toast.LENGTH_SHORT).show();
         }
     }
 
